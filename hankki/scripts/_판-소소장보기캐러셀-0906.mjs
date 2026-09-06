@@ -42,9 +42,10 @@ body{width:1080px;height:1350px;overflow:hidden;position:relative;font-family:'J
 .tag{position:absolute;left:64px;top:64px;z-index:9;font-family:'Jua';font-size:30px;color:#fff;background:${파랑};border-radius:999px;padding:8px 26px}
 `
 // 앱 화면 «조각» — 원본(1170px 폭) 좌표로 잘라 종이 조각처럼. 절대 배치(left/top) 또는 흐름(flow) 둘 다.
-const 조각 = ({ 파일, y, h, x = 50, w = 1070, 배율 = 0.6, 회전 = 0, left, top, z = 5, flow = false, r = 18 }) =>
+// 파일이 '창업자:' 로 시작하면 창업자 캡처(824px 폭 · 갤럭시)에서 잘라 온다 — 원폭 을 같이 준다
+const 조각 = ({ 파일, y, h, x = 50, w = 1070, 배율 = 0.6, 회전 = 0, left, top, z = 5, flow = false, r = 18, 원폭 = 1170 }) =>
   `<div style="${flow ? 'position:relative;' : `position:absolute;z-index:${z};left:${left}px;top:${top}px;`}width:${Math.round(w * 배율)}px;height:${Math.round(h * 배율)}px;overflow:hidden;border-radius:${r}px;background:#f4efe6;box-shadow:0 16px 34px rgba(40,50,60,.18);${회전 ? `transform:rotate(${회전}deg)` : ''}">
-  <img src="${앱(파일)}" style="position:absolute;left:${-x * 배율}px;top:${-y * 배율}px;width:${1170 * 배율}px"></div>`
+  <img src="${파일.startsWith('창업자:') ? b64(join(창업자, 파일.slice(4))) : 앱(파일)}" style="position:absolute;left:${-x * 배율}px;top:${-y * 배율}px;width:${원폭 * 배율}px"></div>`
 const 테이프 = (l, t, r = -5) => `<div style="position:absolute;z-index:7;left:${l}px;top:${t}px;width:150px;height:44px;background:rgba(232,196,120,.75);transform:rotate(${r}deg)"></div>`
 
 // ── A 풀블리드 ────────────────────────────────────────────────
@@ -108,12 +109,12 @@ const 장들 = {
     나(720, '오 7개 찾았네', '오후 6:13') +
     펭(850, 말('아닌 건 체크만 풀면 돼') + 캡처조각({ 파일: '소소-영수증에서찾은재료-2026-09-06.png', y: 1090, h: 300, x: 60, w: 960, 배율: 0.55 }), 'pjs_07') }),
 
-  '소소1-03-유통기한': () => B({ no: 3, 머리: '유통기한은<br>앱이 세요', 부제: '가까운 것부터 D-1 · D-2 · 색으로<br>앱 켜면 지나는 것 먼저 알려줘요', 스티커: 'pjs_08', 스자리: 'left:30px;top:1030px;width:280px;transform:rotate(-5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고', 조각들:
-    조각({ 파일: '02-냉장고Dday', y: 724, h: 190, 배율: 0.62, 회전: -6, left: 40, top: 190 }) + 테이프(110, 170) +
-    조각({ 파일: '02-냉장고Dday', y: 933, h: 210, 배율: 0.62, 회전: 4, left: 380, top: 300 }) + 테이프(900, 290, 8) +
-    조각({ 파일: '02-냉장고Dday', y: 1156, h: 216, 배율: 0.62, 회전: -3, left: 120, top: 820 }) + 테이프(160, 805) +
-    조각({ 파일: '02-냉장고Dday', y: 1385, h: 215, 배율: 0.62, 회전: 5, left: 430, top: 960 }) + 테이프(960, 950, 6) }),
-
+  // 🔔 2026-09-06 23:38 창업자 실물 캡처(알림 기능) = 장보기 탭 빨간 점 · 냉장고 탭 「2」 · D-3부터 표시. ⛔실제 푸시 알림은 안 된다(창업자 *"실제로 알림 울리는 건 안된데"*) — 「울린다」고 쓰지 않는다
+  '소소1-03-유통기한': () => B({ no: 3, 머리: '유통기한은<br>앱이 세요', 부제: 'D-3부터 색으로 표시 · 가까운 것부터<br>앱 켜면 냉장고 탭에 개수 · 장보기 탭에 빨간 점', 스티커: 'pjs_08', 스자리: 'left:30px;top:1030px;width:280px;transform:rotate(-5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고', 조각들:
+    조각({ 파일: '창업자:소소-알림-냉장고Dday-2026-09-06.png', 원폭: 824, x: 0, w: 824, y: 963, h: 148, 배율: 0.86, 회전: -6, left: 40, top: 190 }) + 테이프(110, 170) +
+    조각({ 파일: '창업자:소소-알림-냉장고Dday-2026-09-06.png', 원폭: 824, x: 0, w: 824, y: 1112, h: 150, 배율: 0.86, 회전: 4, left: 340, top: 310 }) + 테이프(930, 300, 8) +
+    조각({ 파일: '창업자:소소-알림-장보기탭-2026-09-06.png', 원폭: 824, x: 30, w: 764, y: 200, h: 112, 배율: 0.86, 회전: -3, left: 100, top: 870, r: 60 }) + 테이프(140, 840) +
+    조각({ 파일: '창업자:소소-알림-장보기탭-2026-09-06.png', 원폭: 824, x: 0, w: 824, y: 1712, h: 118, 배율: 0.86, 회전: 5, left: 360, top: 1035 }) + 테이프(910, 1020, 6) }),
   '소소1-04-추천': () => A({ no: 4, 그림: '01-냉장고추천', 잘라: 690, 머리: '냉장고 열면<br>오늘 메뉴가', 부제: '넣어둔 재료로 만들 수 있는 요리를 골라줘요<br>「가진 재료 4개」 — 뭘 더 사야 하는지도', 스티커: 'gp_gomtb', 스자리: 'right:30px;top:520px;width:300px;transform:rotate(5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고' }),
 
   '소소1-05-인분': () => C({ no: 5, 방: '버섯 솥밥', 머리: '인분 바꾸면 재료도 따라와요', 꼬리: '한끼 · 레시피 → 재료', 줄들:

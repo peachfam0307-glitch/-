@@ -5846,7 +5846,7 @@ const RAW_BASICS = [
     ...base,
     id: 'basic-aehobak-gukbap',
     title: '애호박 국밥', from: '2026-09-16', review: '창업자',   // ✅창업자 검수 2026-09-06 = "다시다 → 연두·백간장 대체" 반영
-    icon: 'gr_370',   // 자동 배정은 gr_343(버섯밥)을 집는다 → 얼큰한 국으로 박아 둔다
+    icon: 'n2904',   // ✅ 창업자 컷 2026-09-06 (전엔 gr_370 임시)
     category: '국물', folder: '국물', tags: ['애호박', '돼지고기', '얼큰', '해장', '국밥'],
     time: 30, servings: 3, difficulty: '보통',
     sourceUrl: 'https://youtu.be/WV91-NxNNDI',
@@ -5869,7 +5869,7 @@ const RAW_BASICS = [
     ...base,
     id: 'basic-odeng-dangmyeon-bokkeum',
     title: '어묵 당면볶음', from: '2026-09-23', review: '창업자',   // ✅창업자 검수 2026-09-06 괜찮아
-    icon: 'gr_104',   // 자동 배정은 gr_387(제육)을 집는다 → 잡채로
+    icon: 'n2903',   // ✅ 창업자 컷 2026-09-06 (전엔 gr_104 임시)
     category: '반찬', folder: '반찬', tags: ['당면', '어묵', '자취', '간단', '매콤'],
     time: 20, servings: 2, difficulty: '쉬움',
     sourceUrl: 'https://youtu.be/xwa-fR__hYs',
@@ -6212,7 +6212,7 @@ const RAW_BASICS = [
     ...base,
     id: 'basic-jipbap-jokbal',
     title: '집에서 하는 족발', from: '2026-11-04',
-    icon: 'gr_441',   // 족발 컷이 없다 → 수육 컷 (⏳창업자 판정)
+    icon: 'n2901',   // ✅ 창업자 컷 2026-09-06 (전엔 gr_441 임시)
     category: '반찬', folder: '반찬', tags: ['족발', '미박사태', '돼지고기', '한 냄비', '저녁', '야식'],
     time: 70, servings: 2, difficulty: '쉬움',
     sourceUrl: 'https://www.instagram.com/reel/Db2iQRahyQn/',
@@ -6233,7 +6233,7 @@ const RAW_BASICS = [
     ...base,
     id: 'basic-gamja-taco',
     title: '감자타코', from: '2026-11-11',
-    icon: 'gr_292',   // 타코 컷이 없다 → 버거 컷 (⏳창업자 판정)
+    icon: 'n2902',   // ✅ 창업자 컷 2026-09-06 (전엔 gr_292 임시)
     category: '양식', folder: '양식', tags: ['타코', '감자', '다짐육', '또띠아', '치즈', '아이'],
     time: 30, servings: 2, difficulty: '보통',
     sourceUrl: 'https://www.instagram.com/reel/DckRKH-EVT0/',

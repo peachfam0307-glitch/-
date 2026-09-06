@@ -40,9 +40,9 @@ body{height:1350px}
 .wrap{padding-top:64px}.hh{font-size:84px}.ss{font-size:32px;margin-top:12px}.rule{top:330px}
 .front{top:410px;width:600px;height:1000px;right:-20px}
 .front img{height:100%} /* 캐러셀은 폰 키가 짧다 — 높이를 채워야 object-position(자리)이 먹는다. 안 그러면 늘 «위»만 보인다(05 타이머·07 단추가 잘렸다) */
-.back{top:460px;width:260px;height:460px}
-.steps{top:980px;gap:14px}.step img,.step .dot{width:78px;height:78px}.step b{font-size:29px}.step small{font-size:22px}
-.duo{top:470px!important;width:250px!important}
+.back{top:420px;width:340px;height:600px} /* 13:44 *"인스타용 1번 인스타장면 크기 키우기"* */
+.steps{top:1040px;gap:14px}.step img,.step .dot{width:78px;height:78px}.step b{font-size:29px}.step small{font-size:22px}
+.duo{top:470px!important} /* 폭은 장() 이 스티커폭()×0.8 로 준다 — 13:44 *"캐러셀 모두 애들 스티커 크기 맞추기"* */
 .sp{transform:scale(.8)}
 .card{top:400px!important;padding:32px 38px!important}.card p{font-size:30px!important;line-height:1.55!important}.card hr{margin:18px 0!important}
 .pill{bottom:150px!important;font-size:30px!important;padding:14px 32px!important}.end{bottom:40px!important;font-size:40px!important}
@@ -98,10 +98,10 @@ ${머리('캡처 한 장이면<br>레시피가 정리돼요', '보다가 캡처 
 //    목표 = 그림 높이 곰 400 · 펭 360(곰보다 살짝 작게 — 창업자 말) · 콤비 380
 const 스티커치수 = { gp_gomhi: [593, 667], gp_gomtb: [581, 698], gp_gomft: [572, 699], gp_gomv: [548, 663], pjs_01: [427, 551], pjs_03: [401, 552], pjs_05: [486, 546], duos_02: [595, 533], duos_06: [620, 475] }
 const 스티커폭 = (k) => { const [w, h] = 스티커치수[k] || [1, 1]; const H = /^gp_gom/.test(k) ? 400 : /^pjs_/.test(k) ? 360 : 380; return Math.round(H * w / h) }
-const 장 = ({ 머리: h, 부제, 파일, 곰, 포인트: pts, 자리 = 'top', 폰 = '' }) => `<style>${공통}
-.front img{object-position:${자리}} ${캐러셀 ? '' : 폰}</style>
+const 장 = ({ 머리: h, 부제, 파일, 곰, 포인트: pts, 자리 = 'top', 폰 = '', 캐러셀자리 = null }) => `<style>${공통}
+.front img{object-position:${캐러셀 && 캐러셀자리 ? 캐러셀자리 : 자리}} ${캐러셀 ? '' : 폰}</style>
 ${머리(h, 부제)}${샤랄라()}
-${곰 ? `<img class="duo" style="width:${스티커폭(곰)}px;top:${/^gp_gom/.test(곰) ? 660 : 690}px" src="${스티커(곰)}">` : ''}
+${곰 ? `<img class="duo" style="width:${Math.round(스티커폭(곰) * (캐러셀 ? 0.8 : 1))}px;top:${/^gp_gom/.test(곰) ? 660 : 690}px" src="${스티커(곰)}">` : ''}
 <div class="front"><img src="${앱(파일)}"></div>
 ${포인트(pts)}`
 
@@ -151,13 +151,13 @@ const 장들 = {
   'v8-04-장보기': () => 장({ 머리: '재료는 한 번에<br>사러가기', 부제: '레시피 재료 그대로 톡 · 18년차 주부의 추천템까지', 파일: '27-장보기-사러가기', 곰: 'gp_gomtb',
     포인트: [['🛒', '담기 한 번', '재료가 리스트로'], ['🔗', '줄마다 사러가기', '검색 없이 바로']] }),
   'v8-05-요리모드': 장05,
-  'v8-06-일꾸': () => 장({ 머리: '오늘의 한 끼가<br>일기가 돼요', 부제: '속지 고르고 · 사진 한 장 · 한 줄 · 스티커까지', 파일: '26-창업자-일꾸-임시', 곰: 'pjs_01', // 📮 [00:23] 창업자가 직접 꾸민 갈비탕 일기(⚠️ 임시 — 저장 띠는 잘랐고 사진 위 ✕ 는 남아 있다 · 깨끗한 재캡처 대기)
+  'v8-06-일꾸': () => 장({ 머리: '오늘의 한 끼가<br>일기가 돼요', 부제: '속지 고르고 · 사진 한 장 · 한 줄 · 스티커까지', 파일: '26-창업자-일꾸', 곰: 'pjs_01', // 📮 [00:23] 창업자가 직접 꾸민 갈비탕 일기(⚠️ 임시 — 저장 띠는 잘랐고 사진 위 ✕ 는 남아 있다 · 깨끗한 재캡처 대기)
     포인트: [['📔', '속지도 여러 가지', '선 · 종이 · 틀'], ['✏️', '손글씨 서체로', '그날 기분 그대로']] }),
   // ⛔ 자랑 카드는 «아래 단추»(이 카드를 내 레시피 표지로)가 값어치다 → 폰을 덜 기울이고 위로 올려 아래가 남게
   'v8-07-자랑': () => 장({ 머리: '오늘의 한 끼를<br>카드 한 장으로', 부제: '뽑을 때마다 달라지는 카드 · 친구에게 톡', 파일: '10-랜덤카드', 곰: 'duos_02',
     포인트: [['🃏', '다시 뽑기', '마음에 드는 카드까지'], ['💬', '공유하기', '카톡으로 자랑']],
     // 📮 [09-06 01:11] *"콩국수도 레꾸자랑뽑기가 보이면 좋겠고"* → 카드 «아래»(다시 뽑기·공유하기 단추 줄)가 보이는 자리로 자른다
-    자리: '50% 58%', 폰: '.front{top:520px;height:1440px;transform:rotate(-2.5deg)}' }),
+    자리: '50% 58%', 캐러셀자리: '50% 42%', 폰: '.front{top:520px;height:1440px;transform:rotate(-2.5deg)}' }), // 캐러셀은 폰이 짧아 58% 면 카드 «위»가 잘린다(13:44 창업자) → 42%
   'v8-08-왜만들었나': 장08,
 }
 

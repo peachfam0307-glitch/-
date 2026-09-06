@@ -60,11 +60,11 @@ body{width:1080px;height:1920px;overflow:hidden;position:relative;font-family:'J
   border:12px solid #fffdf8;transform:rotate(-4deg);box-shadow:0 40px 80px rgba(74,79,54,.22);background:#fffdf8}
 .front img{width:100%;display:block;object-fit:cover;object-position:top}
 /* 📱 곁 폰(작게 · 왼쪽 · 반대로 기울여) */
-.back{position:absolute;z-index:3;left:52px;top:640px;width:330px;height:600px;border-radius:28px;overflow:hidden;
+.back{position:absolute;z-index:3;left:44px;top:600px;width:410px;height:740px;border-radius:28px;overflow:hidden;
   border:9px solid #fffdf8;transform:rotate(3deg);box-shadow:0 30px 62px rgba(74,79,54,.18);background:#fffdf8}
 .back img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 /* 🪜 왼쪽 세로 단계/포인트 */
-.steps{position:absolute;z-index:6;left:64px;top:1300px;display:flex;flex-direction:column;gap:26px}
+.steps{position:absolute;z-index:6;left:64px;top:1390px;display:flex;flex-direction:column;gap:26px}
 .step{display:flex;align-items:center;gap:18px}
 .step img,.step .dot{width:96px;height:96px;border-radius:50%;display:block;box-shadow:0 4px 12px rgba(74,79,54,.16);border:4px solid #fffdf8;flex:0 0 auto}
 .step .dot{background:#e6e2d6;display:flex;align-items:center;justify-content:center;font-size:44px}
@@ -93,10 +93,15 @@ ${머리('캡처 한 장이면<br>레시피가 정리돼요', '보다가 캡처 
 
 // 02~07 — 헤드라인 ＋ 주인공 폰 ＋ 왼쪽에 곰펭 한 마리와 포인트 둘
 //    📮 [00:45] *"펭펭에 비해 꼬르곰이 작게 느껴져"* — gp_gom* 컷은 여백이 커서 같은 폭이면 작아 보인다 → 곰 360 · 펭 290
+// 📏 [13:35 창업자] *"펭펭 크기를 조금 줄여 꼬르곰만하게"* · *"전체적으로 애들 스티커 사이즈 균일하게"* — 파일 폭이 아니라 «그림 자체(투명 뺀 bbox) 높이»를 맞춘다.
+//    Pillow 로 잰 값(2026-09-06): 곰 gp_gomhi 593×667 · gomtb 581×698 · gomft 572×699 / 펭 pjs_01 427(bbox 551) · pjs_03 401(552) / 콤비 duos_02 595(533) · duos_06 620(475)
+//    목표 = 그림 높이 곰 400 · 펭 360(곰보다 살짝 작게 — 창업자 말) · 콤비 380
+const 스티커치수 = { gp_gomhi: [593, 667], gp_gomtb: [581, 698], gp_gomft: [572, 699], gp_gomv: [548, 663], pjs_01: [427, 551], pjs_03: [401, 552], pjs_05: [486, 546], duos_02: [595, 533], duos_06: [620, 475] }
+const 스티커폭 = (k) => { const [w, h] = 스티커치수[k] || [1, 1]; const H = /^gp_gom/.test(k) ? 400 : /^pjs_/.test(k) ? 360 : 380; return Math.round(H * w / h) }
 const 장 = ({ 머리: h, 부제, 파일, 곰, 포인트: pts, 자리 = 'top', 폰 = '' }) => `<style>${공통}
 .front img{object-position:${자리}} ${캐러셀 ? '' : 폰}</style>
 ${머리(h, 부제)}${샤랄라()}
-${곰 ? `<img class="duo" style="width:${/^gp_gom/.test(곰) ? 360 : 290}px;top:${/^gp_gom/.test(곰) ? 660 : 700}px" src="${스티커(곰)}">` : ''}
+${곰 ? `<img class="duo" style="width:${스티커폭(곰)}px;top:${/^gp_gom/.test(곰) ? 660 : 690}px" src="${스티커(곰)}">` : ''}
 <div class="front"><img src="${앱(파일)}"></div>
 ${포인트(pts)}`
 
@@ -113,7 +118,7 @@ const 장08 = () => `<style>${공통}
 .wrap{padding-top:96px}.hh{font-size:88px}
 /* 📮 [00:49] *"8번에서 설명이 제목밑에 바짝 붙어있어"* — 제목이 한 줄이라 부제가 붙어 보인다 → 부제를 한 호흡 띄운다 */
 .ss{margin-top:34px}.rule{top:340px}
-.duo{left:auto;right:64px;top:120px;width:250px}
+.duo{left:auto;right:64px;top:110px;width:300px} /* 08 은 헤드라인 옆 작은 자리라 «균일» 규칙에서 뺀다 — 496px 로 하니 카드를 덮었다(규칙 21) */
 ${캐러셀 ? '.duo{top:40px!important;width:200px!important}.rule{top:300px}' : ''}
 .card{position:absolute;left:64px;right:64px;top:440px;z-index:3;background:#fffdf8;border-radius:36px;padding:60px 54px;box-shadow:0 20px 44px rgba(74,79,54,.12);text-align:left}
 .card p{font-family:'Gowun Dodum';color:${올리브};font-size:42px;line-height:1.72;letter-spacing:-0.01em}

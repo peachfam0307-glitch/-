@@ -52,7 +52,10 @@ export const PAPER_RULES = [
  *      피커에서만 내린다(스티커를 내릴 때와 같은 방식).
  */
 export const PAPER_SKINS = [
-  { key: 'ivory', label: '아이보리', cls: '' },
+  // 🎨 [창업자 2026-09-06] *"아이보리 빼고, 크림이랑 그레이지(연한)"* · *"아이보리가 좀 누래보여"*
+  //    ivory 키는 CSS 기본값으로 남는다(옛 저장본 호환) — 값 자체를 크림으로 바꿨으니 화면은 같이 밝아진다.
+  { key: 'cream', label: '크림', cls: 'cream' },
+  { key: 'greige', label: '그레이지', cls: 'greige' },
   { key: 'sky', label: '하늘', cls: 'sky' },
   { key: 'blush', label: '분홍', cls: 'blush' },
   // 🌿 세이지 — 창업자가 색을 콕 집어 줬다 (2026-08-06 *"소프트 세이지 #F3F5ED"*)
@@ -406,7 +409,7 @@ export const PAPER_LINE_H = LINE_H
  * 고른 값들을 `.paper` 클래스와 배경 그림으로 바꾼다.
  * ⚠️ 틀 그림에 도트가 «이미 그려져» 있으면 CSS 도트를 끈다 — 안 그러면 점이 두 겹으로 찍힌다.
  */
-export function paperStyle({ rule = 'plain', skin = 'ivory', art = 'none' } = {}) {
+export function paperStyle({ rule = 'plain', skin = 'cream', art = 'none' } = {}) {
   const a = PAPER_ARTS.find((x) => x.key === art) || PAPER_ARTS[0]
   const r = PAPER_RULES.find((x) => x.key === rule) || PAPER_RULES[0]
   const s = PAPER_SKINS.find((x) => x.key === skin) || PAPER_SKINS[0]

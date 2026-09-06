@@ -20,6 +20,13 @@ const { SEED_COACH_SEEN } = await import('/home/user/hankki/hankki/src/coach.js'
 const [Y, M, D] = todayKST().split('-').map(Number)
 const 글 = '선선해져서 국물이 자꾸 생각나는 날. 들깨탕 끓였다.'
 const 시안들 = process.env.SKINS ? [
+  { 이름: '1-크림', art: 'none', skin: 'cream', rule: 'lined' },
+  { 이름: '2-하늘', art: 'none', skin: 'sky', rule: 'lined' },
+  { 이름: '3-분홍', art: 'none', skin: 'blush', rule: 'lined' },
+  { 이름: '4-세이지', art: 'none', skin: 'sage', rule: 'lined' },
+  { 이름: '5-크라프트', art: 'none', skin: 'kraft', rule: 'lined' },
+  { 이름: '6-크림-가을사진메모', art: 'auphoto', skin: 'cream', rule: 'lined' },
+] : process.env.OLD ? [
   { 이름: 'a-크림', art: 'autwo', skin: 'cream', rule: 'lined', note2: '저녁은 남은 국에 밥 말아서.' },
   { 이름: 'b-그레이지', art: 'autwo', skin: 'greige', rule: 'lined', note2: '저녁은 남은 국에 밥 말아서.' },
   { 이름: 'c-옛아이보리(저장본)', art: 'autwo', skin: 'ivory', rule: 'lined', note2: '저녁은 남은 국에 밥 말아서.' },

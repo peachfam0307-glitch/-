@@ -54,6 +54,7 @@ import uiPengSearch from '../assets/ui/wave/pn_search.png'
 import gpDuoHeart from '../assets/stickers/photo/gp_duoht.png'
 import { needsOnboarding } from '../components/Onboarding'
 import { backupNudgeStep, dismissBackupNudge, askOpenBackup, myRecipeCount, myDiaryCount, needsCloudHome, markCloudHomeSeen, askOpenCloud, 클라우드보임 } from '../nudges'
+import { pantryExpiryLine, needsPantryExpiryRow, dismissPantryExpiryRow, askOpenPantry } from '../pantryExpiry'
 import { 로그인해뒀나 } from '../cloud'
 import { weeklyNow, homemadeNow, snsNow } from '../data/weekly'
 import { whatsNew } from '../data/whatsnew'
@@ -177,6 +178,11 @@ export default function HomeScreen() {
   // ⚠️ 「내 것」 개수로 센다 — 기본 레시피 50편을 세면 깔자마자 백업하라고 뜬다(2026-08-03 창업자 제보)
   const myN = myRecipeCount(recipes)
   const [bkStep, setBkStep] = useState(() => backupNudgeStep(myRecipeCount(recipes)))
+  // 🧊 냉장고 유통기한 한 줄 — 임박(D-3 이내)·지난 재료가 있으면 «앱을 열었을 때» 홈에서 말한다 (창업자 2026-09-06 「1번으로 하자」).
+  //    ⛔ 폰 알림이 아니다(서버 없음). 하루 한 번 — 닫으면 오늘은 다시 안 뜬다. 잣대는 냉장고 D-3 칩과 같다(`pantryExpiry.js`).
+  //    ⭐ 클라우드·백업 줄과 «같은 모양» — 셋이 같이 뜨면 시끄러우니 그 둘 «아래» 한 줄만.
+  const expLine = useMemo(() => pantryExpiryLine(pantry), [pantry])
+  const [expRow, setExpRow] = useState(() => needsPantryExpiryRow(pantry))
 
   // ☁️ 클라우드 한 줄 — «이미 쓰고 있던 사람»이 클라우드를 만나는 유일한 자리.
   //   📮 창업자 2026-08-21 = *"지금쓰는사람들은 로그인 안해놓으면 레시피 잃을수도 있는데.
@@ -459,6 +465,25 @@ export default function HomeScreen() {
               <div className="t-sub" style={{ fontSize: 15, marginTop: 1 }}>폰을 바꿔도 안 잃게 한 번 저장해둘까요?</div>
             </button>
             <button className="press" onClick={() => { dismissBackupNudge(bkStep); setBkStep(0) }} aria-label="닫기" style={{ flex: '0 0 auto', padding: 6 }}>
+              <Icon name="x" size={16} color="var(--sand)" />
+            </button>
+          </div>
+        )}
+
+        {/* 🧊 냉장고 유통기한 한 줄 — 위 두 줄(클라우드·백업)과 같은 모양. 누르면 장보기 › 냉장고로 간다.
+            ⛔ 폰 알림이 아니다 — 앱을 «열었을 때» 말한다. 하루 한 번(닫으면 오늘은 안 뜬다). */}
+        {expRow && expLine && (
+          <div className="pantry-exp-row" style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 9, padding: '11px 12px 11px 14px', borderRadius: 14, background: 'var(--cream)' }}>
+            <Icon name="clock" size={18} color="var(--brown)" stroke={1.9} />
+            <button
+              className="press"
+              onClick={() => { dismissPantryExpiryRow(); setExpRow(false); askOpenPantry(); nav.go('shop') }}
+              style={{ flex: 1, textAlign: 'left', minWidth: 0 }}
+            >
+              <div style={{ fontSize: 16.5, fontWeight: 700 }}>{expLine.head}</div>
+              <div className="t-sub" style={{ fontSize: 15, marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{expLine.sub}</div>
+            </button>
+            <button className="press" onClick={() => { dismissPantryExpiryRow(); setExpRow(false) }} aria-label="닫기" style={{ flex: '0 0 auto', padding: 4 }}>
               <Icon name="x" size={16} color="var(--sand)" />
             </button>
           </div>

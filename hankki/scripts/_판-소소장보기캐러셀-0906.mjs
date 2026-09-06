@@ -22,7 +22,9 @@ import { execFileSync } from 'node:child_process'
 const ROOT = new URL('..', import.meta.url).pathname
 const 앱폴더 = process.env.APP || join(ROOT, 'design/promo/소소기능-앱화면-2509')
 const 창업자 = join(ROOT, 'design/promo/창업자캡처-소소기능-2509')
-const OUT = process.env.OUT || '/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소1/캐러셀'
+// 🎬 LAYER=base(스티커 없이) · LAYER=sticker(스티커만 · 투명) — 릴스에서 곰펭을 따로 «둥실» 움직이려고 두 겹으로 뜬다
+const LAYER = process.env.LAYER || ''
+const OUT = process.env.OUT || ('/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소1/캐러셀' + (LAYER ? '-' + LAYER : ''))
 mkdirSync(OUT, { recursive: true })
 const b64 = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`
 const 폰트 = readFileSync(join(ROOT, 'design/promo/fonts-embed.css'), 'utf8')
@@ -106,7 +108,7 @@ const 장들 = {
     나(720, '오 7개 찾았네', '오후 6:13') +
     펭(850, 말('아닌 건 체크만 풀면 돼') + 캡처조각({ 파일: '소소-영수증에서찾은재료-2026-09-06.png', y: 1090, h: 300, x: 60, w: 960, 배율: 0.55 }), 'pjs_07') }),
 
-  '소소1-03-유통기한': () => B({ no: 3, 머리: '유통기한은<br>앱이 세요', 부제: '가까운 것부터 D-1 · D-2 · 색으로', 스티커: 'pjs_08', 스자리: 'left:30px;top:1030px;width:280px;transform:rotate(-5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고', 조각들:
+  '소소1-03-유통기한': () => B({ no: 3, 머리: '유통기한은<br>앱이 세요', 부제: '가까운 것부터 D-1 · D-2 · 색으로<br>앱 켜면 지나는 것 먼저 알려줘요', 스티커: 'pjs_08', 스자리: 'left:30px;top:1030px;width:280px;transform:rotate(-5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고', 조각들:
     조각({ 파일: '02-냉장고Dday', y: 724, h: 190, 배율: 0.62, 회전: -6, left: 40, top: 190 }) + 테이프(110, 170) +
     조각({ 파일: '02-냉장고Dday', y: 933, h: 210, 배율: 0.62, 회전: 4, left: 380, top: 300 }) + 테이프(900, 290, 8) +
     조각({ 파일: '02-냉장고Dday', y: 1156, h: 216, 배율: 0.62, 회전: -3, left: 120, top: 820 }) + 테이프(160, 805) +
@@ -155,9 +157,10 @@ const br = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: 
 const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 2 })
 const names = []
 for (const [n, f] of Object.entries(장들)) {
-  await p.setContent(`<!doctype html><meta charset="utf-8">${f()}`)
+  const 겹 = LAYER === 'base' ? '<style>.sp{visibility:hidden!important}</style>' : LAYER === 'sticker' ? '<style>body,body *{visibility:hidden!important;background:transparent!important;box-shadow:none!important}.sp{visibility:visible!important}</style>' : ''
+  await p.setContent(`<!doctype html><meta charset="utf-8">${f()}${겹}`)
   await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(300)
-  await p.screenshot({ path: `${OUT}/${n}.png` }); names.push(n); console.log('  ✅', n)
+  await p.screenshot({ path: `${OUT}/${n}.png`, omitBackground: LAYER === 'sticker' }); names.push(n); console.log('  ✅', n)
 }
 await br.close()
 execFileSync('python3', ['-c', `from PIL import Image

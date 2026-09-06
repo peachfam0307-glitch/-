@@ -68,8 +68,41 @@ fi
 # ② 돌고 «난 뒤» — 실제로 나온 답을 재서, 크면 그 턴에서 멈추게 한다
 #    ⛔ 자를 수는 없다(이미 대화에 들어갔다). 할 수 있는 건 «겹치지 않게» 하는 것뿐이다.
 # ──────────────────────────────────────────────────────────────
+# ──────────────────────────────────────────────────────────────
+# ②-0 «턴 합계» — 2026-09-07 창업자 캡처(Messages 1.3M / 1M · 130%)로 알게 된 구멍
+#    답 «하나»는 6만 B 아래여도 한 턴에 스무 번 돌면 1.2MB 가 그냥 지나간다.
+#    그래서 «턴»마다 누적을 세고, 상한을 넘으면 그 턴에서 멈추게 한다.
+#    · 표식 = /tmp/hankki-bigout-turn-<session_id>  (창업자가 말을 하면 `reset` 이 지운다)
+#    · TURN_LIMIT 200,000 B ≈ 답 셋~넷 분량 · ⛔올려서 통과시키지 말 것
+# ──────────────────────────────────────────────────────────────
+TURN_LIMIT=200000
+SID=$(printf '%s' "$INPUT" | python3 -c 'import sys,json
+try: print(json.load(sys.stdin).get("session_id") or "nosid")
+except Exception: print("nosid")' 2>/dev/null || echo nosid)
+TURN_FILE="/tmp/hankki-bigout-turn-${SID}"
+if [ "$MODE" = "reset" ]; then rm -f "$TURN_FILE"; exit 0; fi
+
 SIZE=$(printf '%s' "$INPUT" | python3 "$HERE/_bigout-size.py" 2>/dev/null || echo 0)
 case "$SIZE" in ''|*[!0-9]*) exit 0 ;; esac
+
+PREV=$(cat "$TURN_FILE" 2>/dev/null || echo 0)
+case "$PREV" in ''|*[!0-9]*) PREV=0 ;; esac
+SUM=$((PREV + SIZE))
+printf '%s' "$SUM" > "$TURN_FILE" 2>/dev/null || true
+if [ "$SUM" -gt "$TURN_LIMIT" ] && [ "$SIZE" -le "$LIMIT" ]; then
+  # 답 하나는 작은데 «합계»가 넘었다 — 한 번 알리고 계수기를 비운다(같은 말을 매번 반복하지 않게)
+  rm -f "$TURN_FILE"
+  {
+    echo "📤📤 **이 턴에 도구 답이 «합쳐서» $(printf "%'d" "$SUM" 2>/dev/null || echo "$SUM") B 들어왔다 (턴 상한 $(printf "%'d" $TURN_LIMIT 2>/dev/null || echo $TURN_LIMIT) B)**"
+    cat <<'MSG'
+
+   ⛔ 답 하나하나는 작았지만 «턴 합계»가 넘었다 — 2026-09-07 창업자 캡처 = Messages 1.3M / 1M (130%).
+   👉 여기서 멈추고 창업자에게 «지금까지»를 보고한다. 더 돌릴 게 남았으면 다음 턴에.
+   👉 남은 것은 파일로 흘리고(… > 파일) 필요한 줄만 연다.
+MSG
+  } >&2
+  exit 2
+fi
 [ "$SIZE" -gt "$LIMIT" ] || exit 0
 
 {

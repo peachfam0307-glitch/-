@@ -52,7 +52,7 @@ const 조각 = ({ 파일, y, h, x = 50, w = 1070, 배율 = 0.6, 회전 = 0, left
 const 테이프 = (l, t, r = -5) => `<div class="tape" style="position:absolute;z-index:7;left:${l}px;top:${t}px;width:150px;height:44px;background:rgba(232,196,120,.75);transform:rotate(${r}deg)"></div>`
 
 // ── A 풀블리드 ────────────────────────────────────────────────
-const A = ({ no, 그림, 잘라 = 0, 머리, 부제, 스티커, 스자리 = 'right:40px;top:560px;width:330px;transform:rotate(6deg)', 꼬리 = '한끼 · 장보기 탭', 태그 = `소소한 기능 ① · ${no}` }) => `<style>${기본}
+const A = ({ no, 그림, 잘라 = 0, 머리, 부제, 스티커, 스자리 = 'right:40px;top:560px;width:200px;transform:rotate(6deg)', 꼬리 = '한끼 · 장보기 탭', 태그 = `소소한 기능 ① · ${no}` }) => `<style>${기본}
 body{background:${크림}}
 .shot{position:absolute;left:0;top:0;width:1080px;height:820px;overflow:hidden}
 .shot img{width:1080px;display:block;margin-top:-${잘라}px}
@@ -96,29 +96,31 @@ ${줄들}
 <div class="hh">${머리}</div>
 <div class="foot">${꼬리}</div>`
 const 나 = (top, 글, 시각 = '오후 6:12') => `<div class="row me" style="top:${top}px"><div class="time">${시각}</div><div class="bub">${글}</div></div>`
-const 펭 = (top, 안, 얼굴 = 'pjs_05', 보임 = true) => `<div class="row you" style="top:${top}px"><img class="sp" src="${스(얼굴)}" style="position:static;width:150px;filter:none;${보임 ? '' : 'visibility:hidden'}"><div class="col">${안}</div></div>`
+const 펭 = (top, 안, 얼굴 = 'pjs_05', 보임 = true) => `<div class="row you" style="top:${top}px"><img class="sp" src="${스(얼굴)}" style="position:static;width:${스크기}px;filter:none;${보임 ? '' : 'visibility:hidden'}"><div class="col">${안}</div></div>`
 const 말 = (글) => `<div class="bub">${글}</div>`
 // 창업자 캡처(1080×2340)를 조각으로 — 폭이 다르다
 const 캡처조각 = ({ 파일, y, h, x = 0, w = 1080, 배율 = 0.55, r = 18 }) => `<div style="position:relative;width:${Math.round(w * 배율)}px;height:${Math.round(h * 배율)}px;overflow:hidden;border-radius:${r}px;background:#fff;box-shadow:0 16px 34px rgba(40,50,60,.18)"><img src="${b64(join(창업자, 파일))}" style="position:absolute;left:${-x * 배율}px;top:${-y * 배율}px;width:${1080 * 배율}px"></div>`
 
 // ── 8장 ─────────────────────────────────────────────────────
 // 좌표는 전부 원본 3배 px 실측(390×844 폰 · 1170×2532) · 패드 1640×2360 (2026-09-07 창업자 백업으로 찍은 v12.70)
+// 🐻🐧 스티커는 «한 값»이다 — 창업자 2026-09-07 「애들 스티커 크기 다 맞춰줘. 너무 크지 않게」
+const 스크기 = 200   // ⛔ 홑따옴표 스자리 문자열엔 못 쓴다(글자로 샌다) — 거기선 200px 를 손으로 적는다
 const 태그2 = (n) => `소소한 기능 ② · ${n}`
 const 장들 = {
-  '소소2-01-표지': () => A({ no: 1, 태그: '소소한 기능 ②', 그림: '01-홈-오늘뭐해먹지', 잘라: 0, 머리: '켜면 오늘이<br>차려져 있어요', 부제: '오늘 뭐 해먹지 · 이번 주 제철 · 자주 해먹는<br>홈이 알아서 골라 둬요', 스티커: 'duos_02', 스자리: 'right:40px;top:470px;width:240px;transform:rotate(-4deg)', 꼬리: '한끼 · 홈' }),
+  '소소2-01-표지': () => A({ no: 1, 태그: '소소한 기능 ②', 그림: '01-홈-오늘뭐해먹지', 잘라: 0, 머리: '켜면 오늘이<br>차려져 있어요', 부제: '오늘 뭐 해먹지 · 이번 주 제철 · 자주 해먹는<br>홈이 알아서 골라 둬요', 스티커: 'duos_02', 스자리: 'right:40px;top:470px;width:200px;transform:rotate(-4deg)', 꼬리: '한끼 · 홈' }),
 
-  '소소2-02-오늘': () => C({ no: 2, 방: '홈', 태그: 태그2(2), 머리: '오늘 메뉴는 홈이 골라요', 꼬리: '한끼 · 홈 → 오늘 뭐 해먹지', 줄들:
+  '소소2-02-오늘': () => C({ no: 2, 방: '홈', 태그: 태그2(2), 머리: '오늘 메뉴,<br>냉장고 보고 골라줘요', 꼬리: '한끼 · 홈 → 오늘 뭐 해먹지', 줄들:
     나(180, '냉장고에 뭐 있더라… 오늘 뭐 먹지') +
     펭(310, 말('냉장고 재료로 되는 걸 골라 뒀어') + 조각({ 파일: '01-홈-오늘뭐해먹지', y: 1030, h: 340, x: 40, w: 1090, 배율: 0.58, flow: true })) +
-    나(690, '음… 이건 오늘 말고', '오후 6:13') +
-    펭(820, 말('「다른 추천」 누르면 다음 것') + 조각({ 파일: '02-홈-다른추천', y: 1030, h: 340, x: 40, w: 1090, 배율: 0.58, flow: true }), 'pjs_05', false) }),
+    나(620, '음… 이건 오늘 말고', '오후 6:13') +
+    펭(730, 말('「다른 추천」 누르면 다음 것') + 조각({ 파일: '02-홈-다른추천', y: 1030, h: 340, x: 40, w: 1090, 배율: 0.58, flow: true }), 'pjs_05', false) }),
 
-  '소소2-03-제철': () => B({ no: 3, 태그: 태그2(3), 머리: '월요일마다<br>새 레시피', 부제: '이번 주 제철 · 우리집레시피 = 월<br>SNS 요리 = 수 · 배지가 요일을 말해줘요', 스티커: 'pjs_08', 스자리: 'left:30px;top:1070px;width:240px;transform:rotate(-5deg)', 꼬리: '한끼 · 홈 → 이번 주', 조각들:
+  '소소2-03-제철': () => B({ no: 3, 태그: 태그2(3), 머리: '월요일마다<br>새 레시피', 부제: '이번 주 제철 · 우리집레시피 = 월<br>SNS 요리 = 수 · 배지가 요일을 말해줘요', 스티커: 'pjs_08', 스자리: 'left:30px;top:1070px;width:200px;transform:rotate(-5deg)', 꼬리: '한끼 · 홈 → 이번 주', 조각들:
     조각({ 파일: '03-홈-제철우리집', y: 40, h: 330, x: 40, w: 1090, 배율: 0.6, 회전: -5, left: 30, top: 150 }) + 테이프(100, 130) +
     조각({ 파일: '03-홈-제철우리집', y: 1100, h: 330, x: 40, w: 1090, 배율: 0.6, 회전: 4, left: 400, top: 340 }) + 테이프(940, 330, 8) +
     조각({ 파일: '03-홈-제철우리집', y: 440, h: 560, x: 60, w: 1060, 배율: 0.62, 회전: -3, left: 330, top: 860 }) + 테이프(780, 850, 6) }),
 
-  '소소2-04-영상': () => A({ no: 4, 태그: 태그2(4), 그림: '06-상세-영상카드', 잘라: 1000, 머리: '영상 보던 요리,<br>레시피로', 부제: '유튜브·인스타 편은 ▶ 칩이 붙어요<br>원본은 레시피 안에서 바로 열려요', 스티커: 'gp_gomtb', 스자리: 'right:30px;top:560px;width:240px;transform:rotate(5deg)', 꼬리: '한끼 · 홈 → SNS 요리' }),
+  '소소2-04-영상': () => A({ no: 4, 태그: 태그2(4), 그림: '06-상세-영상카드', 잘라: 1000, 머리: '영상 보던 요리,<br>레시피로', 부제: '유튜브·인스타 편은 ▶ 칩이 붙어요<br>원본은 레시피 안에서 바로 열려요', 스티커: 'gp_gomtb', 스자리: 'right:30px;top:560px;width:200px;transform:rotate(5deg)', 꼬리: '한끼 · 홈 → SNS 요리' }),
 
   '소소2-05-자주': () => C({ no: 5, 방: '홈', 태그: 태그2(5), 머리: '만든 만큼 앞에 와요', 꼬리: '한끼 · 홈 → 자주 해먹는 요리', 줄들:
     나(200, '저번에 해먹은 거 뭐였지') +
@@ -126,12 +128,12 @@ const 장들 = {
     나(820, '자주 하는 것만 모아 볼 순 없어?', '오후 6:13') +
     펭(950, 말('레시피 탭 「자주」 칩 하나면 돼') + 조각({ 파일: '09-레시피-자주폴더', y: 510, h: 130, x: 20, w: 1130, 배율: 0.58, flow: true }), 'pjs_05', false) }),
 
-  '소소2-06-검색': () => B({ no: 6, 태그: 태그2(6), 머리: '재료 하나로<br>찾아요', 부제: '「두부」 치면 두부 들어간 요리 18개<br>이름·재료·초성 다 돼요', 스티커: 'pjs_07', 스자리: 'left:30px;top:1070px;width:240px;transform:rotate(4deg)', 꼬리: '한끼 · 홈 오른쪽 위 돋보기', 제목y: 490, 조각들:
+  '소소2-06-검색': () => B({ no: 6, 태그: 태그2(6), 머리: '재료 하나로<br>찾아요', 부제: '「두부」 치면 두부 들어간 요리 18개<br>이름·재료·초성 다 돼요', 스티커: 'pjs_07', 스자리: 'left:30px;top:1070px;width:200px;transform:rotate(4deg)', 꼬리: '한끼 · 홈 오른쪽 위 돋보기', 제목y: 490, 조각들:
     조각({ 파일: '07-검색-두부', y: 210, h: 150, x: 40, w: 1090, 배율: 0.78, 회전: -4, left: 60, top: 160, r: 60 }) + 테이프(120, 145) +
     조각({ 파일: '07-검색-두부', y: 410, h: 110, x: 40, w: 700, 배율: 0.78, 회전: 3, left: 480, top: 330 }) + 테이프(900, 320, 8) +
     조각({ 파일: '07-검색-두부', y: 520, h: 620, x: 60, w: 1060, 배율: 0.5, 회전: -3, left: 380, top: 900 }) + 테이프(760, 885, 6) }),
 
-  '소소2-07-폴더': () => A({ no: 7, 태그: 태그2(7), 그림: '08-레시피-모아보기', 잘라: 300, 머리: '폴더·책갈피로<br>내 것만 딱', 부제: '전체 · 해볼 것 · 자주 · SNS · 내가 만든 폴더<br>책갈피 꽂으면 모아보기에 바로', 스티커: 'pjs_05', 스자리: 'right:30px;top:580px;width:240px;transform:rotate(-4deg)', 꼬리: '한끼 · 레시피 탭 → 모아보기' }),
+  '소소2-07-폴더': () => A({ no: 7, 태그: 태그2(7), 그림: '08-레시피-모아보기', 잘라: 300, 머리: '폴더·책갈피로<br>내 것만 딱', 부제: '전체 · 해볼 것 · 자주 · SNS · 내가 만든 폴더<br>책갈피 꽂으면 모아보기에 바로', 스티커: 'pjs_05', 스자리: 'right:30px;top:580px;width:200px;transform:rotate(-4deg)', 꼬리: '한끼 · 레시피 탭 → 모아보기' }),
 
   '소소2-08-마무리': () => `<style>${기본}
 body{background:${크림}}
@@ -149,7 +151,7 @@ body{background:${크림}}
 <div class="top"><div class="no">${태그2(8)}</div><div class="hh">패드에선<br>한 화면에 다</div><div class="ss">제철·우리집이 나란히 · 가로로 눕혀도 돼요<br>다음 편 = 기록은 내 것</div></div>
 <div class="pad"><img src="${앱('10-패드-홈')}"></div>
 <div class="line">폰이든 패드든 같은 한끼<small>갤럭시 패드 · 폴드에서도 그대로</small></div>
-<img class="sp" src="${스('duos_01')}" style="left:30px;top:1030px;width:240px;transform:rotate(-3deg);z-index:9">
+<img class="sp" src="${스('duos_01')}" style="left:30px;top:1030px;width:${스크기}px;transform:rotate(-3deg);z-index:9">
 <div class="pill">▶ Play 스토어에서 「한끼」 검색</div>
 <div class="end">오늘도 한 끼 해냈다면, 한끼에서 만나요</div>`,
 }

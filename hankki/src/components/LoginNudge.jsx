@@ -74,15 +74,17 @@ export default function LoginNudge({ count, onLater, onLoggedIn }) {
           onClick={(e) => e.stopPropagation()}
           style={{ paddingBottom: 'calc(18px + var(--safe-bottom))', maxHeight: 'calc(100dvh - 40px)' }}
         >
-          <div style={{ padding: '6px 22px 0', textAlign: 'center' }}>
+          {/* ✍️ 글씨체 = 주아(창업자 2026-09-06 *"글씨체는 주아체로 바꿔줘"*) — 온보딩·스토어 스샷과 같은 얼굴.
+              ⛔ 주아는 굵기가 400 하나다 → fontWeight 를 세우지 않는다(가짜 굵게가 뭉갠다). 크기로 위계를 준다. */}
+          <div style={{ padding: '6px 22px 0', textAlign: 'center', fontFamily: "'Jua', sans-serif" }}>
             <img src={duoHi} alt="" aria-hidden draggable={false} style={{ width: 150, maxWidth: '48%', display: 'block', margin: '0 auto' }} />
 
-            <div style={{ fontSize: 21, fontWeight: 900, lineHeight: 1.35, letterSpacing: '-0.02em', marginTop: 10, textWrap: 'balance' }}>
+            <div style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.35, letterSpacing: '-0.01em', marginTop: 10, textWrap: 'balance' }}>
               앱을 지우거나 폰을 바꾸면
               <br />레시피 <span style={{ color: 'var(--brown)' }}>{count}편</span>이 사라져요
             </div>
 
-            <div className="t-sub" style={{ fontSize: 15, lineHeight: 1.7, marginTop: 14 }}>
+            <div className="t-sub" style={{ fontSize: 16, lineHeight: 1.7, marginTop: 14 }}>
               구글로 로그인하면 —
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, textAlign: 'left', margin: '8px auto 0', maxWidth: 300 }}>
@@ -91,7 +93,7 @@ export default function LoginNudge({ count, onLater, onLoggedIn }) {
                 `무료 ${KEY_NAME}가 ${비로그인}${KEY_UNIT} → ${로그인상한}${KEY_UNIT}로 늘어요`,
                 '패드에서도 이어서 써요',
               ].map((줄) => (
-                <div key={줄} style={{ display: 'flex', gap: 8, fontSize: 15, lineHeight: 1.55 }}>
+                <div key={줄} style={{ display: 'flex', gap: 8, fontSize: 16.5, lineHeight: 1.55 }}>
                   <span style={{ color: 'var(--brown)', flex: '0 0 auto' }}>·</span>
                   <span>{줄}</span>
                 </div>
@@ -105,7 +107,7 @@ export default function LoginNudge({ count, onLater, onLoggedIn }) {
             <GoogleButton label="구글로 로그인" busy={바쁨} onClick={눌러로그인} />
             <button
               className="press" onClick={onLater} disabled={바쁨}
-              style={{ width: '100%', marginTop: 10, color: 'var(--text-sub)', fontSize: 15.5, fontWeight: 600, padding: '8px 0' }}
+              style={{ width: '100%', marginTop: 10, color: 'var(--text-sub)', fontSize: 16.5, fontWeight: 400, padding: '8px 0', fontFamily: "'Jua', sans-serif" }}
             >
               나중에 하기
             </button>

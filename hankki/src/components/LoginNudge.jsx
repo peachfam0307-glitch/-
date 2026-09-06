@@ -42,13 +42,16 @@ function 고운말(e) {
 }
 
 /**
- * @param {{ count: number, onLater: () => void, onLoggedIn: () => void }} p
- *   count      = 내 레시피 편수(홈이 `myRecipeCount` 로 센 값)
+ * @param {{ recipes: number, diaries: number, onLater: () => void, onLoggedIn: () => void }} p
+ *   recipes    = 내 레시피 편수(홈이 `myRecipeCount` 로 센 값) · diaries = 내 일기 편수(`myDiaryCount`)
+ *                ⭐ 첫 줄은 «있는 것만» 부른다 — 둘 다면 「레시피 N편·일기 M편」, 하나면 그것만(0편을 부르면 남 얘기가 된다)
  *   onLater    = 「나중에 하기」·뒤로가기 — 부모가 «봤음» 표시 ＋ 닫는다
  *   onLoggedIn = 로그인 성공 — 부모가 «봤음» 표시 ＋ 설정의 클라우드 시트로 보낸다(올리기·가져오기는 거기 몫)
  */
-export default function LoginNudge({ count, onLater, onLoggedIn }) {
+export default function LoginNudge({ recipes = 0, diaries = 0, onLater, onLoggedIn }) {
   useModalBack(onLater)
+  // 📔 창업자 확정 문구 = 「내가 저장한 레시피 N편·일기 M편이 사라져요」 — 있는 것만 부른다
+  const 잃을것 = [recipes > 0 && { n: recipes, 말: '레시피' }, diaries > 0 && { n: diaries, 말: '일기' }].filter(Boolean)
   const [바쁨, set바쁨] = useState(false)
   const [탈, set탈] = useState('')
   const { 비로그인, 로그인: 로그인상한 } = 무료열쇠상한()
@@ -81,7 +84,9 @@ export default function LoginNudge({ count, onLater, onLoggedIn }) {
 
             <div style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.35, letterSpacing: '-0.01em', marginTop: 10, textWrap: 'balance' }}>
               앱을 지우거나 폰을 바꾸면
-              <br />레시피 <span style={{ color: 'var(--brown)' }}>{count}편</span>이 사라져요
+              <br />내가 저장한 {잃을것.map((x, i) => (
+                <span key={x.말}>{i > 0 && '·'}{x.말} <span style={{ color: 'var(--brown)' }}>{x.n}편</span></span>
+              ))}이 사라져요
             </div>
 
             <div className="t-sub" style={{ fontSize: 16, lineHeight: 1.7, marginTop: 14 }}>

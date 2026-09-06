@@ -27,14 +27,14 @@ const srv = http.createServer((req, res) => {
 await new Promise((r) => srv.listen(0, r))
 const PORT = srv.address().port
 
-const 씨앗 = ({ 편수 = 1, 로그인 = false, 봤음 = false } = {}) => `
+const 씨앗 = ({ 편수 = 1, 일기 = 0, 로그인 = false, 봤음 = false } = {}) => `
   localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1'); localStorage.setItem('hankki:coach:home', '1')
   ${로그인 ? "localStorage.setItem('hankki:cloud:on', '1')" : ''}
   ${봤음 ? "localStorage.setItem('hankki:nudge:loginpop', '1')" : ''}
   localStorage.setItem('hankki:v1', JSON.stringify({
     recipes: ${JSON.stringify(Array.from({ length: 편수 }, (_, i) => ({ id: 'u' + i, title: '내가 쓴 레시피 ' + i, ingredients: [], steps: [] })))},
     folders: [], profile: { name: '한끼러버', bio: '' }, shops: [], wishlist: [],
-    shoppingList: [], pantry: [], diary: [], seedV: 999, memoCleanV: 9, removedSeedIds: [],
+    shoppingList: [], pantry: [], diary: ${JSON.stringify(Array.from({ length: 일기 }, (_, i) => ({ id: 'd' + i, kind: 'diary', title: '오늘 한 끼 ' + i, date: '2026-09-0' + (i + 1) })))}, seedV: 999, memoCleanV: 9, removedSeedIds: [],
   }))`
 
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
@@ -59,9 +59,9 @@ const 팝업글 = (pg) => pg.evaluate(() => document.querySelector('.sheet-mask 
 
 // ⓐ 쓰던 사람 → 뜬다 · 문구 · 숫자
 {
-  const { ctx, pg } = await 창(씨앗({ 편수: 12 }))
+  const { ctx, pg } = await 창(씨앗({ 편수: 12, 일기: 3 }))
   const 글 = await 팝업글(pg)
-  칸(/앱을 지우거나 폰을 바꾸면/.test(글) && /12편이 사라져요/.test(글), 'ⓐ 쓰던 사람(12편)에게 팝업이 뜬다 · 첫 줄 = 확정 문구 ＋ 내 편수', 글.slice(0, 60).replace(/\n/g, ' / '))
+  칸(/앱을 지우거나 폰을 바꾸면/.test(글) && /내가 저장한 레시피 12편·일기 3편이 사라져요/.test(글.replace(/\n/g, '')), 'ⓐ 쓰던 사람(레시피 12·일기 3)에게 팝업이 뜬다 · 첫 줄 = 확정 문구 ＋ 둘 다', 글.slice(0, 70).replace(/\n/g, ' / '))
   칸(/구글로 로그인하면/.test(글) && /폰을 바꿔도, 앱을 다시 깔아도 그대로 남아요/.test(글) && /패드에서도 이어서 써요/.test(글), 'ⓐ 이유 세 줄 중 둘이 확정 문구 그대로')
   // ⓕ 열쇠 숫자 = 코드 값(WELCOME_ANON → WELCOME_ACCT)
   // ⛔ ocr.js 를 node 에서 import 하지 않는다(브라우저 전제) — 파일 글자에서 상수를 읽는다(내보내지 않은 const 라서)
@@ -101,10 +101,24 @@ const 팝업글 = (pg) => pg.evaluate(() => document.querySelector('.sheet-mask 
   칸(!/사라져요/.test(await 팝업글(pg)), 'ⓒ 로그인해 둔 사람에겐 안 뜬다')
   await ctx.close()
 }
-// ⓓ 갓 깐 사람(내 레시피 0) → 안 뜬다
+// ⓓ 갓 깐 사람(내 레시피 0 · 일기 0) → 안 뜬다
 {
-  const { ctx, pg } = await 창(씨앗({ 편수: 0 }))
-  칸(!/사라져요/.test(await 팝업글(pg)), 'ⓓ 내 레시피 0 이면 안 뜬다(잃을 게 없다)')
+  const { ctx, pg } = await 창(씨앗({ 편수: 0, 일기: 0 }))
+  칸(!/사라져요/.test(await 팝업글(pg)), 'ⓓ 내 레시피 0 · 일기 0 이면 안 뜬다(잃을 게 없다)')
+  await ctx.close()
+}
+// ⓖ 일기만 쓴 사람 → 뜬다 · 첫 줄은 「일기 M편」만(레시피 0편을 부르지 않는다)
+{
+  const { ctx, pg } = await 창(씨앗({ 편수: 0, 일기: 2 }))
+  const 글 = (await 팝업글(pg)).replace(/\n/g, '')
+  칸(/내가 저장한 일기 2편이 사라져요/.test(글) && !/레시피 0편/.test(글), 'ⓖ 일기만 2편이면 뜬다 · 첫 줄 = 「일기 2편」만', 글.slice(0, 50))
+  await ctx.close()
+}
+// ⓗ 레시피만 쓴 사람 → 첫 줄은 「레시피 N편」만
+{
+  const { ctx, pg } = await 창(씨앗({ 편수: 5, 일기: 0 }))
+  const 글 = (await 팝업글(pg)).replace(/\n/g, '')
+  칸(/내가 저장한 레시피 5편이 사라져요/.test(글) && !/일기/.test(글.split('사라져요')[0]), 'ⓗ 레시피만 5편이면 첫 줄 = 「레시피 5편」만')
   await ctx.close()
 }
 

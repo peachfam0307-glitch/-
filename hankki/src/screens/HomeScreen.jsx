@@ -53,7 +53,7 @@ import uiPengSearch from '../assets/ui/wave/pn_search.png'
 //    ⛔ ui 컷 다섯(hand_point·thumbsup·shop·heart·clap)은 이미 다른 단계가 다 쓰고 있어 정본 콤비에서 가져왔다.
 import gpDuoHeart from '../assets/stickers/photo/gp_duoht.png'
 import { needsOnboarding } from '../components/Onboarding'
-import { backupNudgeStep, dismissBackupNudge, askOpenBackup, myRecipeCount, needsCloudHome, markCloudHomeSeen, askOpenCloud, 클라우드보임 } from '../nudges'
+import { backupNudgeStep, dismissBackupNudge, askOpenBackup, myRecipeCount, myDiaryCount, needsCloudHome, markCloudHomeSeen, askOpenCloud, 클라우드보임 } from '../nudges'
 import { 로그인해뒀나 } from '../cloud'
 import { weeklyNow, homemadeNow, snsNow } from '../data/weekly'
 import { whatsNew } from '../data/whatsnew'
@@ -235,10 +235,11 @@ export default function HomeScreen() {
 
   // ☁️📣 로그인 안내 팝업 — «이미 쓰던 사람 · 로그인 안 함 · 내 레시피 1편↑»에게 딱 한 번 (창업자 2026-09-06 ㄱㄱ).
   //    ⛔ 다른 팝업(소식·온보딩·코치마크)이 뜨는 날은 «안 띄운다» — 겹치면 둘 다 못 읽는다. 다음에 켤 때 뜬다.
-  //    ⛔ 홈 한 줄(cloudRow)과 같은 잣대(클라우드보임·!로그인해뒀나·myRecipeCount≥1) — 잣대가 갈리면 말이 갈린다.
+  //    ⛔ 홈 한 줄(cloudRow)과 같은 잣대(클라우드보임·!로그인해뒀나) ＋ «잃을 게 있나» = 내 레시피 **또는** 내 일기 1편↑
+  //       (창업자 2026-09-06 *"레시피나 일기가 사라진다고 해야하려나"* → *"그렇게 하자"* — 일기만 쓰는 사람도 폰 바꾸면 똑같이 잃는다).
   //    ⭐ 뜨는 날은 홈 한 줄을 «같이» 그리지 않는다 — 같은 말을 두 번 하면 그게 재촉이다.
   const [loginPop, setLoginPop] = useState(
-    () => 클라우드보임() && !로그인해뒀나() && myRecipeCount(recipes) >= 1
+    () => 클라우드보임() && !로그인해뒀나() && (myRecipeCount(recipes) >= 1 || myDiaryCount(diary) >= 1)
       && needsLoginNudge() && !needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY)
   )
   const closeLoginPop = () => { markLoginNudgeSeen(); setLoginPop(false) }
@@ -706,7 +707,8 @@ export default function HomeScreen() {
       {/* ☁️📣 로그인 안내 — 로그인되면 설정의 클라우드 시트로 보낸다(올리기·가져오기는 거기 몫 · 홈 한 줄과 같은 길) */}
       {loginPop && (
         <LoginNudge
-          count={myRecipeCount(recipes)}
+          recipes={myRecipeCount(recipes)}
+          diaries={myDiaryCount(diary)}
           onLater={closeLoginPop}
           onLoggedIn={() => { closeLoginPop(); markCloudHomeSeen(); setCloudRow(false); askOpenCloud(); nav.go('profile') }}
         />

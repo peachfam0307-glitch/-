@@ -62,6 +62,11 @@ export const myRecipeCount = (recipes = []) =>
     return (Array.isArray(r.decor) && r.decor.length > 0) || (r.decorBg && r.decorBg !== 'none')
   }).length
 
+// 📔 「내 일기」 편수 — 로그인 안내 팝업이 «잃을 게 있나»를 잴 때 레시피와 «같이» 센다
+//    (창업자 2026-09-06 *"문구를 내가 저장한 레시피나 일기가 사라진다고 해야하려나"* → *"그렇게 하자"*).
+//    ⛔ 우리가 놓아 준 샘플 일기(`sample: true` · `sampleDiary.js`)는 «내 것»이 아니다 — 안 센다.
+export const myDiaryCount = (diary = []) => diary.filter((d) => d && !d.sample).length
+
 /** 지금 띄울 문턱을 돌려준다. 0 이면 띄우지 않는다. */
 export function backupNudgeStep(recipeN) {
   const done = Number(read(K_BACKUP) || 0)

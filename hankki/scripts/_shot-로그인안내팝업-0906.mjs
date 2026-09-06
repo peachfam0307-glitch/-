@@ -31,7 +31,7 @@ for (const theme of ['greige', 'apricot', 'dark']) {
     localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1'); localStorage.setItem('hankki:coach:home', '1'); localStorage.setItem(k, t)
     localStorage.setItem('hankki:v1', JSON.stringify({
       recipes: Array.from({ length: 12 }, (_, i) => ({ id: 'u' + i, title: '내가 쓴 레시피 ' + i, ingredients: [], steps: [] })),
-      folders: [], profile: { name: '한끼러버', bio: '' }, shops: [], wishlist: [], shoppingList: [], pantry: [], diary: [], seedV: 999, memoCleanV: 9, removedSeedIds: [],
+      folders: [], profile: { name: '한끼러버', bio: '' }, shops: [], wishlist: [], shoppingList: [], pantry: [], diary: [{ id: 'd1', kind: 'diary', title: '오늘 한 끼', date: '2026-09-01' }, { id: 'd2', kind: 'diary', title: '오늘 한 끼 2', date: '2026-09-02' }, { id: 'd3', kind: 'diary', title: '오늘 한 끼 3', date: '2026-09-03' }], seedV: 999, memoCleanV: 9, removedSeedIds: [],
     }))
   }, [THEME_KEY, theme])
   await pg.goto(`http://localhost:${PORT}/hankki/`, { waitUntil: 'networkidle' })

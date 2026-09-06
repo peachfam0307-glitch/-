@@ -1,0 +1,196 @@
+// 📔📣 인스타 캐러셀 「소소한 기능 ③ 기록은 내 것」 — 1080×1350 · 8장 (2026-09-07)
+//
+// 📮 창업자 2026-09-07 = *"섞자."* — 짜임 시안 D·E·F 중 하나가 아니라 «장마다 어울리는 것»으로 섞는다.
+//    ＋ *"배치하고, 애들 크기잘 맞춰서(카롱도 넣어도 돼) 등장했으니까."*
+//
+// 🎨 짜임 (시안 _판-소소기록-짜임시안-0907.mjs 에서 그대로 물려받았다)
+//   D 스크랩북 — 공책 줄 위에 캡처를 삐뚤게 붙이고 손글씨 주석·동그라미  → 2 별점 · 3 메모 · 5 일기
+//   E 이어지는 띠 — 팥죽색 띠가 비스듬히 가로지르고 다음 장을 부른다     → 1 표지 · 6 꾸미기 · 8 마무리
+//   F 반반 대비 — 위 「그냥 두면」 ↔ 아래 「한끼에선」                     → 4 요리모드 · 7 백업
+//
+// 🔤 글꼴 ①② = Jua＋GowunDodum → ③ = **Gaegu＋NanumPen**(손글씨) · 🎨 색 ①크림밝음 ②남색어둠 → ③ 세이지 종이(중간톤)
+//
+// 🦫 카롱 등장 — ka_g02·ka_g03·ka_c02·ka_c04(솔로 4컷)는 Stickers.jsx:1926 에서 season autumn · from 2026-09-01 로 이미 열렸다.
+// 🐻🐧🦫 **크기는 «폭»이 아니라 «높이»로 맞춘다** — pjs 427×588 · duos 620×601 · ka 489×611.
+//    폭으로 맞추면 듀오컷 캐릭터가 3분의 2로 작아진다(②편에서 창업자가 「크기도 들쭉날쭉이야」로 잡은 원인).
+//
+// 실행: cd /home/user/hankki/hankki && SMOKE_CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node scripts/_판-소소기록캐러셀-0907.mjs
+import './_fresh.mjs'
+import { chromium } from 'playwright'
+import { readFileSync, mkdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
+
+const ROOT = new URL('..', import.meta.url).pathname
+const 앱폴더 = process.env.APP || join(ROOT, 'design/promo/소소기능-앱화면-2509/기록')
+const LAYER = process.env.LAYER || ''
+const OUT = process.env.OUT || ('/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소3/캐러셀' + (LAYER ? '-' + LAYER : ''))
+mkdirSync(OUT, { recursive: true })
+const b64 = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`
+const 폰트 = readFileSync(join(ROOT, 'design/promo/fonts-embed.css'), 'utf8')
+const 앱 = (f) => b64(join(앱폴더, `${f}.png`))
+// 🦫 ka_* 는 앱 스티커 폴더(photo)에 있다 — pjs_·duos_·gp_ 는 sharepool 정본
+const 스 = (k) => b64(join(ROOT, /^(pjs|duos|gp)_/.test(k) ? `src/assets/sharepool/${k}.png` : `src/assets/stickers/photo/${k}.png`))
+
+// 🎨 ③ 팔레트 = «오래 쓴 노트» — 세이지 종이 · 먹빛 글자 · 팥죽색 포인트
+const 종이 = '#e7ebe0', 먹 = '#38403a', 팥 = '#9c4a3c', 크림 = '#fbf9f3', 흐림 = '#6b746c'
+const 스높이 = 200          // 🐻🐧🦫 «높이» 한 값 — 캐릭터가 같은 크기로 보인다
+const 곰높이 = 186          // gp_gom* 만 원본이 배경 여백 없이 꽉 차서 조금 낮춘다
+
+const 기본 = `${폰트}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1080px;height:1350px;overflow:hidden;position:relative;font-family:'Gaegu','NanumPen',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.sp{position:absolute;height:${스높이}px;width:auto;filter:drop-shadow(0 12px 18px rgba(40,50,60,.22))}
+.sp.gom{height:${곰높이}px}
+.hh{font-family:'Gaegu';color:${먹};letter-spacing:-0.01em;font-weight:700}
+.ss{font-family:'NanumPen';line-height:1.45;color:${흐림}}
+.tape{position:absolute;background:rgba(190,180,150,.55);z-index:7}
+.tag{position:absolute;left:60px;top:56px;z-index:9;font-family:'Gaegu';font-weight:700;font-size:34px;color:${크림};background:${팥};border-radius:6px;padding:6px 22px;transform:rotate(-2deg)}
+.foot{position:absolute;left:64px;bottom:52px;font-family:'NanumPen';font-size:32px;color:#7d867e;z-index:9}
+`
+const 줄무늬 = `background-image:repeating-linear-gradient(180deg,transparent 0 57px,rgba(90,105,95,.16) 57px 59px);`
+const 모눈 = `background-image:linear-gradient(rgba(90,105,95,.11) 1px,transparent 1px),linear-gradient(90deg,rgba(90,105,95,.11) 1px,transparent 1px);background-size:54px 54px;`
+
+// 앱 화면 조각 — 원본 1170×2532 좌표로 잘라 온다 (자를 자리는 검수판으로 «눈으로» 보고 적었다)
+const 조각 = ({ 파일, y, h, x = 0, w = 1170, 배율 = 0.6, 회전 = 0, left, top, z = 5, r = 10, 테 = true }) =>
+  `<div class="piece" style="position:absolute;z-index:${z};left:${left}px;top:${top}px;width:${Math.round(w * 배율)}px;height:${Math.round(h * 배율)}px;overflow:hidden;border-radius:${r}px;background:#fff;${테 ? 'border:10px solid #fff;' : ''}box-shadow:0 14px 30px rgba(50,60,52,.22);transform:rotate(${회전}deg)">
+  <img src="${앱(파일)}" style="position:absolute;left:${-x * 배율}px;top:${-y * 배율}px;width:${Math.round(1170 * 배율)}px"></div>`
+const 테이프 = (l, t, w = 170, r = -6) => `<div class="tape" style="left:${l}px;top:${t}px;width:${w}px;height:42px;transform:rotate(${r}deg)"></div>`
+const 손동그라미 = (l, t, w, h) => `<svg style="position:absolute;z-index:8;left:${l}px;top:${t}px" width="${w}" height="${h}"><ellipse cx="${w / 2}" cy="${h / 2}" rx="${w / 2 - 8}" ry="${h / 2 - 8}" fill="none" stroke="${팥}" stroke-width="7" stroke-linecap="round" stroke-dasharray="1400 40" transform="rotate(-3 ${w / 2} ${h / 2})"/></svg>`
+const 손화살표 = (l, t, w, h, 뒤집 = false) => `<svg style="position:absolute;z-index:8;left:${l}px;top:${t}px${뒤집 ? ';transform:scaleX(-1)' : ''}" width="${w}" height="${h}"><path d="M6 ${h - 10} C ${w * 0.3} ${h * 0.75}, ${w * 0.55} ${h * 0.5}, ${w - 22} 16" fill="none" stroke="${팥}" stroke-width="6" stroke-linecap="round"/><path d="M${w - 46} 20 L${w - 16} 12 L${w - 26} 44" fill="none" stroke="${팥}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+const 태그3 = (n) => `소소한 기능 ③ · ${n}`
+
+// ── D 스크랩북 ────────────────────────────────────────────────
+const D = ({ no, 머리, 조각들, 메모 = '', 스티커, 스자리, 꼬리, 제목y = 148, 제목크기 = 92 }) => `<style>${기본}
+body{background:${종이};${줄무늬}}
+.hh{position:absolute;left:64px;top:${제목y}px;font-size:${제목크기}px;line-height:1.12;z-index:9;transform:rotate(-1.5deg)}
+.memo{position:absolute;font-family:'NanumPen';font-size:44px;color:${팥};z-index:9;line-height:1.3}</style>
+<div class="tag">${태그3(no)}</div>
+<div class="hh">${머리}</div>
+${조각들}${메모}
+<img class="sp${/^gp_/.test(스티커) ? ' gom' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
+<div class="foot">${꼬리}</div>`
+
+// ── E 이어지는 띠 ─────────────────────────────────────────────
+const E = ({ no, 머리, 띠글, 부제, 조각들, 스티커, 스자리, 꼬리, 다음 = '넘겨 보세요 ⟶', 띠top = 330 }) => `<style>${기본}
+body{background:${크림}}
+.band{position:absolute;left:-40px;top:${띠top}px;width:1200px;height:520px;background:${팥};transform:rotate(-6deg);z-index:2}
+.band2{position:absolute;left:-40px;top:${띠top + 540}px;width:1200px;height:26px;background:${종이};transform:rotate(-6deg);z-index:3}
+.hh{position:absolute;left:70px;top:96px;font-size:92px;line-height:1.1;z-index:9}
+.on{position:absolute;left:70px;top:${띠top + 90}px;width:520px;font-size:66px;line-height:1.2;color:${크림};z-index:9;transform:rotate(-6deg)}
+.ss{position:absolute;left:70px;top:${띠top + 630}px;width:640px;font-size:44px;z-index:9}
+.next{position:absolute;right:56px;bottom:150px;font-family:'NanumPen';font-size:38px;color:${팥};z-index:9}</style>
+<div class="tag">${태그3(no)}</div>
+<div class="band"></div><div class="band2"></div>
+<div class="hh">${머리}</div>
+<div class="on">${띠글}</div>
+${조각들}
+<div class="ss">${부제}</div>
+${다음 ? `<div class="next">${다음}</div>` : ''}
+<img class="sp${/^gp_/.test(스티커) ? ' gom' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
+<div class="foot">${꼬리}</div>`
+
+// ── F 반반 대비 ───────────────────────────────────────────────
+//   ⭐ 위 칸을 560px 로 잡아 인스타 미리보기(정사각 잘림)에서도 두 칸이 다 보인다
+const F = ({ no, 위글, 머리, 부제, 조각들, 스티커, 스자리, 꼬리 }) => `<style>${기본}
+body{background:${크림}}
+.up{position:absolute;left:0;top:0;width:1080px;height:560px;background:#d8d4cb;overflow:hidden}
+.dn{position:absolute;left:0;top:560px;width:1080px;height:790px;background:${종이};${모눈}overflow:hidden}
+.cut{position:absolute;left:0;top:548px;width:1080px;height:26px;background:${팥};z-index:8}
+.lab{position:absolute;font-family:'Gaegu';font-weight:700;font-size:40px;z-index:9;border-radius:6px;padding:6px 20px}
+.hh{position:absolute;left:64px;top:632px;font-size:84px;line-height:1.12;z-index:9}
+.ss{position:absolute;left:64px;top:880px;width:480px;font-size:42px;z-index:9}
+.gray{position:absolute;left:64px;top:250px;width:640px;font-family:'NanumPen';font-size:52px;color:#7b766c;z-index:9;line-height:1.3}</style>
+<div class="tag">${태그3(no)}</div>
+<div class="up"></div><div class="dn"></div><div class="cut"></div>
+<div class="lab" style="right:56px;top:56px;background:#b9b3a7;color:#fff">그냥 두면</div>
+<div class="lab" style="right:56px;top:606px;background:${팥};color:${크림}">한끼에선</div>
+<div class="gray">${위글}</div>
+<div class="hh">${머리}</div>
+<div class="ss">${부제}</div>
+${조각들}
+<img class="sp${/^gp_/.test(스티커) ? ' gom' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
+<div class="foot">${꼬리}</div>`
+
+// ── 8장 ───────────────────────────────────────────────────────
+const 장들 = {
+  // 1 표지 — E (띠가 다음 장을 부른다)
+  '소소3-01-표지': () => E({ no: 1, 머리: '해먹은 건<br>내 것이 돼요', 띠글: '별점 · 한 줄 ·<br>사진 · 일기까지', 부제: '만들었어요 한 번이면 그날 기록이 남아요<br>달력에 쌓이고, 백업으로 안 잃어요',
+    조각들: 조각({ 파일: '03-시트-기록-별넷', y: 1100, h: 900, 배율: 0.44, 회전: -6, left: 600, top: 380, z: 6, 테: false, r: 22 }),
+    스티커: 'duos_04', 스자리: 'right:60px;bottom:190px', 꼬리: '한끼 · 레시피 → 만들었어요' }),
+
+  // 2 별점·한 줄 — D
+  '소소3-02-별점': () => D({ no: 2, 머리: '별 다섯 개 주고<br>한 줄 남겨요',
+    조각들: 조각({ 파일: '03-시트-기록-별넷', y: 1100, h: 1000, 배율: 0.56, 회전: -3, left: 70, top: 410 }) + 테이프(120, 388) +
+      조각({ 파일: '03-시트-기록-별넷', y: 2180, h: 220, x: 40, w: 1090, 배율: 0.52, 회전: 3, left: 500, top: 1090, z: 6 }) + 테이프(880, 1075, 150, 8),
+    메모: 손동그라미(96, 700, 330, 120) + `<div class="memo" style="left:700px;top:640px;transform:rotate(4deg)">여기 눌러<br>별 주기</div>` + 손화살표(640, 710, 120, 130, true),
+    스티커: 'ka_g02', 스자리: 'right:56px;top:330px;transform:rotate(5deg)', 꼬리: '한끼 · 레시피 → 만들었어요' }),
+
+  // 3 메모·포스트잇 — D
+  '소소3-03-메모': () => D({ no: 3, 머리: '레시피에<br>내 메모를 붙여요',
+    조각들: 조각({ 파일: '04-상세-포스트잇', y: 1020, h: 420, 배율: 0.7, 회전: -2, left: 60, top: 470 }) + 테이프(110, 450) +
+      조각({ 파일: '03-시트-기록-별넷', y: 2180, h: 220, x: 40, w: 1090, 배율: 0.5, 회전: 3, left: 470, top: 1030, z: 6 }) + 테이프(830, 1015, 150, 8),
+    메모: `<div class="memo" style="left:80px;top:960px;transform:rotate(-2deg)">다음에 또 할 때<br>이 한 줄이 제일 쓸모 있다</div>`,
+    스티커: 'pjs_03', 스자리: 'right:52px;top:250px;transform:rotate(4deg)', 꼬리: '한끼 · 레시피 상세 → 메모' }),
+
+  // 4 요리모드 — F (그냥 두면 ↔ 한끼에선)
+  '소소3-04-요리모드': () => F({ no: 4, 위글: '손에 물 묻은 채<br>꺼진 화면을 자꾸 톡톡', 머리: '요리하는 동안<br>화면이 안 꺼져요', 부제: '요리모드로 들어가면 단계마다 큰 글씨<br>타이머도 그 단계에서 바로',
+    조각들: 조각({ 파일: '05-요리모드-화면안꺼짐', y: 1960, h: 540, 배율: 0.44, 회전: -2, left: 552, top: 760, z: 6 }),
+    스티커: 'gp_gomhi', 스자리: 'left:64px;bottom:108px', 꼬리: '한끼 · 레시피 상세 → 요리모드 시작' }),
+
+  // 5 일기 달력 — D
+  '소소3-05-일기': () => D({ no: 5, 머리: '달력에<br>쌓여요',
+    조각들: 조각({ 파일: '06-일기-달력', y: 60, h: 1100, 배율: 0.6, 회전: -2.5, left: 70, top: 430 }) + 테이프(120, 410) +
+      조각({ 파일: '06-일기-달력', y: 1440, h: 260, x: 40, w: 1090, 배율: 0.5, 회전: 3, left: 470, top: 1080, z: 6 }) + 테이프(830, 1065, 150, 8),
+    메모: `<div class="memo" style="left:790px;top:300px;transform:rotate(4deg);text-align:center">이만큼<br>해먹었네</div>` + 손화살표(700, 400, 130, 140, true),
+    스티커: 'ka_c04', 스자리: 'right:56px;top:590px;transform:rotate(-4deg)', 꼬리: '한끼 · 일기 탭' }),
+
+  // 6 꾸미기 — E
+  '소소3-06-꾸미기': () => E({ no: 6, 머리: '일기장도<br>내 취향대로', 띠글: '속지 · 글씨체 ·<br>스티커까지', 부제: '속지 24종 · 글씨체 6종 · 계절 스티커<br>고르는 데 30초, 쓰는 건 매일',
+    조각들: 조각({ 파일: '07-꾸미기-속지', y: 1430, h: 1090, 배율: 0.42, 회전: -6, left: 590, top: 360, z: 6, 테: false, r: 22 }) +
+      조각({ 파일: '08-꾸미기-글씨체', y: 1960, h: 300, x: 40, w: 1090, 배율: 0.46, 회전: 3, left: 480, top: 1010, z: 6 }),
+    스티커: 'pjs_08', 스자리: 'left:64px;bottom:150px;transform:rotate(-4deg)', 꼬리: '한끼 · 일기 → 꾸미기' }),
+
+  // 7 백업 — F
+  '소소3-07-백업': () => F({ no: 7, 위글: '폰 바꾸고 나면<br>적어둔 게 통째로 사라진다', 머리: '내 것은<br>내가 들고 가요', 부제: '백업 파일로 내보내고 그대로 되살려요<br>클라우드에 두면 폰이 바뀌어도 그대로',
+    조각들: 조각({ 파일: '09-설정-백업클라우드', y: 980, h: 700, 배율: 0.42, 회전: -2, left: 560, top: 700, z: 6 }),
+    스티커: 'ka_c02', 스자리: 'left:64px;bottom:108px', 꼬리: '한끼 · 설정 → 백업 · 내보내기' }),
+
+  // 8 마무리 — E (넘길 게 없으니 「넘겨 보세요」를 빼고 스토어 알약을 넣는다)
+  '소소3-08-마무리': () => `<style>${기본}
+body{background:${크림}}
+.band{position:absolute;left:-40px;top:300px;width:1200px;height:470px;background:${팥};transform:rotate(-6deg);z-index:2}
+.band2{position:absolute;left:-40px;top:790px;width:1200px;height:26px;background:${종이};transform:rotate(-6deg);z-index:3}
+.hh{position:absolute;left:70px;top:96px;font-size:92px;line-height:1.1;z-index:9}
+.on{position:absolute;left:70px;top:396px;width:540px;font-size:62px;line-height:1.2;color:${크림};z-index:9;transform:rotate(-6deg)}
+.ss{position:absolute;left:70px;top:900px;width:640px;font-size:42px;z-index:9}
+.pill{position:absolute;left:70px;bottom:150px;z-index:9;background:${팥};color:${크림};border-radius:999px;padding:16px 40px;font-size:36px;font-family:'Gaegu';font-weight:700;white-space:nowrap}</style>
+<div class="tag">${태그3(8)}</div>
+<div class="band"></div><div class="band2"></div>
+<div class="hh">테마까지<br>고르면 끝</div>
+<div class="on">뮤트로 그레이지<br>크림 · 살구 · 다크</div>
+${조각({ 파일: '10-설정-테마', y: 1380, h: 900, 배율: 0.42, 회전: -6, left: 600, top: 340, z: 6, 테: false, r: 22 })}
+<div class="ss">①장보기 ②홈이 알아서 ③기록은 내 것<br>세 편 다 무료로 쓰는 기능이에요</div>
+<div class="pill">▶ Play 스토어에서 「한끼」 검색</div>
+<img class="sp" src="${스('duos_01')}" style="right:56px;bottom:140px;transform:rotate(-3deg);z-index:9">
+<div class="foot">오늘도 한 끼 해냈다면, 한끼에서 만나요</div>`,
+}
+
+const br = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
+const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 2 })
+const names = []
+for (const [n, f] of Object.entries(장들)) {
+  const 겹 = LAYER === 'base' ? '<style>.sp{visibility:hidden!important}</style>' : LAYER === 'sticker' ? '<style>body,body *{visibility:hidden!important;background:transparent!important;box-shadow:none!important}.sp{visibility:visible!important}</style>' : ''
+  await p.setContent(`<!doctype html><meta charset="utf-8">${f()}${겹}`)
+  await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(300)
+  await p.screenshot({ path: `${OUT}/${n}.png`, omitBackground: LAYER === 'sticker' }); names.push(n); console.log('  ✅', n)
+}
+await br.close()
+execFileSync('python3', ['-c', `from PIL import Image
+names=${JSON.stringify(names)}
+w=500; h=625
+sh=Image.new('RGB',(w*4+50,h*2+30),'white')
+for i,n in enumerate(names):
+  sh.paste(Image.open('${OUT}/'+n+'.png').resize((w,h)),(10+(i%4)*(w+10),10+(i//4)*(h+10)))
+sh.save('${OUT}/캐러셀-검수판.png')`])
+console.log(`\n📔 8장 ＋ 검수판 → ${OUT}`)

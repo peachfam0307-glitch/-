@@ -26,6 +26,13 @@ import dpToday from '../assets/paper/dp_today.webp'
 import dpSnap from '../assets/paper/dp_snap.webp'
 import dpList3 from '../assets/paper/dp_list3.webp'
 import dpScrap from '../assets/paper/dp_scrap.webp'
+// 📔 창업자 시트 2026-09-06 — 속지 6장 (원본 = docs/stickers/속지-창업자-2026-09-06/원본시트/)
+import dpPinkScrap from '../assets/paper/dp_pinkscrap.webp'
+import dpAuPhoto from '../assets/paper/dp_auphoto.webp'
+import dpAuScrap from '../assets/paper/dp_auscrap.webp'
+import dpAuTwo from '../assets/paper/dp_autwo.webp'
+import dpAuThree from '../assets/paper/dp_authree.webp'
+import dpPinkLace from '../assets/paper/dp_pinklace.webp'
 
 /** ⑴ 선 — 무지가 기본. 「양식을 안 정한다」는 확정 그대로 빈 종이에서 시작한다. */
 export const PAPER_RULES = [
@@ -298,6 +305,96 @@ export const PAPER_ARTS = [
         { top: 57.1, bottom: 28.3, left: 29.2, right: 51.8, rot: 5.8, key: 'ph_s3' },
       ],
       write: { top: 38, left: 58.5, right: 6.5, bottom: 26.5 },
+    },
+  },
+  // ── 📔 창업자 시트 2026-09-06 · 속지 6장 ──────────────────────────────────────────
+  //   📮 창업자 *"다이어리 속지 추가하자"* (여섯 장 · 1086×1448 · 글자 0개로 받았다)
+  //   📐 좌표는 전부 **원본 픽셀을 재서** 넣었다(규칙 18 · 눈대중 아님) — 창은 «흰 영역 flood ＋ 네 변 회귀»로
+  //      기울기까지 쟀고, 겹쳐 그려 눈으로 맞췄다(규칙 21).
+  //   ✂️ 인쇄된 줄은 **지웠다** — 가을 사진메모 3.59% · 기록3칸 3.45% · 스크랩 노트(기울어짐)가
+  //      글줄 4.34% 와 안 맞는다(사진 기록 전례). 줄은 「선」 탭이 «쓰는 칸 안»에만 긋는다(`rule:'write'`).
+  //
+  // 🎀 폴라로이드 스크랩(핑크) — 폴라로이드 둘(기울어짐) ＋ 파란 스캘럽 메모 ＋ 태그·체리는 장식
+  //    실측: 큰 창 중심(27.6,29.4) −6.9° · 분홍 창 중심(74.0,40.1) +6.2° · 메모 속 x13.2~52.1 · y61.1~87.5
+  {
+    key: 'pinkscrap', label: '폴라로이드 스크랩', src: dpPinkScrap, note: '폴라로이드 둘 ＋ 파란 메모',
+    fields: {
+      rule: 'write',
+      photo: [
+        { top: 16.2, bottom: 57.4, left: 9.8, right: 54.6, rot: -6.9, key: 'ph_pk1' },
+        { top: 27.9, bottom: 47.7, left: 57.6, right: 9.7, rot: 6.2, key: 'ph_pk2' },
+      ],
+      title: { top: 63.5, left: 14, right: 50 },
+      write: { top: 68.5, left: 14, right: 50, bottom: 13.5 },
+    },
+  },
+  // 🍂 가을 사진 메모 — 위 큰 틀(테이프·단풍) ＋ 아래 메모 종이. 실측: 틀 속 x10.4~89.5 · y9.5~62.8 · 메모 x6.6~93.4 · y67.7~94.8
+  {
+    key: 'auphoto', label: '가을 사진 메모', src: dpAuPhoto, note: '큰 사진 한 장 ＋ 아래 메모',
+    fields: {
+      rule: 'write',
+      photo: { top: 10.3, bottom: 38, left: 11.2, right: 11.3, key: 'ph_ab' },
+      title: { top: 69, left: 10, right: 10 },
+      write: { top: 73.5, left: 10, right: 10, bottom: 8.5 },
+    },
+  },
+  // 🍁 가을 스크랩 — 찢은 종이(−4.6°) ＋ 폴라로이드(+7.6°) 사진 둘 · 스프링 노트 ＋ 찢은 메모 글 둘
+  //    실측: 찢은 종이 중심(35.7,30) 45×47% · 폴라 중심(77.1,35.1) · 스프링 종이 x12.9~44.4 · y63.7~87.4 · 오른쪽 종이 x55.7~93.7 · y46.8~85.8(위쪽은 테이프)
+  {
+    key: 'auscrap', label: '가을 스크랩', src: dpAuScrap, note: '기울어진 사진 둘 ＋ 노트 · 메모',
+    fields: {
+      rule: 'write',
+      photo: [
+        { top: 8, bottom: 48, left: 14.7, right: 43.3, rot: -4.6, key: 'ph_ac1' },
+        { top: 24.9, bottom: 54.7, left: 64.3, right: 10.1, rot: 7.6, key: 'ph_ac2' },
+      ],
+      title: { top: 62, left: 58, right: 8 },
+      write: [
+        { top: 64.5, left: 13.5, right: 56.5, bottom: 13.5, rot: -1.5 },
+        { top: 67, left: 58, right: 8, bottom: 16, key: 'note2', label: '메모' },
+      ],
+    },
+  },
+  // 🌰 가을 두 칸 — 테두리 하나에 가운데 선(y 50%). 위·아래 글칸 둘. 실측: 틀 x2.7~97.2 · y4.5~96.7 · 오른쪽 위 잎 x>82
+  {
+    key: 'autwo', label: '가을 두 칸', src: dpAuTwo, note: '위·아래 글칸 둘',
+    fields: {
+      rule: 'write',
+      title: { top: 6.5, left: 7, right: 20 },
+      write: [
+        { top: 11.5, left: 7, right: 7, bottom: 51.5 },
+        { top: 53, left: 7, right: 7, bottom: 6, key: 'note2', label: '아래 칸' },
+      ],
+    },
+  },
+  // 🗂 가을 기록 3칸 — 사진 ＋ 메모 세 줄(둘째 줄은 좌우 바뀜). 실측: 사진 x4.1~34.9 · 메모 x34.5~95.9 (둘째: 사진 x65.1~96 · 메모 x4.1~64.9)
+  {
+    key: 'authree', label: '가을 기록 3칸', src: dpAuThree, note: '사진＋메모 세 줄',
+    fields: {
+      rule: 'write',
+      // 🏷 제목은 첫 메모칸 첫 줄 — 알약 탭(x5~30 · y6~13)에 얹으면 어둡고 좁아 안 읽힌다(찍어 보고 옮김 · 규칙 21)
+      title: { top: 13.5, left: 38.5, right: 6.5 },
+      photo: [
+        { top: 12.3, bottom: 65.4, left: 5, right: 66, key: 'ph_e1' },
+        { top: 41.8, bottom: 35.7, left: 66, right: 4.9, key: 'ph_e2' },
+        { top: 70.6, bottom: 7.3, left: 5, right: 66, key: 'ph_e3' },
+      ],
+      write: [
+        { top: 18.3, left: 38.5, right: 6.5, bottom: 65.5, label: '기록 1' },
+        { top: 43.7, left: 7, right: 37.5, bottom: 36, key: 'note2', label: '기록 2' },
+        { top: 72, left: 38.5, right: 6.5, bottom: 7.5, key: 'note3', label: '기록 3' },
+      ],
+    },
+  },
+  // 🎀 핑크 레이스 — 스캘럽 테두리 ＋ 오른쪽 아래 작은 카드(오늘의 한 줄). 실측: 속 x3.7~96.1 · y5.8~93.5 · 카드 x54.2~97.9 · y72~92.9(리본 오른쪽 위)
+  {
+    key: 'pinklace', label: '핑크 레이스', src: dpPinkLace, note: '큰 글칸 ＋ 오늘의 한 줄 카드',
+    fields: {
+      rule: 'write',
+      title: { top: 13, left: 12, right: 12 },
+      write: { top: 18, left: 10, right: 10, bottom: 30 },
+      // 카드 왼쪽 아래 하트(x57~62)를 피해 63 부터 — 첫 판에서 글 첫 글자가 하트에 물렸다(규칙 21)
+      line: { top: 80, left: 63, right: 9, label: '오늘의 한 줄' },
     },
   },
 ]

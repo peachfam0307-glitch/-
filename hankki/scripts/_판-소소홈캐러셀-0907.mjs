@@ -52,10 +52,12 @@ const 조각 = ({ 파일, y, h, x = 50, w = 1070, 배율 = 0.6, 회전 = 0, left
 const 테이프 = (l, t, r = -5) => `<div class="tape" style="position:absolute;z-index:7;left:${l}px;top:${t}px;width:150px;height:44px;background:rgba(232,196,120,.75);transform:rotate(${r}deg)"></div>`
 
 // ── A 풀블리드 ────────────────────────────────────────────────
-const A = ({ no, 그림, 잘라 = 0, 머리, 부제, 스티커, 동그라미 = '', 스자리 = 'right:40px;top:560px;width:200px;transform:rotate(6deg)', 꼬리 = '한끼 · 장보기 탭', 태그 = `소소한 기능 ① · ${no}` }) => `<style>${기본}
+const A = ({ no, 그림, 잘라 = 0, 그림폭 = 1080, 머리, 부제, 스티커, 동그라미 = '', 스자리 = 'right:40px;top:560px;width:200px;transform:rotate(6deg)', 꼬리 = '한끼 · 장보기 탭', 태그 = `소소한 기능 ① · ${no}` }) => `<style>${기본}
 body{background:${크림}}
 .shot{position:absolute;left:0;top:0;width:1080px;height:820px;overflow:hidden}
-.shot img{width:1080px;display:block;margin-top:-${잘라}px}
+/* 🔍 그림폭 = 앱 화면을 «키워» 오른쪽 끝의 반쯤 잘린 칩을 틀 밖으로 밀어낸다(창업자 2026-09-07 「칩 수정」)
+   ⛔ 키우면 세로도 같이 커지므로 잘라를 «같은 비율로» 환산해야 자리가 안 밀린다 */
+.shot img{width:${그림폭}px;display:block;margin-top:-${Math.round(잘라 * 그림폭 / 1080)}px}
 .shot::after{content:'';position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(180deg,rgba(31,42,60,0),${크림} 85%)}
 .card{position:absolute;left:60px;right:60px;top:700px;bottom:60px;background:${판};border-radius:48px;box-shadow:0 30px 70px rgba(0,0,0,.35);text-align:center;padding:70px 60px 0;z-index:6}
 .no{display:inline-block;background:${파랑};color:${알약글자};font-family:'Jua';font-size:30px;border-radius:999px;padding:8px 26px;margin-bottom:24px}
@@ -67,9 +69,9 @@ body{background:${크림}}
 
 // ⭕ 앱 화면 «그 자리»에 연한 동그라미 — 창업자 2026-09-07 「동그라미라도 하나 쳐주고 (연하게라도)」
 //    좌표는 원본 1170px 기준으로 적는다. A 는 1080 폭으로 눕히고 잘라만큼 올리므로 여기서 같이 환산한다.
-const 동글 = ({ x, y, w, h, 잘라 = 0 }) => {
-  const k = 1080 / 1170
-  return `<div style="position:absolute;z-index:8;left:${Math.round(x * k)}px;top:${Math.round(y * k - 잘라)}px;width:${Math.round(w * k)}px;height:${Math.round(h * k)}px;border:6px solid rgba(240,180,41,.6);border-radius:999px;box-shadow:0 0 0 8px rgba(240,180,41,.12)"></div>`
+const 동글 = ({ x, y, w, h, 잘라 = 0, 그림폭 = 1080 }) => {
+  const k = 그림폭 / 1170   // ⛔ 그림을 키웠으면 «같은 비율»로 재야 동그라미가 칩에서 벗어나지 않는다
+  return `<div style="position:absolute;z-index:8;left:${Math.round(x * k)}px;top:${Math.round(y * k - 잘라 * 그림폭 / 1080)}px;width:${Math.round(w * k)}px;height:${Math.round(h * k)}px;border:6px solid rgba(240,180,41,.6);border-radius:999px;box-shadow:0 0 0 8px rgba(240,180,41,.12)"></div>`
 }
 
 // ── B 조각 콜라주 ───────────────────────────────────────────
@@ -142,7 +144,7 @@ const 장들 = {
     조각({ 파일: '07-검색-두부', y: 410, h: 110, x: 40, w: 700, 배율: 0.78, 회전: 3, left: 480, top: 330 }) + 테이프(900, 320, 8) +
     조각({ 파일: '07-검색-두부', y: 520, h: 690, x: 50, w: 1070, 배율: 0.5, 회전: -3, left: 272, top: 870 }) + 테이프(660, 855, 6) }),
 
-  '소소2-07-폴더': () => A({ no: 7, 태그: 태그2(7), 그림: '08-레시피-모아보기', 잘라: 300, 머리: '해볼 것만<br>따로 모아요', 부제: '전체 · 해볼 것 · 자주 · SNS · 내가 만든 폴더<br>요리사 모자 칩 하나면 골라 둔 것만 딱', 스티커: 'gp_gomtb', 스자리: 'right:30px;top:580px;width:200px;transform:rotate(-4deg)', 꼬리: '한끼 · 레시피 탭 → 모아보기', 동그라미: 동글({ x: 335, y: 505, w: 385, h: 128, 잘라: 300 }) }),
+  '소소2-07-폴더': () => A({ no: 7, 태그: 태그2(7), 그림: '08-레시피-모아보기', 잘라: 300, 그림폭: 1204, 머리: '해볼 것만<br>따로 모아요', 부제: '전체 · 해볼 것 · 자주 · SNS · 내가 만든 폴더<br>요리사 모자 칩 하나면 골라 둔 것만 딱', 스티커: 'gp_gomtb', 스자리: 'right:30px;top:580px;width:200px;transform:rotate(-4deg)', 꼬리: '한끼 · 레시피 탭 → 모아보기', 동그라미: 동글({ x: 335, y: 505, w: 385, h: 128, 잘라: 300, 그림폭: 1204 }) }),
 
   '소소2-08-마무리': () => `<style>${기본}
 body{background:${크림}}

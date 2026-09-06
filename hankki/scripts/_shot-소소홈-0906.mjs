@@ -87,6 +87,11 @@ await p.goBack(); await 쉼(800)
 await 탭('레시피'); await 맨위(); await 쉼(500)
 const 모아 = p.locator('[data-coach="collection"]')
 if (await 모아.count()) { await 모아.click(); await 쉼(800) }
+// 🔖 창업자 2026-09-07 = *"레시피 자체에 추가로 요리사모자 하나 눌러서 보여달라는거야. 책갈피가 실제로 보여야지"*
+//    카드의 모자는 «꽂힘=진한 모자 · 안 꽂힘=연한 모자»(MyRecipesScreen 920줄 idxChef/idxChefFaint) —
+//    맨 앞 카드를 한 번 눌러 «꽂힌» 상태를 만들고 찍는다. ⛔창업자 백업 데이터라 실제 앱에 남지 않는다(이 컨테이너 안 판).
+const 모자 = p.locator('.fav-dot').first()
+if (await 모자.count() && !(await 모자.evaluate((el) => el.classList.contains('on')))) { await 모자.click(); await 쉼(700) }
 await 찍('08-레시피-모아보기')
 const 자주칩 = p.locator('.pill', { hasText: /^자주/ })
 if (await 자주칩.count()) { await 자주칩.click(); await 쉼(800); await 찍('09-레시피-자주폴더') }

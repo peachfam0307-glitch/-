@@ -4141,7 +4141,7 @@ html, body { overscroll-behavior: none; }
 }
 .weekly-kicker { font-size: 15px; font-weight: 800; color: var(--brown); letter-spacing: 0.02em; }
 /* 📅 요일 배지 — 「월」「수」 = 그 요일마다 새로 온다 (창업자 2026-09-07 「월 배지를 옆에 달아도 좋고」) */
-.weekly-day { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--blue, #5b7ea8); color: #fff; font-size: 11px; font-weight: 800; line-height: 1; flex: 0 0 auto; }
+.weekly-day { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--blue, #5b7ea8); color: #fff; font-size: 14.5px; font-weight: 800; line-height: 1; flex: 0 0 auto; margin-left: 2px; }  /* 26px — 창업자 「배지 조금 더 크게 요일이 잘 안보여」(20px 이었다) */
 .weekly-title { font-size: 19px; font-weight: 800; margin-top: 5px; }
 .weekly-why { font-size: 15.5px; margin-top: 3px; line-height: 1.5; }
 .weekly-box > .weekly-row { margin-top: 11px; }

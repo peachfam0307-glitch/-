@@ -27,7 +27,6 @@ const srv = createServer((q, s) => {
 await new Promise((r) => srv.listen(4431, r))
 
 const { SEED_COACH_SEEN } = await import('../src/coach.js')
-const { todayKST } = await import('../src/today.js')
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 })
 await ctx.addInitScript(SEED_COACH_SEEN)
@@ -76,8 +75,9 @@ if (await 쇼핑몰.count()) { await 쇼핑몰.evaluate((el) => el.scrollIntoVie
 
 // ── ③ 냉장고 — 재료 담기(유통기한) → D-day 표 ＋ 가진 재료 추천 ────────
 await p.locator('[data-coach="pantry"]').first().click(); await 쉼(1000)
-// ⏰ 절대원칙 27 — 날짜는 todayKST 에서. (2026-09-07 00:16 check-kst 가 run 2239 를 막았다 → 이 줄로 고침 · 다른 세션 파일이지만 v12.69 배포가 막혀 이 세션이 고쳤다)
-const 오늘 = new Date(todayKST() + 'T00:00:00'); const 날짜 = (d) => { const t = new Date(오늘); t.setDate(t.getDate() + d); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}` }
+const { todayKST } = await import('../src/today.js')   // ⏰ 절대원칙 27 — 날짜는 today.js 에서만
+// 오늘(KST)에 d 일을 더한다 — 문자열 산수(연·월·일 숫자로) · toISOString 을 안 쓴다(check-kst)
+const 날짜 = (d) => { const [y, m, dd] = todayKST().split('-').map(Number); const t = new Date(Date.UTC(y, m - 1, dd + d)); return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, '0')}-${String(t.getUTCDate()).padStart(2, '0')}` }
 const 재료들 = [['두부', 2], ['달걀', 6], ['애호박', 4], ['대파', 3], ['우유', 1], ['돼지고기', 2], ['양파', 12], ['버섯', 5]]
 let 넣은 = 0
 for (const [이름, d] of 재료들) {

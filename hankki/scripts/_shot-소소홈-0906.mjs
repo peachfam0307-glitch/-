@@ -41,24 +41,20 @@ const 보이게 = async (loc, block = 'center') => { await loc.evaluate((el, blo
 
 await p.goto(URL0, { waitUntil: 'networkidle' }); await p.evaluate(() => document.fonts.ready); await 쉼(900)
 
-// ── ① 「자주 해먹는」 재료 — 레시피 셋에 「만들었어요」를 눌러 cooked 를 쌓는다 ─────
-await 탭('레시피')
-for (const [이름, n] of [['버섯 솥밥', 3], ['돼지고기 김치찌개', 2], ['간장계란밥', 1]]) {
-  const 카드 = p.locator(`text=${이름}`).first()
-  if (!(await 카드.count())) { console.log(`  ⚠️ 「${이름}」 없음`); continue }
-  await 카드.click(); await 쉼(900)
-  for (let i = 0; i < n; i++) {
-    await p.getByRole('button', { name: /만들었어요/ }).first().click(); await 쉼(700)
-    // 「만들었어요」 뒤에 «한 줄 쓸래요?» 시트가 뜬다(2026-09-03 창업자 확정) → 「나중에」
-    const 나중 = p.getByRole('button', { name: /^나중에/ }); if (await 나중.count()) { await 나중.first().click(); await 쉼(500) }
-  }
-  await 쉼(2600)  // 토스트 사라진 뒤
-  await p.goBack(); await 쉼(900)
-  if (!(await p.locator('.bottom-nav').count())) { await p.goto(URL0, { waitUntil: 'networkidle' }); await 쉼(900); await 탭('레시피') }
-}
-// 책갈피 하나 꽂기(목록에서 바로)
-const 책갈피 = p.locator('button[aria-label$="꽂기"]')
-if (await 책갈피.count()) { await 책갈피.first().click(); await 쉼(400); await 책갈피.nth(1).click().catch(() => {}); await 쉼(600) }
+// ── ① 창업자 백업(2026-09-07 · 레시피 269 · 만든 것 14 · 책갈피 12 · 폴더 12)을 «앱 UI 로» 불러온다 ─────
+//    📮 창업자 = *"옛화면 그만찍고 요즘 화면찍어"* · *"이것도 예전꺼 찍기 금지. 최신 json파일 내가 줬잖아"*
+//    ⛔ 시드 화면으로 찍지 않는다 — 실제 창업자 폰과 같은 데이터로 찍는다.
+const 백업 = process.env.BACKUP || join(ROOT, 'docs/_내레시피-백업/2026-09-07.json')
+await p.locator('button[aria-label="설정"]').first().click(); await 쉼(900)
+// 「백업 파일 불러오기」는 설정의 「백업」 카드를 눌러 여는 시트 «안»에 있다
+const 백업카드 = p.locator('[data-coach="backup"]').first(); await 백업카드.evaluate((el) => el.scrollIntoView({ block: 'center' })); await 쉼(300); await 백업카드.click(); await 쉼(900)
+const 불러 = p.getByRole('button', { name: '백업 파일 불러오기' }).first()
+await 불러.evaluate((el) => el.scrollIntoView({ block: 'center' })); await 쉼(300)
+const [chooser] = await Promise.all([p.waitForEvent('filechooser'), 불러.click()])
+await chooser.setFiles(백업); await 쉼(1500)
+await p.getByRole('button', { name: '불러오기' }).last().click(); await 쉼(3500)
+console.log('  📦 백업 불러옴 →', 백업.split('/').pop())
+await p.goto(URL0, { waitUntil: 'networkidle' }); await 쉼(1200)
 
 // ── ② 홈 ─────────────────────────────────────────────
 await 탭('홈'); await 맨위(); await 쉼(800)

@@ -1,15 +1,18 @@
-// 📣🛒 인스타 캐러셀 「소소한 기능 ① 장보기·냉장고」 — 1080×1350 · 8장 (2026-09-06)
+// 📣🛒 인스타 캐러셀 「소소한 기능 ① 장보기·냉장고」 — 1080×1350 · 8장 (2026-09-06 · 2판)
 //
 // 📮 창업자 20:13 = *"아직 소개 안 한 것+내가 적은 것 해서 2,3번에 나눠서 올려보자. 종류별로 묶어서"*
-//    1편 = 영수증 → 찾은 재료 → 냉장고 D-day → 가진 재료 추천 → 인분·장보기 담기 → 체크→냉장고 → 쇼핑몰
-// 🎨 뼈대 = 앞 셋(모눈 올리브 D · 세이지 C · 크라프트 속지)과 «다르게» — 「냉장고 문 ＋ 자석 메모 ＋ 영수증 종이」
-//    · 바탕 = 냉장고 문 색(연한 하늘회색) ＋ 은은한 가로 결 · 제목 = 로고 갈색 · 번호 = 동그란 «자석»
-//    · 폰은 «똑바로» 세우고 위에 자석 하나 · 설명은 «영수증 종이»(톱니 아랫단) 에 얹는다
-// 🖼 재료 = scratchpad/소소1/앱/01~05(`_shot-소소장보기-0906.mjs`) ＋ 창업자 캡처 둘(`design/promo/창업자캡처-소소기능-2509/`)
-// 🐧 스티커 = sharepool 정본만(pjs_·duos_) ＋ 곰 gp_gom*(정본) — ⛔gp_peng·gp_duo 는 옛 펭펭(README 00절)
+// 📮 창업자 22:12 = *"우리 계속 한거랑 너무 디자인이랑 글씨 배치, 비슷한데"* → 짜임 시안 셋(`_판-소소캐러셀-짜임시안-0906.mjs`)
+// 📮 창업자 22:5x = *"1번이 좋고 … 기능마다 어울리는 짜임 스타일이 다르잖아 — abc 적절하게 섞어서"*
+//    ⛔ 1판(냉장고 문·자석·영수증 종이 · 제목 위-왼쪽 · 폰 오른쪽)은 스토어 v8 과 짜임이 같아서 버렸다(git 에 있다).
+//
+// 🎨 장마다 짜임을 «기능에 맞게» 고른다
+//   A 풀블리드 — 앱 화면이 위를 꽉 채우고 아래 흰 카드에 제목 가운데     → 1 표지 · 4 추천 · 7 쇼핑몰 · 8 마무리
+//   B 조각 콜라주 — 폰 틀 없이 앱 «줄»을 종이 조각처럼 · 제목 한가운데    → 3 유통기한 · 6 체크→냉장고
+//   C 대화 — 파란 말풍선이 묻고 펭펭·앱 조각이 답한다                    → 2 영수증 · 5 인분
+// 🖼 재료 = design/promo/소소기능-앱화면-2509(`_shot-소소장보기-0906.mjs` · 1170×2532) ＋ 창업자 캡처 둘
+// 🐧 스티커 = sharepool 정본(pjs_·duos_) ＋ 곰 gp_gom*(정본) — ⛔gp_peng·gp_duo 는 옛 펭펭(README 00절)
 //
 // 실행: cd /home/user/hankki/hankki && SMOKE_CHROMIUM=/opt/pw-browsers/chromium-1194/chrome-linux/chrome node scripts/_판-소소장보기캐러셀-0906.mjs
-//      REEL=1 → 1080×1920(릴스 재료)
 import './_fresh.mjs'
 import { chromium } from 'playwright'
 import { readFileSync, mkdirSync } from 'node:fs'
@@ -17,119 +20,139 @@ import { join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 
 const ROOT = new URL('..', import.meta.url).pathname
-const SCR = '/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소1'
-const 앱폴더 = process.env.APP || join(ROOT, 'design/promo/소소기능-앱화면-2509')   // _shot-소소장보기-0906 이 찍은 5장(저장소에 담아 둠)
+const 앱폴더 = process.env.APP || join(ROOT, 'design/promo/소소기능-앱화면-2509')
 const 창업자 = join(ROOT, 'design/promo/창업자캡처-소소기능-2509')
-const REEL = !!process.env.REEL
-const OUT = process.env.OUT || join(SCR, REEL ? '릴스재료' : '캐러셀')
+const OUT = process.env.OUT || '/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소1/캐러셀'
 mkdirSync(OUT, { recursive: true })
 const b64 = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`
 const 폰트 = readFileSync(join(ROOT, 'design/promo/fonts-embed.css'), 'utf8')
 const 앱 = (f) => b64(join(앱폴더, `${f}.png`))
-const 스티커 = (k) => b64(join(ROOT, /^(pjs|duos)_/.test(k) ? `src/assets/sharepool/${k}.png` : `src/assets/stickers/photo/${k}.png`))
-// 📏 그림(bbox) 실측 — 폭은 높이 기준으로(곰 400·펭 360·콤비 380 × 0.8 · 스토어 v8 표와 같다)
-const 치수 = { pjs_07: [426, 549], pjs_08: [487, 528], pjs_05: [450, 546], pjs_01: [391, 551], duos_04: [589, 583], duos_01: [584, 567], gp_gomtb: [581, 698], gp_gomhi: [593, 667] }
-const 폭 = (k) => { const [w, h] = 치수[k]; const H = /^duos_/.test(k) ? 380 : /^gp_gom/.test(k) ? 400 : 360; return Math.round(H * w / h * 0.8) }
-const 곰펭 = (k, x, y, w = 폭(k), r = 0) => `<img class="sp" src="${스티커(k)}" style="left:${x}px;top:${y}px;width:${w}px;transform:rotate(${r}deg)">`
+const 스 = (k) => b64(join(ROOT, /^(pjs|duos)_/.test(k) ? `src/assets/sharepool/${k}.png` : `src/assets/stickers/photo/${k}.png`))
+const 갈색 = '#5d3410', 파랑 = '#5b7ea8', 크림 = '#fbf7ef', 먹 = '#3a3f46'
 
-const 갈색 = '#5d3410', 파랑 = '#5b7ea8', 먹 = '#3a3f46'
-const H = REEL ? 1920 : 1350
-const 공통 = `${폰트}
+const 기본 = `${폰트}
 *{margin:0;padding:0;box-sizing:border-box}
-body{width:1080px;height:${H}px;overflow:hidden;position:relative;font-family:'Jua','Gowun Dodum',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
-  background:#e9eff2;background-image:repeating-linear-gradient(180deg,rgba(255,255,255,.55) 0 2px,transparent 2px 26px),linear-gradient(180deg,#eef3f5,#e3eaee)}
-.stage{position:relative;width:1080px;height:${H}px}
-.top{position:relative;z-index:3;padding:${REEL ? 300 : 64}px 64px 0;text-align:left}
-.tag{display:inline-block;font-family:'Jua';font-size:28px;color:#fff;background:${파랑};border-radius:999px;padding:8px 24px;letter-spacing:.06em;margin-bottom:18px}
-.hh{font-family:'Jua';color:${갈색};font-size:84px;line-height:1.22;letter-spacing:-0.02em}
-.ss{font-family:'Gowun Dodum';color:rgba(58,63,70,.68);font-size:32px;line-height:1.5;margin-top:14px}
-.sp{position:absolute;z-index:7;filter:drop-shadow(0 12px 18px rgba(40,50,60,.22))}
-/* 📱 폰 — 똑바로 · 위에 자석 */
-.phone{position:absolute;z-index:5;width:520px;height:${REEL ? 1000 : 860}px;border-radius:44px;overflow:hidden;border:10px solid #fff;background:#fff;box-shadow:0 28px 60px rgba(40,50,60,.22),0 3px 8px rgba(40,50,60,.12)}
-.phone img{width:100%;display:block}
-.mag{position:absolute;z-index:8;width:64px;height:64px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffd98a,#e6a63c 60%,#b8772a);box-shadow:0 6px 12px rgba(40,50,60,.3),inset 0 -3px 6px rgba(0,0,0,.15)}
-/* 🧾 영수증 종이 — 아랫단 톱니 */
-.slip{position:absolute;z-index:6;background:#fffdf9;padding:30px 34px 40px;box-shadow:0 18px 40px rgba(40,50,60,.18);font-family:'Gowun Dodum';color:${먹}}
-.slip::after{content:'';position:absolute;left:0;right:0;bottom:-14px;height:14px;background:linear-gradient(-45deg,transparent 10px,#fffdf9 0) 0 0/28px 14px repeat-x,linear-gradient(45deg,transparent 10px,#fffdf9 0) 14px 0/28px 14px repeat-x}
-.slip .no{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:50%;background:${파랑};color:#fff;font-family:'Jua';font-size:30px;margin-bottom:12px}
-.slip b{display:block;font-family:'Jua';font-weight:400;color:${갈색};font-size:40px;line-height:1.25}
-.slip small{display:block;font-size:26px;line-height:1.5;color:rgba(58,63,70,.75);margin-top:10px}
-.slip .dash{border-top:2px dashed rgba(58,63,70,.25);margin:16px 0 12px}
-.foot{position:absolute;left:0;right:0;bottom:${REEL ? 300 : 30}px;z-index:9;text-align:center;font-family:'Gowun Dodum';font-size:24px;color:rgba(58,63,70,.5)}
+body{width:1080px;height:1350px;overflow:hidden;position:relative;font-family:'Jua','Gowun Dodum',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.sp{position:absolute;filter:drop-shadow(0 12px 18px rgba(40,50,60,.22))}
+.hh{font-family:'Jua';color:${갈색};letter-spacing:-0.02em}
+.ss{font-family:'Gowun Dodum';line-height:1.5}
+.foot{position:absolute;left:0;right:0;bottom:36px;text-align:center;font-family:'Gowun Dodum';font-size:24px;color:rgba(58,63,70,.45);z-index:9}
+.tag{position:absolute;left:64px;top:64px;z-index:9;font-family:'Jua';font-size:30px;color:#fff;background:${파랑};border-radius:999px;padding:8px 26px}
 `
+// 앱 화면 «조각» — 원본(1170px 폭) 좌표로 잘라 종이 조각처럼. 절대 배치(left/top) 또는 흐름(flow) 둘 다.
+const 조각 = ({ 파일, y, h, x = 50, w = 1070, 배율 = 0.6, 회전 = 0, left, top, z = 5, flow = false, r = 18 }) =>
+  `<div style="${flow ? 'position:relative;' : `position:absolute;z-index:${z};left:${left}px;top:${top}px;`}width:${Math.round(w * 배율)}px;height:${Math.round(h * 배율)}px;overflow:hidden;border-radius:${r}px;background:#f4efe6;box-shadow:0 16px 34px rgba(40,50,60,.18);${회전 ? `transform:rotate(${회전}deg)` : ''}">
+  <img src="${앱(파일)}" style="position:absolute;left:${-x * 배율}px;top:${-y * 배율}px;width:${1170 * 배율}px"></div>`
+const 테이프 = (l, t, r = -5) => `<div style="position:absolute;z-index:7;left:${l}px;top:${t}px;width:150px;height:44px;background:rgba(232,196,120,.75);transform:rotate(${r}deg)"></div>`
 
-// 한 장 = 제목 ＋ 폰(오른쪽) ＋ 영수증 종이(왼쪽 아래) ＋ 스티커
-const 장 = ({ no, 머리, 부제, 그림, 캡션, 캡션2, 스, 스자리, 폰y = 400, 폰x = 500, 잘라 = 0 }) => `<style>${공통}
-.phone{left:${폰x}px;top:${폰y}px}
-.phone img{margin-top:-${잘라}px}
-.mag.p{left:${폰x + 228}px;top:${폰y - 30}px}
-.slip{left:64px;top:${폰y + 230}px;width:400px}</style><div class="stage">
-<div class="top"><div class="tag">소소한 기능 ①</div><div class="hh">${머리}</div><div class="ss">${부제}</div></div>
-<div class="phone"><img src="${앱(그림)}"></div><div class="mag p"></div>
-<div class="slip"><span class="no">${no}</span><b>${캡션}</b><div class="dash"></div><small>${캡션2}</small></div>
-${스 ? 곰펭(스, ...스자리) : ''}
-<div class="foot">한끼 · 장보기 탭</div></div>`
+// ── A 풀블리드 ────────────────────────────────────────────────
+const A = ({ no, 그림, 잘라 = 0, 머리, 부제, 스티커, 스자리 = 'right:40px;top:560px;width:330px;transform:rotate(6deg)', 꼬리 = '한끼 · 장보기 탭', 태그 = `소소한 기능 ① · ${no}` }) => `<style>${기본}
+body{background:${크림}}
+.shot{position:absolute;left:0;top:0;width:1080px;height:820px;overflow:hidden}
+.shot img{width:1080px;display:block;margin-top:-${잘라}px}
+.shot::after{content:'';position:absolute;left:0;right:0;bottom:0;height:260px;background:linear-gradient(180deg,rgba(251,247,239,0),${크림} 85%)}
+.card{position:absolute;left:60px;right:60px;top:700px;bottom:60px;background:#fff;border-radius:48px;box-shadow:0 30px 70px rgba(60,50,40,.14);text-align:center;padding:70px 60px 0;z-index:6}
+.no{display:inline-block;background:${파랑};color:#fff;font-family:'Jua';font-size:30px;border-radius:999px;padding:8px 26px;margin-bottom:24px}
+.hh{font-size:92px;line-height:1.18}
+.ss{font-size:34px;color:rgba(58,63,70,.7);margin-top:26px}</style>
+<div class="shot"><img src="${앱(그림)}"></div>
+<div class="card"><div class="no">${태그}</div><div class="hh">${머리}</div><div class="ss">${부제}</div><div class="foot">${꼬리}</div></div>
+<img class="sp" src="${스(스티커)}" style="${스자리};z-index:9">`
 
+// ── B 조각 콜라주 ───────────────────────────────────────────
+const B = ({ no, 머리, 부제, 조각들, 스티커, 스자리, 꼬리 = '한끼 · 장보기 탭', 제목y = 470 }) => `<style>${기본}
+body{background:#eef1ea;background-image:radial-gradient(rgba(93,52,16,.07) 1.6px,transparent 1.9px);background-size:28px 28px}
+.mid{position:absolute;left:0;right:0;top:${제목y}px;z-index:8;text-align:center}
+.hh{font-size:112px;line-height:1.12;text-shadow:0 0 24px #eef1ea,0 0 24px #eef1ea,0 0 40px #eef1ea}
+.ss{font-size:34px;color:rgba(58,63,70,.7);margin-top:24px;text-shadow:0 0 16px #eef1ea,0 0 16px #eef1ea}
+.big{position:absolute;right:60px;top:56px;z-index:9;font-family:'Jua';font-size:150px;color:${파랑};opacity:.18;line-height:1}</style>
+<div class="tag">소소한 기능 ①</div><div class="big">0${no}</div>
+${조각들}
+<div class="mid"><div class="hh">${머리}</div><div class="ss">${부제}</div></div>
+<img class="sp" src="${스(스티커)}" style="${스자리};z-index:9">
+<div class="foot">${꼬리}</div>`
+
+// ── C 대화 ─────────────────────────────────────────────────
+const C = ({ no, 방, 줄들, 머리, 꼬리 = '한끼 · 장보기 탭' }) => `<style>${기본}
+body{background:#f6f1e8}
+.head{position:absolute;left:0;right:0;top:0;height:150px;background:#fff;border-bottom:2px solid rgba(93,52,16,.1);display:flex;align-items:center;justify-content:center;gap:16px;font-family:'Jua';font-size:34px;color:${갈색}}
+.head small{font-family:'Gowun Dodum';font-size:24px;color:rgba(58,63,70,.5)}
+.row{position:absolute;left:0;right:0;display:flex;align-items:flex-end;gap:20px;padding:0 50px}
+.row.me{justify-content:flex-end}
+.bub{max-width:660px;background:#fff;border-radius:34px;padding:26px 36px;font-family:'Jua';font-size:38px;line-height:1.35;color:${갈색};box-shadow:0 10px 26px rgba(60,50,40,.1)}
+.me .bub{background:${파랑};color:#fff;border-bottom-right-radius:8px}
+.you .bub{border-bottom-left-radius:8px}
+.time{font-family:'Gowun Dodum';font-size:22px;color:rgba(58,63,70,.45);margin:0 8px 6px}
+.col{display:flex;flex-direction:column;gap:12px}
+.hh{position:absolute;left:0;right:0;bottom:80px;text-align:center;font-size:72px;line-height:1.2;z-index:8}</style>
+<div class="head">${방} <small>소소한 기능 ① · ${no}</small></div>
+${줄들}
+<div class="hh">${머리}</div>
+<div class="foot">${꼬리}</div>`
+const 나 = (top, 글, 시각 = '오후 6:12') => `<div class="row me" style="top:${top}px"><div class="time">${시각}</div><div class="bub">${글}</div></div>`
+const 펭 = (top, 안, 얼굴 = 'pjs_05', 보임 = true) => `<div class="row you" style="top:${top}px"><img class="sp" src="${스(얼굴)}" style="position:static;width:150px;filter:none;${보임 ? '' : 'visibility:hidden'}"><div class="col">${안}</div></div>`
+const 말 = (글) => `<div class="bub">${글}</div>`
+// 창업자 캡처(1080×2340)를 조각으로 — 폭이 다르다
+const 캡처조각 = ({ 파일, y, h, x = 0, w = 1080, 배율 = 0.55, r = 18 }) => `<div style="position:relative;width:${Math.round(w * 배율)}px;height:${Math.round(h * 배율)}px;overflow:hidden;border-radius:${r}px;background:#fff;box-shadow:0 16px 34px rgba(40,50,60,.18)"><img src="${b64(join(창업자, 파일))}" style="position:absolute;left:${-x * 배율}px;top:${-y * 배율}px;width:${1080 * 배율}px"></div>`
+
+// ── 8장 ─────────────────────────────────────────────────────
+// 좌표는 전부 원본 3배 px 실측(390×844 폰 · 1170×2532)
 const 장들 = {
-  '소소1-01-표지': () => `<style>${공통}
-.fan{position:absolute;z-index:4;top:${REEL ? 780 : 520}px;width:440px;height:720px;border-radius:36px;overflow:hidden;border:9px solid #fff;background:#fff;box-shadow:0 26px 54px rgba(40,50,60,.2)}
-.fan img{width:100%;display:block}
-.f1{left:60px;transform:rotate(-7deg)} .f2{left:320px;top:${REEL ? 820 : 560}px;z-index:5} .f3{left:580px;transform:rotate(7deg)}
-.hh{font-size:96px}</style><div class="stage">
-<div class="top"><div class="tag">소소한 기능 ①</div><div class="hh">장 봐 오면<br>그다음은 한끼가</div><div class="ss">영수증 → 냉장고 → 오늘 메뉴 → 장보기까지</div></div>
-<div class="fan f1"><img src="${앱('02-냉장고Dday')}"></div>
-<div class="fan f3"><img src="${앱('03-장보기체크')}"></div>
-<div class="fan f2"><img src="${앱('01-냉장고추천')}"></div>
-<div class="mag" style="left:520px;top:${REEL ? 790 : 530}px"></div>
-${곰펭('duos_04', 640, REEL ? 1480 : 920, 400, -4)}
-<div class="foot">한끼 · 장보기 탭</div></div>`,
+  '소소1-01-표지': () => A({ no: 1, 태그: '소소한 기능 ①', 그림: '01-냉장고추천', 잘라: 110, 머리: '장 봐 오면<br>그다음은 한끼가', 부제: '영수증 → 냉장고 → 오늘 메뉴 → 장보기까지<br>장보기 탭 하나에 다 있어요', 스티커: 'duos_04', 스자리: 'right:30px;top:520px;width:400px;transform:rotate(-4deg)' }),
 
-  '소소1-02-영수증': () => `<style>${공통}
-.rc{position:absolute;z-index:4;left:64px;top:${REEL ? 700 : 420}px;width:420px;background:#fff;padding:18px 0 26px;box-shadow:0 18px 40px rgba(40,50,60,.18);overflow:hidden}
-.rc::after{content:'';position:absolute;left:0;right:0;bottom:0;height:14px;background:linear-gradient(-45deg,transparent 10px,#e9eff2 0) 0 0/28px 14px repeat-x,linear-gradient(45deg,transparent 10px,#e9eff2 0) 14px 0/28px 14px repeat-x}
-.rc img{width:100%;display:block}
-.arrow{position:absolute;z-index:6;left:470px;top:${REEL ? 1030 : 750}px;font-family:'Jua';font-size:64px;color:${파랑}}
-.phone{left:520px;top:${REEL ? 700 : 400}px;height:${REEL ? 1000 : 820}px}
-.phone img{margin-top:-${Math.round(520 * 2340 / 1080 * 0.395)}px}
-.mag.p{left:748px;top:${REEL ? 670 : 370}px}
-.slip{left:64px;top:${REEL ? 1400 : 1010}px;width:400px;padding:22px 30px 30px}
-.slip b{font-size:34px}</style><div class="stage">
-<div class="top"><div class="tag">소소한 기능 ①</div><div class="hh">영수증 찍으면<br>재료가 쏙</div><div class="ss">이름만 골라 담아요 · 아닌 건 체크 풀고</div></div>
-<div class="rc"><img src="${b64(join(창업자, '소소-영수증-품목만-2026-09-06.png'))}"></div>
-<div class="arrow">→</div>
-<div class="phone"><img src="${b64(join(창업자, '소소-영수증에서찾은재료-2026-09-06.png'))}"></div><div class="mag p"></div>
-<div class="slip"><span class="no">1</span><b>냉장고 → 영수증</b><div class="dash"></div><small>사진 한 장이면 두부·감자·공심채가 냉장고에 들어가요</small></div>
-${곰펭('pjs_07', REEL ? 720 : 740, REEL ? 1560 : 1040, 300, 4)}
-<div class="foot">한끼 · 장보기 탭 → 냉장고</div></div>`,
+  '소소1-02-영수증': () => C({ no: 2, 방: '냉장고', 머리: '영수증 찍으면 재료가 쏙', 꼬리: '한끼 · 장보기 탭 → 냉장고 → 영수증', 줄들:
+    나(200, '장 봐 왔는데… 이거 다 하나씩 넣어?') +
+    펭(330, 말('아니, 영수증만 찍어') + 캡처조각({ 파일: '소소-영수증-품목만-2026-09-06.png', y: 150, h: 400, x: 150, w: 780, 배율: 0.6 })) +
+    나(720, '오 7개 찾았네', '오후 6:13') +
+    펭(850, 말('아닌 건 체크만 풀면 돼') + 캡처조각({ 파일: '소소-영수증에서찾은재료-2026-09-06.png', y: 1090, h: 300, x: 60, w: 960, 배율: 0.55 }), 'pjs_07') }),
 
-  '소소1-03-유통기한': () => 장({ no: 2, 머리: '유통기한은<br>앱이 세요', 부제: '가까운 것부터 D-1 · D-2 · 색으로 알려줘요', 그림: '02-냉장고Dday', 캡션: '냉장고 재료함', 캡션2: '재료를 누르면 유통기한·수량을 적을 수 있어요', 스: 'pjs_08', 스자리: [30, REEL ? 1420 : 1020, 250, -5] }),
-  '소소1-04-추천': () => 장({ no: 3, 머리: '냉장고 열면<br>오늘 메뉴가', 부제: '가진 재료로 만들 수 있는 요리를 골라줘요', 그림: '01-냉장고추천', 캡션: '가진 재료로 만들 수 있어요', 캡션2: '두부·달걀·애호박… 넣어둔 것만으로 맞춰 줘요', 스: 'gp_gomtb', 스자리: [40, REEL ? 1420 : 1020, 250, 5] }),
-  '소소1-05-인분': () => 장({ no: 4, 머리: '인분 바꾸면<br>재료도 따라와요', 부제: '2인분 → 4인분, 양은 앱이 계산해요', 그림: '05-인분조절', 캡션: '인분 − ＋ · 장보기 담기', 캡션2: '레시피 재료를 한 번에 장보기 리스트로', 스: 'pjs_01', 스자리: [60, REEL ? 1420 : 1020, 220, -6], 잘라: 560 }),
-  '소소1-06-체크': () => 장({ no: 5, 머리: '샀으면 체크,<br>냉장고로 쏙', 부제: '장보기에서 지우는 게 아니라 냉장고에 넣어 둬요', 그림: '03-장보기체크', 캡션: '샀어요! 냉장고에 넣어뒀어요', 캡션2: '체크 한 번이면 냉장고 재료함에 들어가요', 스: 'pjs_07', 스자리: [40, REEL ? 1420 : 1020, 250, 4] }),
-  '소소1-07-쇼핑몰': () => 장({ no: 6, 머리: '사러가기는<br>늘 쓰던 몰로', 부제: '쿠팡·컬리·이마트몰… 앱이 깔려 있으면 바로 열려요', 그림: '04-쇼핑몰', 캡션: '쇼핑몰 바로가기', 캡션2: '줄마다 「사러가기」 · 몰은 편집에서 내 걸로', 스: 'pjs_05', 스자리: [40, REEL ? 1420 : 1020, 240, -4] }),
+  '소소1-03-유통기한': () => B({ no: 3, 머리: '유통기한은<br>앱이 세요', 부제: '가까운 것부터 D-1 · D-2 · 색으로', 스티커: 'pjs_08', 스자리: 'left:30px;top:1030px;width:280px;transform:rotate(-5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고', 조각들:
+    조각({ 파일: '02-냉장고Dday', y: 724, h: 190, 배율: 0.62, 회전: -6, left: 40, top: 190 }) + 테이프(110, 170) +
+    조각({ 파일: '02-냉장고Dday', y: 933, h: 210, 배율: 0.62, 회전: 4, left: 380, top: 300 }) + 테이프(900, 290, 8) +
+    조각({ 파일: '02-냉장고Dday', y: 1156, h: 216, 배율: 0.62, 회전: -3, left: 120, top: 820 }) + 테이프(160, 805) +
+    조각({ 파일: '02-냉장고Dday', y: 1385, h: 215, 배율: 0.62, 회전: 5, left: 430, top: 960 }) + 테이프(960, 950, 6) }),
 
-  '소소1-08-마무리': () => `<style>${공통}
-.card{position:absolute;z-index:5;left:80px;right:80px;top:${REEL ? 720 : 400}px;background:#fffdf9;border-radius:32px;padding:44px 48px;box-shadow:0 22px 48px rgba(40,50,60,.16)}
+  '소소1-04-추천': () => A({ no: 4, 그림: '01-냉장고추천', 잘라: 690, 머리: '냉장고 열면<br>오늘 메뉴가', 부제: '넣어둔 재료로 만들 수 있는 요리를 골라줘요<br>「가진 재료 4개」 — 뭘 더 사야 하는지도', 스티커: 'gp_gomtb', 스자리: 'right:30px;top:520px;width:300px;transform:rotate(5deg)', 꼬리: '한끼 · 장보기 탭 → 냉장고' }),
+
+  '소소1-05-인분': () => C({ no: 5, 방: '버섯 솥밥', 머리: '인분 바꾸면 재료도 따라와요', 꼬리: '한끼 · 레시피 → 재료', 줄들:
+    나(200, '손님 와서 4인분 해야 하는데<br>재료 다시 계산해야 해?') +
+    펭(370, 말('＋ 두 번만 눌러') + 조각({ 파일: '05-인분조절', y: 2180, h: 130, x: 40, w: 900, 배율: 0.66, flow: true, r: 14 })) +
+    나(700, '장 볼 것도 적어야 하는데', '오후 6:13') +
+    펭(830, 말('그건 「장보기 담기」 한 번') + 조각({ 파일: '05-인분조절', y: 2070, h: 120, x: 720, w: 400, 배율: 0.75, flow: true, r: 14 }) + 말('4인분 양으로 리스트에 들어가'), 'pjs_01') }),
+
+  '소소1-06-체크': () => B({ no: 6, 머리: '샀으면 체크,<br>냉장고로 쏙', 부제: '지우는 게 아니라 냉장고에 넣어 둬요', 스티커: 'pjs_07', 스자리: 'left:30px;top:1030px;width:280px;transform:rotate(4deg)', 꼬리: '한끼 · 장보기 탭 → 장보기 리스트', 조각들:
+    조각({ 파일: '03-장보기체크', y: 0, h: 115, x: 0, w: 1170, 배율: 0.7, 회전: -2, left: 130, top: 150, r: 26 }) +
+    조각({ 파일: '03-장보기체크', y: 1040, h: 200, 배율: 0.62, 회전: 4, left: 60, top: 300 }) + 테이프(560, 270, 3) +
+    조각({ 파일: '03-장보기체크', y: 1250, h: 200, 배율: 0.62, 회전: -3, left: 380, top: 820 }) + 테이프(880, 805, 7) +
+    조각({ 파일: '03-장보기체크', y: 1460, h: 200, 배율: 0.62, 회전: 5, left: 140, top: 990 }) + 테이프(620, 985, -6) }),
+
+  '소소1-07-쇼핑몰': () => A({ no: 7, 그림: '04-쇼핑몰', 잘라: 1040, 머리: '사러가기는<br>늘 쓰던 몰로', 부제: '쿠팡·컬리·이마트몰… 깔려 있으면 바로 열려요<br>줄마다 「사러가기」 · 몰은 편집에서 내 걸로', 스티커: 'pjs_05', 스자리: 'right:30px;top:540px;width:300px;transform:rotate(-4deg)', 꼬리: '한끼 · 장보기 탭 → 쇼핑몰 바로가기' }),
+
+  '소소1-08-마무리': () => `<style>${기본}
+body{background:${크림}}
+.top{position:absolute;left:0;right:0;top:110px;text-align:center;z-index:3}
+.no{display:inline-block;background:${파랑};color:#fff;font-family:'Jua';font-size:30px;border-radius:999px;padding:8px 26px;margin-bottom:24px}
+.hh{font-size:92px;line-height:1.18}
+.ss{font-size:32px;color:rgba(58,63,70,.7);margin-top:20px}
+.card{position:absolute;left:80px;right:80px;top:500px;background:#fff;border-radius:40px;padding:44px 48px;box-shadow:0 22px 48px rgba(60,50,40,.14);z-index:5}
 .step{display:flex;align-items:center;gap:22px;margin:0 0 20px}
 .step .d{width:60px;height:60px;border-radius:50%;background:${파랑};color:#fff;font-family:'Jua';font-size:30px;display:flex;align-items:center;justify-content:center;flex:none}
 .step b{font-family:'Jua';color:${갈색};font-size:38px;font-weight:400} .step small{display:block;font-family:'Gowun Dodum';color:rgba(58,63,70,.65);font-size:25px;margin-top:2px}
-.pill{position:absolute;left:50%;transform:translateX(-50%);bottom:${REEL ? 420 : 150}px;z-index:6;background:${갈색};color:#fff7ea;border-radius:999px;padding:16px 40px;font-size:32px;font-family:'Jua';white-space:nowrap}
-.end{position:absolute;left:0;right:0;bottom:${REEL ? 330 : 56}px;z-index:5;text-align:center;font-family:'Jua';color:${갈색};font-size:38px;line-height:1.4}
-.foot{display:none}</style><div class="stage">
-<div class="top"><div class="tag">이렇게 돌아요</div><div class="hh">장보기 탭 하나로<br>한 바퀴</div><div class="ss">다음 편 = 홈이 알아서 · 기록은 내 것</div></div>
+.pill{position:absolute;left:50%;transform:translateX(-50%);bottom:130px;z-index:6;background:${갈색};color:#fff7ea;border-radius:999px;padding:16px 40px;font-size:32px;font-family:'Jua';white-space:nowrap}
+.end{position:absolute;left:0;right:0;bottom:56px;z-index:5;text-align:center;font-family:'Jua';color:${갈색};font-size:36px}</style>
+<div class="top"><div class="no">이렇게 돌아요</div><div class="hh">장보기 탭 하나로<br>한 바퀴</div><div class="ss">다음 편 = 홈이 알아서 · 기록은 내 것</div></div>
 <div class="card">
 <div class="step"><div class="d">1</div><div><b>영수증 찍기</b><small>냉장고 → 영수증 · 재료가 들어가요</small></div></div>
 <div class="step"><div class="d">2</div><div><b>유통기한 · 오늘 메뉴</b><small>D-day 표 · 가진 재료로 만들 수 있어요</small></div></div>
 <div class="step"><div class="d">3</div><div><b>장보기 담기 → 체크</b><small>인분 맞춰 담고, 사면 체크 · 냉장고로</small></div></div>
 <div class="step" style="margin:0"><div class="d">4</div><div><b>사러가기</b><small>늘 쓰던 쇼핑몰로 바로</small></div></div></div>
-${곰펭('duos_01', 20, REEL ? 1380 : 900, 280, -3)}
+<img class="sp" src="${스('duos_01')}" style="left:20px;top:990px;width:280px;transform:rotate(-3deg);z-index:9">
 <div class="pill">▶ Play 스토어에서 「한끼」 검색</div>
-<div class="end">오늘도 한 끼 해냈다면, 한끼에서 만나요</div></div>`,
+<div class="end">오늘도 한 끼 해냈다면, 한끼에서 만나요</div>`,
 }
 
-const CHROMIUM = process.env.SMOKE_CHROMIUM
-const br = await chromium.launch(CHROMIUM ? { executablePath: CHROMIUM } : {})
-const p = await br.newPage({ viewport: { width: 1080, height: H }, deviceScaleFactor: 2 })
+const br = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
+const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 2 })
 const names = []
 for (const [n, f] of Object.entries(장들)) {
   await p.setContent(`<!doctype html><meta charset="utf-8">${f()}`)
@@ -139,7 +162,7 @@ for (const [n, f] of Object.entries(장들)) {
 await br.close()
 execFileSync('python3', ['-c', `from PIL import Image
 names=${JSON.stringify(names)}
-w=500; h=${Math.round(500 * H / 1080)}
+w=500; h=625
 sh=Image.new('RGB',(w*4+50,h*2+30),'white')
 for i,n in enumerate(names):
   sh.paste(Image.open('${OUT}/'+n+'.png').resize((w,h)),(10+(i%4)*(w+10),10+(i//4)*(h+10)))

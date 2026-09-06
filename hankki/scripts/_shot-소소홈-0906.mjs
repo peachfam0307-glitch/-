@@ -48,11 +48,16 @@ const 백업 = process.env.BACKUP || join(ROOT, 'docs/_내레시피-백업/2026-
 await p.locator('button[aria-label="설정"]').first().click(); await 쉼(900)
 // 「백업 파일 불러오기」는 설정의 「백업」 카드를 눌러 여는 시트 «안»에 있다
 const 백업카드 = p.locator('[data-coach="backup"]').first(); await 백업카드.evaluate((el) => el.scrollIntoView({ block: 'center' })); await 쉼(300); await 백업카드.click(); await 쉼(900)
-const 불러 = p.getByRole('button', { name: '백업 파일 불러오기' }).first()
+// ⛔ 「백업 파일 불러오기」(파일 고르기)는 Playwright 에선 onChange 가 안 난다(filechooser·setInputFiles 둘 다 12초 기다려도 시트 없음 · _probe-백업시트-0907)
+//    → 「코드 붙여넣기로 불러오기」에 JSON 글자를 통째로 넣는다. 앱 쪽 흐름은 둘 다 같은 importFromText/불러오기끝 이다.
+const 불러 = p.getByRole('button', { name: '코드 붙여넣기로 불러오기' }).first()
 await 불러.evaluate((el) => el.scrollIntoView({ block: 'center' })); await 쉼(300)
-const [chooser] = await Promise.all([p.waitForEvent('filechooser'), 불러.click()])
-await chooser.setFiles(백업); await 쉼(1500)
-await p.getByRole('button', { name: '불러오기' }).last().click(); await 쉼(3500)
+await 불러.click(); await 쉼(700)
+await p.locator('textarea:visible').first().evaluate((el, v) => { const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })) }, readFileSync(백업, 'utf8'))
+await 쉼(400); await p.getByRole('button', { name: '불러오기', exact: true }).last().click()
+// ⏳ 7MB 를 읽고 파싱한 뒤에야 확인 시트(「레시피 N개가 담긴 백업이에요」)가 뜬다 — 뜰 때까지 기다린다(1.5초로는 안 떠서 시드 70편을 찍었었다)
+await p.getByText(/레시피 \d+개가 담긴 백업/).waitFor({ timeout: 60000 })
+await p.getByRole('button', { name: '불러오기', exact: true }).last().click(); await 쉼(5000)
 console.log('  📦 백업 불러옴 →', 백업.split('/').pop())
 await p.goto(URL0, { waitUntil: 'networkidle' }); await 쉼(1200)
 

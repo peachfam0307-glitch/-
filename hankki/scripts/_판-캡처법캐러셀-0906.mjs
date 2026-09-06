@@ -162,7 +162,7 @@ body{width:1080px;height:${process.env.REEL ? 1920 : 1350}px;overflow:hidden;pos
 .phone{position:absolute;z-index:4;left:50%;transform:translateX(-50%);top:700px;width:620px;height:760px;border-radius:44px 44px 0 0;overflow:hidden;
   border:12px solid #f6f9f2;border-bottom:0;box-shadow:0 -10px 50px rgba(47,79,58,.18);background:#f6f9f2}
 .phone img{width:100%;height:100%;display:block;object-fit:cover;object-position:top}
-.peek{position:absolute;z-index:3;filter:drop-shadow(0 8px 16px rgba(47,79,58,.18))}
+.peek{position:absolute;z-index:5;filter:drop-shadow(0 8px 16px rgba(47,79,58,.18))} /* 15:01 창업자 *"애들 스티커 다 가려졌엉"* → 전부 폰 «앞»(z 5) · 폰 모서리에 걸친다 */
 .free{position:absolute;z-index:6;right:70px;top:640px;background:#f6f9f2;color:${녹};border:2px solid rgba(47,79,58,.3);font-family:'Jua';font-size:24px;border-radius:999px;padding:8px 18px}
 .leaf{position:absolute;z-index:2;color:rgba(47,79,58,.35);font-size:40px}
 `
@@ -176,7 +176,7 @@ ${잎점()}
 <div class="top">${no ? `<div class="big">${no}</div>` : ''}${tag ? `<div class="tag">${tag}</div>` : ''}<div class="hh">${h}</div><div class="ss">${부제}</div></div>
 ${가로단계(rows)}
 ${무료 ? `<div class="free">${무료}</div>` : ''}
-${곰 ? `<img class="peek" style="width:${폭(곰)}px;${곰자리 === 'left' ? 'left:40px' : 'right:40px'};top:${1330 - 폭(곰) * 1.05}px${앞 ? ';z-index:5' : ''}" src="${스티커(곰)}">` : ''}
+${곰 ? `<img class="peek" style="width:${폭(곰)}px;${곰자리 === 'left' ? 'left:24px' : 'right:24px'};top:${1330 - 폭(곰) * 1.08}px${앞 ? ';z-index:5' : ''}" src="${스티커(곰)}">` : ''}
 <div class="phone"><img src="${파일}"></div></div>`
   const C장들 = {
     '캐러셀C-01-표지': () => C장({ tag: '한끼 사용법', 머리: '레시피 담는 법<br>여섯 가지', 부제: '어디서 봤든 한끼로', 파일: 앱('30-가져오기'), 곰: 'au_b16', 곰자리: 'right', 앞: true,

@@ -1,0 +1,114 @@
+// ☁️📣 로그인 안내 팝업 — «이미 쓰던 사람 · 로그인 안 함 · 레시피 1편↑»에게 딱 한 번 (창업자 2026-09-06 ㄱㄱ)
+//
+// 📮 창업자 = *"그럼 로그인 안내부터 하자 ㄱㄱ"* → *"안내 팝업이 낫지않을까??"* → *"로그인을 해야 남는거잖아."*
+// ⭐ 이 판이 지키는 것
+//    ⓐ 쓰던 사람(레시피 1편·로그인 안 함·소식 팝업 꺼짐)에겐 **뜬다** — 확정 문구 첫 줄 ＋ 이유 세 줄
+//    ⓑ 「나중에 하기」로 닫으면 **다시 켜도 안 뜬다**(한 번만 · 재촉 금지)
+//    ⓒ 로그인해 둔 사람에겐 **안 뜬다**
+//    ⓓ 갓 깐 사람(내 레시피 0)에겐 **안 뜬다** — 잃을 게 없다
+//    ⓔ 뜨는 날은 홈의 「로그인하면 새 폰에서도」 한 줄이 **같이 안 그려진다** — 같은 말 두 번 = 재촉
+//    ⓕ 숫자(열쇠 10→30 · 편수)가 **코드 값**과 같다 — 글자로 박지 않았다
+// ⛔ 뿌리를 컨테이너 경로로 박지 않는다(2026-08-31 #1965·#1966 교훈) — 이 파일 자리에서 dist 를 찾는다.
+import { chromium } from 'playwright'
+import http from 'node:http'
+import { readFileSync, statSync } from 'node:fs'
+import { extname, join } from 'node:path'
+import { SEED_COACH_SEEN } from '../src/coach.js'
+
+const ROOT = join(new URL('..', import.meta.url).pathname, 'dist')
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' }
+const srv = http.createServer((req, res) => {
+  let p = decodeURIComponent(req.url.split('?')[0])
+  if (p.startsWith('/hankki/')) p = p.slice(7)
+  const f = join(ROOT, p === '/' ? 'index.html' : p)
+  try { statSync(f); res.writeHead(200, { 'Content-Type': MIME[extname(f)] || 'application/octet-stream' }); res.end(readFileSync(f)) }
+  catch { res.writeHead(404); res.end('nope') }
+})
+await new Promise((r) => srv.listen(0, r))
+const PORT = srv.address().port
+
+const 씨앗 = ({ 편수 = 1, 로그인 = false, 봤음 = false } = {}) => `
+  localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1'); localStorage.setItem('hankki:coach:home', '1')
+  ${로그인 ? "localStorage.setItem('hankki:cloud:on', '1')" : ''}
+  ${봤음 ? "localStorage.setItem('hankki:nudge:loginpop', '1')" : ''}
+  localStorage.setItem('hankki:v1', JSON.stringify({
+    recipes: ${JSON.stringify(Array.from({ length: 편수 }, (_, i) => ({ id: 'u' + i, title: '내가 쓴 레시피 ' + i, ingredients: [], steps: [] })))},
+    folders: [], profile: { name: '한끼러버', bio: '' }, shops: [], wishlist: [],
+    shoppingList: [], pantry: [], diary: [], seedV: 999, memoCleanV: 9, removedSeedIds: [],
+  }))`
+
+const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
+const errs = []
+let 통과 = 0, 전체 = 0
+const 칸 = (좋나, 이름, 덧 = '') => { 전체++; if (좋나) 통과++; console.log(`${좋나 ? '✅' : '⛔'} ${이름}${덧 ? ' — ' + 덧 : ''}`) }
+
+async function 창 (init) {
+  const ctx = await b.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true })
+  await ctx.route('**/*.googleapis.com/**', (r) => r.abort())
+  await ctx.route('**/*.gstatic.com/**', (r) => r.abort())
+  const pg = await ctx.newPage()
+  pg.on('pageerror', (e) => errs.push('PAGEERROR ' + e.message))
+  await pg.addInitScript(SEED_COACH_SEEN)
+  await pg.addInitScript(init)
+  await pg.goto(`http://localhost:${PORT}/hankki/`, { waitUntil: 'domcontentloaded' })
+  await pg.waitForFunction(() => (document.body?.innerText || '').trim().length > 30, null, { timeout: 30000 })
+  await pg.waitForTimeout(700)
+  return { ctx, pg }
+}
+const 팝업글 = (pg) => pg.evaluate(() => document.querySelector('.sheet-mask .sheet')?.innerText || '')
+
+// ⓐ 쓰던 사람 → 뜬다 · 문구 · 숫자
+{
+  const { ctx, pg } = await 창(씨앗({ 편수: 12 }))
+  const 글 = await 팝업글(pg)
+  칸(/앱을 지우거나 폰을 바꾸면/.test(글) && /12편이 사라져요/.test(글), 'ⓐ 쓰던 사람(12편)에게 팝업이 뜬다 · 첫 줄 = 확정 문구 ＋ 내 편수', 글.slice(0, 60).replace(/\n/g, ' / '))
+  칸(/구글로 로그인하면/.test(글) && /폰을 바꿔도, 앱을 다시 깔아도 그대로 남아요/.test(글) && /패드에서도 이어서 써요/.test(글), 'ⓐ 이유 세 줄 중 둘이 확정 문구 그대로')
+  // ⓕ 열쇠 숫자 = 코드 값(WELCOME_ANON → WELCOME_ACCT)
+  // ⛔ ocr.js 를 node 에서 import 하지 않는다(브라우저 전제) — 파일 글자에서 상수를 읽는다(내보내지 않은 const 라서)
+  const ocr = readFileSync(join(new URL('..', import.meta.url).pathname, 'src/ocr.js'), 'utf8')
+  const 상수 = (n) => Number((ocr.match(new RegExp(`const ${n} = (\\d+)`)) || [])[1])
+  const WELCOME_ANON = 상수('WELCOME_ANON'), WELCOME_ACCT = 상수('WELCOME_ACCT')
+  const KEY_NAME = (ocr.match(/export const KEY_NAME = '([^']+)'/) || [])[1]
+  const 열쇠줄 = new RegExp(`무료 ${KEY_NAME}가 ${WELCOME_ANON}개 → ${WELCOME_ACCT}개로 늘어요`)
+  칸(열쇠줄.test(글), `ⓕ 열쇠 줄이 코드 값과 같다 (${WELCOME_ANON} → ${WELCOME_ACCT})`)
+  칸(/구글로 로그인/.test(글) && /나중에 하기/.test(글), 'ⓐ 단추 둘 = 구글로 로그인 · 나중에 하기')
+  // 📏 줄간격 — 이유 세 줄 사이가 붙어 있지 않다(창업자 *"줄간격 신경써서"*)
+  const 간격 = await pg.evaluate(() => {
+    const 줄 = [...document.querySelectorAll('.sheet-mask .sheet div')].filter((d) => /^·/.test(d.innerText.trim()) && d.children.length === 2)
+    if (줄.length < 3) return null
+    const r = 줄.map((d) => d.getBoundingClientRect())
+    return Math.round(Math.min(r[1].top - r[0].bottom, r[2].top - r[1].bottom))
+  })
+  칸(간격 !== null && 간격 >= 6, '📏 이유 세 줄 사이 간격 ≥ 6px', `${간격}px`)
+  // ⓔ 홈 한 줄이 같이 안 그려진다
+  const 본문 = await pg.evaluate(() => document.body.innerText)
+  const 홈줄수 = (본문.match(/로그인하면 새 폰에서도 이어서 써요/g) || []).length
+  칸(홈줄수 === 0, 'ⓔ 뜨는 날은 홈 「로그인하면 새 폰에서도」 한 줄이 안 그려진다', `${홈줄수}곳`)
+  // ⓑ 「나중에 하기」 → 표식 · 다시 켜도 안 뜬다
+  await pg.evaluate(() => [...document.querySelectorAll('.sheet-mask .sheet button')].find((x) => x.innerText.trim() === '나중에 하기')?.click())
+  await pg.waitForTimeout(400)
+  const 표식 = await pg.evaluate(() => localStorage.getItem('hankki:nudge:loginpop'))
+  칸(표식 === '1' && !(await 팝업글(pg)), 'ⓑ 「나중에 하기」 → 봤음 표식 · 닫힌다')
+  await pg.reload({ waitUntil: 'domcontentloaded' })
+  await pg.waitForFunction(() => (document.body?.innerText || '').trim().length > 30, null, { timeout: 30000 })
+  await pg.waitForTimeout(700)
+  칸(!/사라져요/.test(await 팝업글(pg)), 'ⓑ 다시 켜도 안 뜬다(한 번만)')
+  await ctx.close()
+}
+// ⓒ 로그인해 둔 사람 → 안 뜬다
+{
+  const { ctx, pg } = await 창(씨앗({ 편수: 5, 로그인: true }))
+  칸(!/사라져요/.test(await 팝업글(pg)), 'ⓒ 로그인해 둔 사람에겐 안 뜬다')
+  await ctx.close()
+}
+// ⓓ 갓 깐 사람(내 레시피 0) → 안 뜬다
+{
+  const { ctx, pg } = await 창(씨앗({ 편수: 0 }))
+  칸(!/사라져요/.test(await 팝업글(pg)), 'ⓓ 내 레시피 0 이면 안 뜬다(잃을 게 없다)')
+  await ctx.close()
+}
+
+await b.close(); srv.close()
+if (errs.length) console.log('⛔ pageerror:', errs.join(' | '))
+console.log(`\n${통과}/${전체}`)
+process.exit(통과 === 전체 && !errs.length ? 0 : 1)

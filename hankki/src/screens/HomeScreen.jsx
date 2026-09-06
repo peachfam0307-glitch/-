@@ -15,6 +15,7 @@ import TabTips from '../components/TabTips'
 import TabTalk from '../components/TabTalk'
 import PreviewSheet from '../components/PreviewSheet'
 import NewsPopup, { needsNewsPopup, markNewsSeen, isNewsUnread } from '../components/NewsPopup'
+import LoginNudge, { needsLoginNudge, markLoginNudgeSeen } from '../components/LoginNudge'
 import CoachMarks, { needsCoach } from '../components/CoachMarks'
 import ConfirmSheet from '../components/ConfirmSheet'
 
@@ -232,6 +233,16 @@ export default function HomeScreen() {
   // ⚠️ 어떻게 닫든 «봤음»으로 친다 — 안 그러면 뒤로가기로 닫은 사람에게 매번 뜬다.
   const closeNews = () => { 소식봤음(); setNewsPop(false) }
 
+  // ☁️📣 로그인 안내 팝업 — «이미 쓰던 사람 · 로그인 안 함 · 내 레시피 1편↑»에게 딱 한 번 (창업자 2026-09-06 ㄱㄱ).
+  //    ⛔ 다른 팝업(소식·온보딩·코치마크)이 뜨는 날은 «안 띄운다» — 겹치면 둘 다 못 읽는다. 다음에 켤 때 뜬다.
+  //    ⛔ 홈 한 줄(cloudRow)과 같은 잣대(클라우드보임·!로그인해뒀나·myRecipeCount≥1) — 잣대가 갈리면 말이 갈린다.
+  //    ⭐ 뜨는 날은 홈 한 줄을 «같이» 그리지 않는다 — 같은 말을 두 번 하면 그게 재촉이다.
+  const [loginPop, setLoginPop] = useState(
+    () => 클라우드보임() && !로그인해뒀나() && myRecipeCount(recipes) >= 1
+      && needsLoginNudge() && !needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY)
+  )
+  const closeLoginPop = () => { markLoginNudgeSeen(); setLoginPop(false) }
+
   // 오늘의 추천 — 냉장고 재료로 만들 수 있는 요리 우선, 없으면 자주 해먹는/전체
   // ⭐ 맞추기·점수는 `src/pantryMatch.js` **한 곳**에서 한다 —
   //    「냉장고 파먹기」(`PantryView`)와 «같은 판단»이라야 두 화면이 딴소리를 안 한다.
@@ -409,7 +420,7 @@ export default function HomeScreen() {
         {/* ☁️ 클라우드 한 줄 — 백업 줄과 «같은 자리»를 쓴다(같은 걱정을 푸는 줄이라서).
             ⛔ 둘이 같이 뜨면 시끄러우니 **클라우드가 이긴다** — 백업보다 나은 답이다.
             ⛔ 벽이 아니다. 닫으면 다시 안 뜨고, 나중엔 설정에서 만난다. */}
-        {cloudRow && (
+        {cloudRow && !loginPop && (
           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 9, padding: '11px 12px 11px 14px', borderRadius: 14, background: 'var(--cream)' }}>
             <Icon name="cloud" size={18} color="var(--brown)" stroke={1.9} />
             <button
@@ -690,6 +701,14 @@ export default function HomeScreen() {
           news={news}
           onClose={closeNews}
           onOpenNews={() => { closeNews(); setPreview(true) }}
+        />
+      )}
+      {/* ☁️📣 로그인 안내 — 로그인되면 설정의 클라우드 시트로 보낸다(올리기·가져오기는 거기 몫 · 홈 한 줄과 같은 길) */}
+      {loginPop && (
+        <LoginNudge
+          count={myRecipeCount(recipes)}
+          onLater={closeLoginPop}
+          onLoggedIn={() => { closeLoginPop(); markCloudHomeSeen(); setCloudRow(false); askOpenCloud(); nav.go('profile') }}
         />
       )}
 

@@ -38,7 +38,8 @@ const 캐러셀 = !!process.env.CAROUSEL
 const 캐러셀CSS = 캐러셀 ? `
 body{height:1350px}
 .wrap{padding-top:64px}.hh{font-size:84px}.ss{font-size:32px;margin-top:12px}.rule{top:330px}
-.front{top:440px;width:600px;height:1000px;right:-60px}
+.front{top:410px;width:600px;height:1000px;right:-20px}
+.front img{height:100%} /* 캐러셀은 폰 키가 짧다 — 높이를 채워야 object-position(자리)이 먹는다. 안 그러면 늘 «위»만 보인다(05 타이머·07 단추가 잘렸다) */
 .back{top:460px;width:260px;height:460px}
 .steps{top:980px;gap:14px}.step img,.step .dot{width:78px;height:78px}.step b{font-size:29px}.step small{font-size:22px}
 .duo{top:470px!important;width:250px!important}
@@ -55,7 +56,7 @@ body{width:1080px;height:1920px;overflow:hidden;position:relative;font-family:'J
 .ss{font-family:'Gowun Dodum';color:rgba(74,79,54,.62);font-size:38px;line-height:1.5;margin-top:20px}
 .rule{position:absolute;z-index:2;left:64px;right:64px;top:432px;height:3px;background:rgba(74,79,54,.22)}
 /* 📱 주인공 폰 — 오른쪽 아래로 화면 밖까지. 살짝 기울여 «놓인» 느낌 */
-.front{position:absolute;z-index:4;right:-90px;top:640px;width:720px;height:1400px;border-radius:52px;overflow:hidden;
+.front{position:absolute;z-index:4;right:-30px;top:590px;width:720px;height:1400px;border-radius:52px;overflow:hidden;
   border:12px solid #fffdf8;transform:rotate(-4deg);box-shadow:0 40px 80px rgba(74,79,54,.22);background:#fffdf8}
 .front img{width:100%;display:block;object-fit:cover;object-position:top}
 /* 📱 곁 폰(작게 · 왼쪽 · 반대로 기울여) */
@@ -93,7 +94,7 @@ ${머리('캡처 한 장이면<br>레시피가 정리돼요', '보다가 캡처 
 // 02~07 — 헤드라인 ＋ 주인공 폰 ＋ 왼쪽에 곰펭 한 마리와 포인트 둘
 //    📮 [00:45] *"펭펭에 비해 꼬르곰이 작게 느껴져"* — gp_gom* 컷은 여백이 커서 같은 폭이면 작아 보인다 → 곰 360 · 펭 290
 const 장 = ({ 머리: h, 부제, 파일, 곰, 포인트: pts, 자리 = 'top', 폰 = '' }) => `<style>${공통}
-.front img{object-position:${자리}} ${폰}</style>
+.front img{object-position:${자리}} ${캐러셀 ? '' : 폰}</style>
 ${머리(h, 부제)}${샤랄라()}
 ${곰 ? `<img class="duo" style="width:${/^gp_gom/.test(곰) ? 360 : 290}px;top:${/^gp_gom/.test(곰) ? 660 : 700}px" src="${스티커(곰)}">` : ''}
 <div class="front"><img src="${앱(파일)}"></div>
@@ -104,7 +105,8 @@ ${포인트(pts)}`
 const 장05 = () => 장({ 머리: '불 앞에서도<br>편하게', 부제: '큰 글씨 걸음 · 타이머 켜 두고 · 화면도 안 꺼져요', 파일: '25c-요리모드-타이머작동', 곰: 'gp_gomft',
   포인트: [['⏲', '걸음마다 타이머', '끓는 시간 딱 맞게'], ['🔔', '소리와 진동으로', '다른 화면에 있어도']],
   // ⛔ 첫 판은 타이머 띠(이 장의 값어치)가 아래로 잘렸다(규칙 21) → 폰을 줄여 올리고 «아래»가 보이게 자른다
-  자리: '50% 100%', 폰: '.front{top:520px;right:-40px;width:640px;height:1440px;transform:rotate(-3deg)}' })
+  // 📮 [09-06 01:11] *"타이머, 요리모드 잘 안보여"* → 폰을 더 넓게(700) · 덜 기울여 타이머 띠와 걸음 글이 크게 들어오게
+  자리: '50% 100%', 폰: '.front{top:470px;right:-10px;width:700px;height:1480px;transform:rotate(-2deg)}' })
 
 // 08 왜 만들었나 — v5 마지막 장 글 «그대로»(창업자 확정 문단) · 뼈대만 D 로
 const 장08 = () => `<style>${공통}
@@ -148,8 +150,9 @@ const 장들 = {
     포인트: [['📔', '속지도 여러 가지', '선 · 종이 · 틀'], ['✏️', '손글씨 서체로', '그날 기분 그대로']] }),
   // ⛔ 자랑 카드는 «아래 단추»(이 카드를 내 레시피 표지로)가 값어치다 → 폰을 덜 기울이고 위로 올려 아래가 남게
   'v8-07-자랑': () => 장({ 머리: '오늘의 한 끼를<br>카드 한 장으로', 부제: '뽑을 때마다 달라지는 카드 · 친구에게 톡', 파일: '10-랜덤카드', 곰: 'duos_02',
-    포인트: [['🃏', '다시 뽑기', '마음에 드는 카드까지'], ['💬', '공유하기', '카톡으로 자랑']], 자리: '50% 8%',
-    폰: '.front{top:560px;height:1480px;transform:rotate(-2.5deg)}' }),
+    포인트: [['🃏', '다시 뽑기', '마음에 드는 카드까지'], ['💬', '공유하기', '카톡으로 자랑']],
+    // 📮 [09-06 01:11] *"콩국수도 레꾸자랑뽑기가 보이면 좋겠고"* → 카드 «아래»(다시 뽑기·공유하기 단추 줄)가 보이는 자리로 자른다
+    자리: '50% 58%', 폰: '.front{top:520px;height:1440px;transform:rotate(-2.5deg)}' }),
   'v8-08-왜만들었나': 장08,
 }
 

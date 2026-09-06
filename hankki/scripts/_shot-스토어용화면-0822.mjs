@@ -312,7 +312,10 @@ if (await 탭(p, '일기')) {
 await 홈으로(p)
 if (await 탭(p, '레꾸자랑')) {
   await 시트닫기(p)
-  const 첫칸 = p.locator('.grid-card, .album-tile, .brag-card').first()
+  // 📮 [09-06 13:29 창업자] *"랜덤카드 콩국수하지말자"* → 첫 칸(콩국수) 대신 가을에 어울리는 편을 콕 집는다. 없으면 첫 칸.
+  const 카드편 = process.env.CARD_RECIPE || '돼지고기 김치찌개'
+  let 첫칸 = p.locator('.grid-card, .album-tile, .brag-card').filter({ hasText: 카드편 }).first()
+  if (!(await 첫칸.count())) { console.log(`  ⚠️ 레꾸자랑 목록에 「${카드편}」이 없다 — 첫 칸으로`); 첫칸 = p.locator('.grid-card, .album-tile, .brag-card').first() }
   if (await 첫칸.count()) {
     await 첫칸.click(); await p.waitForTimeout(1300)
     const 랜덤 = p.getByRole('button', { name: /랜덤/ }).first()

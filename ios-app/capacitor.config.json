@@ -1,0 +1,5 @@
+{
+  "appId": "kr.hankki.app",
+  "appName": "한끼",
+  "webDir": "../hankki/dist"
+}

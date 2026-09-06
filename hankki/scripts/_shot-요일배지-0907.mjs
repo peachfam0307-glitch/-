@@ -17,5 +17,7 @@ for (const [w, h, n, d] of [[390, 844, '폰', 3], [820, 1180, '패드', 2]]) {
   const p = await ctx.newPage(); await p.goto('http://127.0.0.1:4433/hankki/', { waitUntil: 'networkidle' }); await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(1000)
   const box = p.locator('.week-pair').first(); await box.evaluate((el) => el.scrollIntoView({ block: 'start' })); await p.waitForTimeout(500)
   await p.screenshot({ path: `${OUT}/요일배지-${n}.png` }); console.log('📸', n)
+  await p.locator('.bottom-nav .nav-item').filter({ hasText: '장보기' }).first().click(); await p.waitForTimeout(1100)
+  await p.screenshot({ path: `${OUT}/요일배지-장보기-${n}.png` }); console.log('📸 장보기', n)
 }
 await b.close(); srv.close()

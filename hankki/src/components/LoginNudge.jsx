@@ -90,7 +90,8 @@ export default function LoginNudge({ recipes = 0, diaries = 0, onLater, onLogged
             <div style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.35, letterSpacing: '-0.01em', marginTop: 10, textWrap: 'balance' }}>
               앱을 지우거나 폰을 바꾸면
               <br />내가 저장한 {잃을것.map((x, i) => (
-                <span key={x.말}>{i > 0 && '·'}{x.말} <span style={{ color: 'var(--brown)' }}>{x.n}편</span></span>
+                // 📱 창업자 폰 실물(2026-09-06 18:41 · 글자 크게)에서 「일기」와 「23편」이 줄이 갈렸다 → 한 덩이는 안 갈리게
+                <span key={x.말} style={{ whiteSpace: 'nowrap' }}>{i > 0 && '·'}{x.말} <span style={{ color: 'var(--brown)' }}>{x.n}편</span></span>
               ))}이 사라져요
             </div>
 

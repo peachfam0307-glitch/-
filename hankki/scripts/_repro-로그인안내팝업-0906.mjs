@@ -13,7 +13,8 @@ import { chromium } from 'playwright'
 import http from 'node:http'
 import { readFileSync, statSync } from 'node:fs'
 import { extname, join } from 'node:path'
-import { SEED_COACH_SEEN } from '../src/coach.js'
+// ⛔ SEED_COACH_SEEN 을 쓰면 «이 팝업도» 본 상태가 된다(열쇠가 코치 접두어 아래) → 코치 열쇠만 «이름으로» 심는다
+import { COACH_KEYS } from '../src/coach.js'
 
 const ROOT = join(new URL('..', import.meta.url).pathname, 'dist')
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' }
@@ -30,7 +31,7 @@ const PORT = srv.address().port
 const 씨앗 = ({ 편수 = 1, 일기 = 0, 로그인 = false, 봤음 = false } = {}) => `
   localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1'); localStorage.setItem('hankki:coach:home', '1')
   ${로그인 ? "localStorage.setItem('hankki:cloud:on', '1')" : ''}
-  ${봤음 ? "localStorage.setItem('hankki:nudge:loginpop', '1')" : ''}
+  ${봤음 ? "localStorage.setItem('hankki:coach:loginpop', '1')" : ''}
   localStorage.setItem('hankki:v1', JSON.stringify({
     recipes: ${JSON.stringify(Array.from({ length: 편수 }, (_, i) => ({ id: 'u' + i, title: '내가 쓴 레시피 ' + i, ingredients: [], steps: [] })))},
     folders: [], profile: { name: '한끼러버', bio: '' }, shops: [], wishlist: [],
@@ -48,7 +49,7 @@ async function 창 (init) {
   await ctx.route('**/*.gstatic.com/**', (r) => r.abort())
   const pg = await ctx.newPage()
   pg.on('pageerror', (e) => errs.push('PAGEERROR ' + e.message))
-  await pg.addInitScript(SEED_COACH_SEEN)
+  await pg.addInitScript((ks) => { ks.forEach((k) => localStorage.setItem(k, '1')) }, COACH_KEYS)
   await pg.addInitScript(init)
   await pg.goto(`http://localhost:${PORT}/hankki/`, { waitUntil: 'domcontentloaded' })
   await pg.waitForFunction(() => (document.body?.innerText || '').trim().length > 30, null, { timeout: 30000 })
@@ -87,7 +88,7 @@ const 팝업글 = (pg) => pg.evaluate(() => document.querySelector('.sheet-mask 
   // ⓑ 「나중에 하기」 → 표식 · 다시 켜도 안 뜬다
   await pg.evaluate(() => [...document.querySelectorAll('.sheet-mask .sheet button')].find((x) => x.innerText.trim() === '나중에 하기')?.click())
   await pg.waitForTimeout(400)
-  const 표식 = await pg.evaluate(() => localStorage.getItem('hankki:nudge:loginpop'))
+  const 표식 = await pg.evaluate(() => localStorage.getItem('hankki:coach:loginpop'))
   칸(표식 === '1' && !(await 팝업글(pg)), 'ⓑ 「나중에 하기」 → 봤음 표식 · 닫힌다')
   await pg.reload({ waitUntil: 'domcontentloaded' })
   await pg.waitForFunction(() => (document.body?.innerText || '').trim().length > 30, null, { timeout: 30000 })

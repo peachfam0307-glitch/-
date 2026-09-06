@@ -4,6 +4,7 @@ import GoogleButton from './GoogleButton'
 import { useModalBack } from '../useBackHandler'
 import { 로그인 } from '../cloud'
 import { 무료열쇠상한, KEY_NAME, KEY_UNIT } from '../ocr'
+import { COACH_NS } from '../coach'
 import duoHi from '../assets/sharepool/duo_hi.png'
 
 // ☁️📣 로그인 안내 팝업 — «이미 쓰고 있던 사람»에게 딱 한 번.
@@ -27,7 +28,10 @@ import duoHi from '../assets/sharepool/duo_hi.png'
 // ⛔ 유니코드 이모지 금지 — 첫 화면과 같은 곰펭 그림(`duo_hi.png`)을 쓴다.
 // 🔒 `_repro-로그인안내팝업-0906.mjs` 가 「뜨는 조건 · 한 번만 · 문구」를 잰다.
 
-const KEY = 'hankki:nudge:loginpop' // '1' = 봤음(로그인·나중에·뒤로가기 전부)
+// ⛔⛔ 열쇠는 코치 접두어(`hankki:coach:`) 아래에 둔다 — 검사판 295개가 `SEED_COACH_SEEN` 으로 그 접두어를 «본 상태»로 열기 때문이다.
+//    `hankki:nudge:` 아래 두었더니 2026-09-06 스모크에서 재현판 4개(감정컷·일기잠금·일기그달·백업실패)를 이 팝업이 덮어 죽었다.
+//    9/1 「소식 팝업이 배포를 두 번 죽인」 것과 같은 사고 — 그때는 판 210개에 끄기를 심었고, 이번엔 열쇠 자리로 푼다.
+const KEY = `${COACH_NS}loginpop` // '1' = 봤음(로그인·나중에·뒤로가기 전부)
 
 /** 아직 안 봤나? — ⛔ 저장소를 못 읽는 폰이면 «봤음»으로 친다(매번 뜨는 게 더 나쁘다) */
 export const needsLoginNudge = () => { try { return localStorage.getItem(KEY) !== '1' } catch { return false } }

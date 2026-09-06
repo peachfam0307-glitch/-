@@ -4,7 +4,8 @@ import { chromium } from 'playwright'
 import http from 'node:http'
 import { readFileSync, statSync, mkdirSync } from 'node:fs'
 import { extname, join } from 'node:path'
-import { SEED_COACH_SEEN } from '../src/coach.js'
+// ⛔ SEED_COACH_SEEN 을 쓰면 «이 팝업도» 본 상태가 된다(열쇠가 코치 접두어 아래) → 코치 열쇠만 «이름으로» 심는다
+import { COACH_KEYS } from '../src/coach.js'
 import { THEME_KEY } from '../src/theme.js'
 
 const OUT = process.env.OUT || '/tmp/shot-로그인안내팝업-0906'
@@ -26,7 +27,7 @@ for (const theme of ['greige', 'apricot', 'dark']) {
   await ctx.route('**/*.googleapis.com/**', (r) => r.abort())
   await ctx.route('**/*.gstatic.com/**', (r) => r.abort())
   const pg = await ctx.newPage()
-  await pg.addInitScript(SEED_COACH_SEEN)
+  await pg.addInitScript((ks) => { ks.forEach((k) => localStorage.setItem(k, '1')) }, COACH_KEYS)
   await pg.addInitScript(([k, t]) => {
     localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1'); localStorage.setItem('hankki:coach:home', '1'); localStorage.setItem(k, t)
     localStorage.setItem('hankki:v1', JSON.stringify({

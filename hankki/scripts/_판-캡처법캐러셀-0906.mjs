@@ -170,15 +170,16 @@ body{width:1080px;height:${process.env.REEL ? 1920 : 1350}px;overflow:hidden;pos
   const 가로단계 = (rows) => `<div class="row">${rows.map(([e, b, s], i) => `${i ? '<div class="arw">›</div>' : ''}<div class="chip">${/^data:/.test(e) ? `<img src="${e}">` : `<div class="dot">${e}</div>`}<b>${b}</b>${s ? `<small>${s}</small>` : ''}</div>`).join('')}</div>`
   const 톤들 = ['#f1f5ec', '#eef4ea', '#ecf3ee', '#f2f5e8']
   let 톤i = 0
-  const C장 = ({ no, tag, 머리: h, 부제, 파일, 곰, 곰자리 = 'left', 단계: rows, 자리 = 'top', 무료 = '' }) => `<style>${C공통}.phone img{object-position:${자리}} body{--bg:${톤들[톤i++ % 톤들.length]}}</style><div class="stage">
+  // 14:45 창업자 *"1번에 스티커 안으로 다 들어갔어"* → 표지는 곰펭을 폰 «앞»(z 5)에, 폰 모서리에 걸치게
+  const C장 = ({ no, tag, 머리: h, 부제, 파일, 곰, 곰자리 = 'left', 단계: rows, 자리 = 'top', 무료 = '', 앞 = false }) => `<style>${C공통}.phone img{object-position:${자리}} body{--bg:${톤들[톤i++ % 톤들.length]}}</style><div class="stage">
 ${잎점()}
 <div class="top">${no ? `<div class="big">${no}</div>` : ''}${tag ? `<div class="tag">${tag}</div>` : ''}<div class="hh">${h}</div><div class="ss">${부제}</div></div>
 ${가로단계(rows)}
 ${무료 ? `<div class="free">${무료}</div>` : ''}
-${곰 ? `<img class="peek" style="width:${폭(곰)}px;${곰자리 === 'left' ? 'left:40px' : 'right:40px'};top:${1330 - 폭(곰) * 1.05}px" src="${스티커(곰)}">` : ''}
+${곰 ? `<img class="peek" style="width:${폭(곰)}px;${곰자리 === 'left' ? 'left:40px' : 'right:40px'};top:${1330 - 폭(곰) * 1.05}px${앞 ? ';z-index:5' : ''}" src="${스티커(곰)}">` : ''}
 <div class="phone"><img src="${파일}"></div></div>`
   const C장들 = {
-    '캐러셀C-01-표지': () => C장({ tag: '한끼 사용법', 머리: '레시피 담는 법<br>여섯 가지', 부제: '어디서 봤든 한끼로', 파일: 앱('30-가져오기'), 곰: 'au_b16', 곰자리: 'right',
+    '캐러셀C-01-표지': () => C장({ tag: '한끼 사용법', 머리: '레시피 담는 법<br>여섯 가지', 부제: '어디서 봤든 한끼로', 파일: 앱('30-가져오기'), 곰: 'au_b16', 곰자리: 'right', 앞: true,
       단계: [['1', '캡처'], ['2', '갤러리'], ['3', '사진'], ['4', '글'], ['5', '손'], ['6', '링크']] }),
     '캐러셀C-02-SNS': () => C장({ no: '1', 머리: '인스타 · 유튜브<br>보다가 캡처', 부제: '제일 많이 써요 · 공유 한 번이면 재료·순서까지', 파일: b64(join(안내, '인스타-공유동그라미.png')), 곰: 'au_b09',
       단계: [[i공유, '공유', '캡처한 화면에서'], [i더보기, '더보기'], [i한끼, '한끼', '누르면 끝']] }),

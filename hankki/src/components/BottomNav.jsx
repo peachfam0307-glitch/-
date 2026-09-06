@@ -1,4 +1,6 @@
 import Icon from './Icon'
+import { useStore } from '../store'
+import { pantryExpiryCount } from '../pantryExpiry'
 
 // 검색 탭은 뺐다 — 홈 상단 검색창이 검색 화면으로 바로 데려가 준다.
 // 그 자리엔 앱의 핵심 동작인 '가져오기'를 넣고, 채운 원으로 눈에 띄게 강조한다.
@@ -46,6 +48,11 @@ const ITEMS = [
 const COACH_ANCHOR = { log: 'nav-diary', shop: 'nav-shop', brag: 'nav-brag' }
 
 export default function BottomNav({ active, onChange, onImport }) {
+  // 🔴 장보기 탭 점 — 냉장고에 유통기한 임박(D-3 이내)·지난 재료가 있으면 카트 아이콘에 점 하나 (창업자 확정 2026-09-06)
+  //    ⛔ 글자·숫자는 여기 안 붙인다 — 홈은 그대로, «무엇»은 장보기 화면의 「냉장고 ②」와 재료함 D-칩이 말한다.
+  //    닫기 없음 = 재료가 냉장고에 남아 있는 동안 켜져 있다(지우면 꺼진다).
+  const { pantry } = useStore()
+  const expN = pantryExpiryCount(pantry)
   return (
     <nav className="bottom-nav">
       {ITEMS.map((it) => {
@@ -74,12 +81,16 @@ export default function BottomNav({ active, onChange, onImport }) {
             onClick={() => onChange(it.key)}
             aria-current={on ? 'page' : undefined}
           >
-            <Icon
-              name={it.icon}
-              size={23}
-              stroke={on ? 2 : 1.6}
-              color={on ? 'var(--brown)' : 'var(--text-sub)'}
-            />
+            <span className="nav-icon-wrap">
+              <Icon
+                name={it.icon}
+                size={23}
+                stroke={on ? 2 : 1.6}
+                color={on ? 'var(--brown)' : 'var(--text-sub)'}
+              />
+              {/* ⛔ aria-label 을 붙이면 탭의 «이름»이 「장보기 유통기한 임박…」이 돼서 재현판들의 '장보기' 찾기가 다 깨진다(실측) → 장식으로 */}
+              {it.key === 'shop' && expN > 0 && <span className="nav-dot" data-testid="pantry-exp-dot" aria-hidden="true" />}
+            </span>
             <span style={{ color: on ? 'var(--brown)' : 'var(--text-sub)', fontWeight: on ? 700 : 500 }}>
               {it.label}
             </span>

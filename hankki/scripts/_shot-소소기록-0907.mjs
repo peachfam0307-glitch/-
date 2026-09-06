@@ -92,13 +92,21 @@ await 탭('레시피'); await 맨위(); await 쉼(700)
 await 탭('홈'); await 맨위(); await 쉼(700)
 // ⚠️ 실측 — .h-section 안에서 .mini-card 를 찾으면 0 이다(줄 머리와 가로 스크롤이 형제다).
 //    그래서 홈의 미니카드를 «앞에서부터» 눌러 보고 «포스트잇이 있는» 레시피를 찾는다(메모가 없는 편도 있다).
+// 🔎 창업자 2026-09-07 = *"소이 최애반찬은 다른 레시피로 바꿔줘"* — 「소이」·「우리 딸」은 개인 이름이라 홍보물에 안 쓴다.
+//    대신 «기능을 그대로 보여주는» 메모를 골랐다 = 수제 떡갈비
+//    「감칠맛+단맛 살짝 더 들어가면 좋을 듯 / 아우노올리고당 넣어야겠다」 별 4 — 이게 「다음엔 이렇게」다.
+//    ⛔ 미니카드를 훑지 않고 «검색으로 콕» 집는다 — 홈 차례가 바뀌어도 같은 레시피가 나온다
 let 열림 = false
-for (let i = 0; i < 8 && !열림; i++) {
-  const 칸 = p.locator('.mini-card').nth(i)
-  if (!(await 칸.count())) break
-  await 보이게(칸, 'center'); await 칸.click(); await 쉼(1300)
-  if (await p.locator('.memo-note').count()) { 열림 = true; break }
-  await p.goBack(); await 쉼(800); await 탭('홈'); await 맨위(); await 쉼(500)
+await p.locator('button[aria-label="검색"]').first().click(); await 쉼(900)
+const 검색칸 = p.locator('input[placeholder="검색어를 입력하세요"]').first()
+if (await 검색칸.count()) {
+  await 검색칸.fill('수제 떡갈비'); await 쉼(1100)
+  const 결과 = p.locator('.grid-card').first()   // 검색 결과 = .grid-card (SearchScreen 68줄)
+  if (await 결과.count()) {
+    await 결과.click(); await 쉼(1500)
+    if (await p.locator('.memo-note').count()) 열림 = true
+    else console.log('  ⚠️ 수제 떡갈비에 포스트잇이 없다')
+  } else console.log('  ⚠️ 검색 결과가 없다')
 }
 if (!열림) console.log('  ⚠️ 포스트잇이 붙은 레시피를 못 찾았다')
 const 첫칸 = p.locator('.memo-note').first()
@@ -110,8 +118,9 @@ if (열림) {
     await 포스트잇.click(); await 쉼(1100)
     if (await p.locator('.sheet').count()) {
       await 찍('02-시트-기록-별점메모')
-      const 별4 = p.locator('button[aria-label="4점"]').first()
-      if (await 별4.count()) { await 별4.click(); await 쉼(500); await 찍('03-시트-기록-별넷') }
+      // ⚠️ 실측 — 이 기록은 «이미 별 4» 라서 4점을 누르면 토글로 «꺼져» 별 0 이 찍혔다. 5점으로 올린다.
+      const 별5 = p.locator('button[aria-label="5점"]').first()
+      if (await 별5.count()) { await 별5.click(); await 쉼(500); await 찍('03-시트-기록-별넷') }
       // 시트 닫기 — Escape 로는 안 닫혀서 «덮개»를 직접 누른다(실측)
       await p.locator('.sheet-mask').first().click({ position: { x: 10, y: 10 } }).catch(() => {})
       await 쉼(900)

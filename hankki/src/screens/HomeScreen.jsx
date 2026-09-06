@@ -189,7 +189,11 @@ export default function HomeScreen() {
 
   // 🗓 이번 주 레시피 — 달력이 여는 줄. ⛔재고가 없으면 `null` 이라 **줄을 아예 안 그린다**
   //    (빈 「이번 주」 자리를 남기지 않는다 · `LAB_*_URL` 이 비면 그 칸을 안 그리는 것과 같은 방식).
-  const weekly = useMemo(() => weeklyNow(recipes), [recipes])
+  // 🔢 [창업자 확정 2026-09-06] 홈 상자엔 **2편만** (*"제철은 다음주부터 2개씩"* · *"이번주 제철도 2개편으로 보기에 해줘"*)
+  //   🔢 실측 = 폰 한 줄 2칸 → 3편이면 아래 한 칸이 빈다(SNS·우리집이 2편인 것과 같은 이유 · weekly.js snsNow 주석).
+  //   ⭐ 여기(홈)에서만 자른다 — `weeklyNow` 자체를 자르면 장보기(ShopScreen 의 weeklyPicks)가 3편째 재료를 잃는다.
+  //   ⭐ 3편째는 «사라지지 않는다» — 레시피 탭에 날짜대로 그대로 열린다.
+  const weekly = useMemo(() => { const w = weeklyNow(recipes); return w && { ...w, items: w.items.slice(0, 2) } }, [recipes])
   // 🍳 우리집레시피 — 창업자가 실제로 해먹는 것. 제철과 «별개» 줄이다(창업자 확정 2026-08-11, 안 ⒜).
   //    ⛔ 재고가 없으면 `null` 이라 박스를 아예 안 그린다(제철 줄과 같은 규칙).
   const homemade = useMemo(() => homemadeNow(recipes), [recipes])

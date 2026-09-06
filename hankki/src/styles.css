@@ -2568,7 +2568,9 @@ img {
 .cook-navbtn:active { transform: scale(0.97); }
 
 /* 냉장고 재료함 — 유통기한 칩 */
-.exp-chip { flex: 0 0 auto; font-size: 15px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+/* 🔤 nowrap — 안내 상자 글 속에 «보기»로 든 D-3 칩이 줄 끝에서 「D-」/「3」으로 갈라졌다(창업자 2026-09-06 *"d-3줄바꿈이 이상하네"*).
+   칩은 한 덩어리다 — 재료 줄의 칩은 flex 라 원래 안 갈라지지만 글 속 칩엔 이게 있어야 한다. */
+.exp-chip { flex: 0 0 auto; display: inline-block; white-space: nowrap; font-size: 15px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
 .exp-chip.exp-over { background: #f4e0d8; color: #b5502f; }
 .exp-chip.exp-soon { background: #f6e6d6; color: #c2703f; }
 .exp-chip.exp-mid { background: #eef0e6; color: #869657; }

@@ -6207,7 +6207,7 @@ const RAW_BASICS = [
     ],
     memo: '마요네즈로 «먼저 버무리면» 진미채가 딱딱해지지 않아요.\n\n양념을 «먼저 끓인 뒤» 진미채를 넣어야 타지 않아요.',
   },
-  // 📸 인스타 릴스 2편 — 창업자 2026-09-06 캡처로 전달. ✅ 링크 짝 = 창업자 확인 *"인스타1 족발, 2감자타코 맞아"* · ⏳ 그림은 창업자가 뽑아 온다(*"아.. 뽑아올게"*) → 오면 갈아끼우고 review 표시
+  // 📸 인스타 릴스 2편 — 창업자 2026-09-06 캡처로 전달. ✅ 링크 짝 = 창업자 확인 *"인스타1 족발, 2감자타코 맞아"* · ✅ 그림 = 창업자 컷 n2901·n2902 · ✅ 창업자 「배포해」 2026-09-06 20:47 → 오면 갈아끼우고 review 표시
   {
     ...base,
     id: 'basic-jipbap-jokbal',
@@ -6217,6 +6217,7 @@ const RAW_BASICS = [
     time: 70, servings: 2, difficulty: '쉬움',
     sourceUrl: 'https://www.instagram.com/reel/Db2iQRahyQn/',
     sourceName: 'nomoney_cook',
+    review: '창업자', // ✅ 2026-09-06 검수판 확인 → 「배포해」
     ingredients: [
       '돼지 미박사태 800g', '양파 1개', '대파 1/2단', '통마늘 15개',
       '진간장 80ml', '맛술 100ml', '굴소스 2큰술', '설탕 2큰술', '생강쌍화차 1병 (120ml)', '물 500ml',
@@ -6238,6 +6239,7 @@ const RAW_BASICS = [
     time: 30, servings: 2, difficulty: '보통',
     sourceUrl: 'https://www.instagram.com/reel/DckRKH-EVT0/',
     sourceName: 'foodstylist_som',
+    review: '창업자', // ✅ 2026-09-06 검수판 확인 → 「배포해」
     ingredients: [
       '감자 500g', '마요네즈 2큰술', '다짐육 300g', '맛술 1큰술', '다진 마늘 1큰술', '토마토소스 6큰술', '굴소스 1큰술', '올리고당 1/2큰술',
       '토마토 1/2개', '양파 1/2개', '스리라차 (취향껏)', '버터 한 조각', '후추 약간', '또띠아', '멕시칸 치즈', '체다치즈',

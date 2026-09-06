@@ -5,7 +5,8 @@ import http from 'node:http'
 import { readFileSync, statSync, mkdirSync } from 'node:fs'
 import { extname, join } from 'node:path'
 // ⛔ SEED_COACH_SEEN 을 쓰면 «이 팝업도» 본 상태가 된다(열쇠가 코치 접두어 아래) → 코치 열쇠만 «이름으로» 심는다
-import { COACH_KEYS } from '../src/coach.js'
+import { COACH } from '../src/coach.js'
+const COACH_KEYS = Object.values(COACH).filter((k) => k !== COACH.loginpop) // ⭐ 이 팝업 열쇠만 «빼고» 심는다
 import { THEME_KEY } from '../src/theme.js'
 
 const OUT = process.env.OUT || '/tmp/shot-로그인안내팝업-0906'

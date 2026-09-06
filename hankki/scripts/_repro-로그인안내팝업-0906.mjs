@@ -14,7 +14,8 @@ import http from 'node:http'
 import { readFileSync, statSync } from 'node:fs'
 import { extname, join } from 'node:path'
 // ⛔ SEED_COACH_SEEN 을 쓰면 «이 팝업도» 본 상태가 된다(열쇠가 코치 접두어 아래) → 코치 열쇠만 «이름으로» 심는다
-import { COACH_KEYS } from '../src/coach.js'
+import { COACH } from '../src/coach.js'
+const COACH_KEYS = Object.values(COACH).filter((k) => k !== COACH.loginpop) // ⭐ 이 팝업 열쇠만 «빼고» 심는다
 
 const ROOT = join(new URL('..', import.meta.url).pathname, 'dist')
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' }

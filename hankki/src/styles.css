@@ -642,6 +642,22 @@ img {
   letter-spacing: -0.02em;
   transition: transform 0.08s ease;
 }
+/* 🔴 탭바 점 — 장보기 카트 오른쪽 위. 색은 `--gift`(소식 「새로」 알약과 같은 «알림» 색 · 새 색 안 만든다).
+   아이콘을 span 으로 감싼 건 점의 기준점을 «아이콘»에 두려고(탭 전체 기준이면 폭 따라 점이 떠돈다). (창업자 확정 2026-09-06) */
+.nav-icon-wrap { position: relative; display: inline-flex; line-height: 0; }
+.nav-dot {
+  position: absolute; top: -3px; right: -5px;
+  width: 9px; height: 9px; border-radius: 999px;
+  background: var(--gift);
+  border: 2px solid var(--surface);
+}
+/* 「냉장고 ②」 — 세그먼트 탭 이름 옆 숫자 알약. 켜진 탭(갈색 바탕)에서도 보이게 같은 `--gift`. */
+.seg-count {
+  display: inline-block; min-width: 18px; height: 18px; line-height: 18px;
+  margin-left: 5px; padding: 0 6px; border-radius: 999px;
+  background: var(--gift); color: #fff;
+  font-size: 13px; font-weight: 900; text-align: center; vertical-align: 2px;
+}
 /* '가져오기' 강조 — 채운 포인트색 원 안에 흰 +. 앱의 핵심 동작이라 눈에 띄게. */
 .nav-item-import {
   gap: 4px;

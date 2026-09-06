@@ -31,7 +31,7 @@ const 고르기 = (k) => (B && B스티커[k]) || k
 
 const 올리브 = B ? '#5d3410' : '#4a4f36'
 const B공통 = B ? `
-body{background:#dde4d3;background-image:radial-gradient(rgba(93,52,16,.10) 1.6px,transparent 1.8px);background-size:30px 30px}
+body{background:#e8eee1;background-image:radial-gradient(rgba(93,52,16,.06) 1.6px,transparent 1.8px);background-size:30px 30px}
 .rule{background:rgba(93,52,16,.25)}
 .no{background:#c2703a}
 .front{transform:none;right:24px;top:400px;border-color:#fbf5e8;border-radius:40px;box-shadow:0 26px 60px rgba(60,50,30,.22)}
@@ -130,3 +130,97 @@ for i,n in enumerate(names):
   sh.paste(Image.open('${OUT}/'+n+'.png').resize((w,h)),(10+(i%4)*(w+10),10+(i//4)*(h+10)))
 sh.save('${OUT}/캐러셀-검수판.png')`])
 console.log(`\n📸 8장 ＋ 검수판 → ${OUT}`)
+
+// ═══════════════════════════════════════════════════════════════
+// 🎨 STYLE=C — 📮 [14:35 창업자] *"배경 색만 바꾸는게 아니라 무늬랑 디자인을 좀 다르게 … 글씨컬러는 짙은 녹색으로
+//    배경무늬도 좀 다르게 배경색은 진하지 않은 녹색 … 스티커 위치나 글씨배치가 오늘 올린거랑 너무 똑같아."*
+//    ⛔ B 는 색·스티커만 바꾼 «같은 짜임»이었다. C 는 짜임을 바꾼다 —
+//    헤드라인 «가운데» · 번호는 큰 동그라미 · 단계는 폰 «위»에 가로 한 줄(› 로 이음) · 폰은 «아래 가운데 똑바로» 화면 밖으로
+//    · 곰펭은 폰 «뒤 모서리»에서 빼꼼 · 배경 = 연한 녹색 «체크(깅엄)» · 글씨 = 짙은 녹색 · 별 대신 잎 점.
+if (process.env.STYLE === 'C') {
+  const OUTC = process.env.OUT || '/tmp/claude-0/-home-user-hankki/0848ab85-00e3-56db-9a26-e87075950c12/scratchpad/캡처법캐러셀C'
+  mkdirSync(OUTC, { recursive: true })
+  const 녹 = '#2f4f3a'
+  const C공통 = `${폰트}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:1080px;height:${process.env.REEL ? 1920 : 1350}px;overflow:hidden;position:relative;font-family:'Jua','Gowun Dodum',system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  background:var(--bg,#f1f5ec); /* 14:38 창업자 *"배경색을 좀만 연하게 · 무늬랑 색이 진해서 주인공이 안보여"* → 바탕 #e9f0e2→#f1f5ec · 체크 .07→.035 */
+  background-image:repeating-linear-gradient(0deg,rgba(47,79,58,.035) 0 26px,transparent 26px 52px),repeating-linear-gradient(90deg,rgba(47,79,58,.035) 0 26px,transparent 26px 52px)}
+.stage{position:absolute;left:0;top:${process.env.REEL ? 285 : 0}px;width:1080px;height:1350px}
+.top{position:relative;z-index:3;text-align:center;padding:70px 70px 0}
+.big{width:104px;height:104px;border-radius:50%;border:5px solid ${녹};color:${녹};font-family:'Jua';font-size:54px;line-height:94px;margin:0 auto 18px;background:#f6f9f2}
+.tag{display:inline-block;background:${녹};color:#f3f7ee;font-family:'Jua';font-size:28px;border-radius:999px;padding:8px 26px;margin-bottom:16px;letter-spacing:.04em}
+.hh{font-family:'Jua';color:${녹};letter-spacing:-0.02em;font-size:86px;line-height:1.26}
+.ss{font-family:'Gowun Dodum';color:rgba(47,79,58,.72);font-size:31px;line-height:1.5;margin-top:14px}
+.row{position:absolute;z-index:6;left:0;right:0;top:470px;display:flex;justify-content:center;align-items:center;gap:14px}
+.chip{display:flex;flex-direction:column;align-items:center;gap:8px;width:210px}
+.chip img,.chip .dot{width:92px;height:92px;border-radius:50%;display:block;border:4px solid #f6f9f2;box-shadow:0 6px 16px rgba(47,79,58,.18)}
+.chip .dot{background:${녹};color:#f3f7ee;display:flex;align-items:center;justify-content:center;font-family:'Jua';font-size:38px}
+.chip b{font-family:'Jua';font-weight:400;color:${녹};font-size:28px;letter-spacing:-0.02em;text-align:center;line-height:1.25}
+.chip small{font-family:'Gowun Dodum';color:rgba(47,79,58,.65);font-size:21px;text-align:center}
+.arw{font-family:'Jua';color:#c2703a;font-size:52px;margin-top:-40px}
+.phone{position:absolute;z-index:4;left:50%;transform:translateX(-50%);top:700px;width:620px;height:760px;border-radius:44px 44px 0 0;overflow:hidden;
+  border:12px solid #f6f9f2;border-bottom:0;box-shadow:0 -10px 50px rgba(47,79,58,.18);background:#f6f9f2}
+.phone img{width:100%;height:100%;display:block;object-fit:cover;object-position:top}
+.peek{position:absolute;z-index:3;filter:drop-shadow(0 8px 16px rgba(47,79,58,.18))}
+.free{position:absolute;z-index:6;right:70px;top:640px;background:#f6f9f2;color:${녹};border:2px solid rgba(47,79,58,.3);font-family:'Jua';font-size:24px;border-radius:999px;padding:8px 18px}
+.leaf{position:absolute;z-index:2;color:rgba(47,79,58,.35);font-size:40px}
+`
+  const 잎점 = () => `<svg class="leaf" style="left:70px;top:590px;width:56px;height:56px" viewBox="0 0 48 48"><path d="M8 40C8 20 20 8 40 8c0 20-12 32-32 32Z" fill="rgba(47,79,58,.28)"/></svg><svg class="leaf" style="right:80px;top:120px;width:44px;height:44px;transform:rotate(120deg)" viewBox="0 0 48 48"><path d="M8 40C8 20 20 8 40 8c0 20-12 32-32 32Z" fill="rgba(47,79,58,.25)"/></svg><svg class="leaf" style="left:120px;top:1180px;width:48px;height:48px;transform:rotate(-60deg)" viewBox="0 0 48 48"><path d="M8 40C8 20 20 8 40 8c0 20-12 32-32 32Z" fill="rgba(47,79,58,.25)"/></svg>`
+  const 가로단계 = (rows) => `<div class="row">${rows.map(([e, b, s], i) => `${i ? '<div class="arw">›</div>' : ''}<div class="chip">${/^data:/.test(e) ? `<img src="${e}">` : `<div class="dot">${e}</div>`}<b>${b}</b>${s ? `<small>${s}</small>` : ''}</div>`).join('')}</div>`
+  const 톤들 = ['#f1f5ec', '#eef4ea', '#ecf3ee', '#f2f5e8']
+  let 톤i = 0
+  const C장 = ({ no, tag, 머리: h, 부제, 파일, 곰, 곰자리 = 'left', 단계: rows, 자리 = 'top', 무료 = '' }) => `<style>${C공통}.phone img{object-position:${자리}} body{--bg:${톤들[톤i++ % 톤들.length]}}</style><div class="stage">
+${잎점()}
+<div class="top">${no ? `<div class="big">${no}</div>` : ''}${tag ? `<div class="tag">${tag}</div>` : ''}<div class="hh">${h}</div><div class="ss">${부제}</div></div>
+${가로단계(rows)}
+${무료 ? `<div class="free">${무료}</div>` : ''}
+${곰 ? `<img class="peek" style="width:${폭(곰)}px;${곰자리 === 'left' ? 'left:40px' : 'right:40px'};top:${1330 - 폭(곰) * 1.05}px" src="${스티커(곰)}">` : ''}
+<div class="phone"><img src="${파일}"></div></div>`
+  const C장들 = {
+    '캐러셀C-01-표지': () => C장({ tag: '한끼 사용법', 머리: '레시피 담는 법<br>여섯 가지', 부제: '어디서 봤든 한끼로', 파일: 앱('30-가져오기'), 곰: 'au_b16', 곰자리: 'right',
+      단계: [['1', '캡처'], ['2', '갤러리'], ['3', '사진'], ['4', '글'], ['5', '손'], ['6', '링크']] }),
+    '캐러셀C-02-SNS': () => C장({ no: '1', 머리: '인스타 · 유튜브<br>보다가 캡처', 부제: '제일 많이 써요 · 공유 한 번이면 재료·순서까지', 파일: b64(join(안내, '인스타-공유동그라미.png')), 곰: 'au_b09',
+      단계: [[i공유, '공유', '캡처한 화면에서'], [i더보기, '더보기'], [i한끼, '한끼', '누르면 끝']] }),
+    '캐러셀C-03-갤러리': () => C장({ no: '2', 머리: '갤러리에 있던<br>사진도 똑같이', 부제: '예전에 저장해 둔 캡처 · 여러 장도 돼요', 파일: b64(join(안내, '6-갤러리-도구띠.png')), 자리: '50% 100%', 곰: 'au_b24', 곰자리: 'right',
+      단계: [[i공유, '공유', '갤러리에서'], [i더보기, '더보기'], [i한끼, '한끼', '누르면 끝']] }),
+    '캐러셀C-04-앱사진': () => C장({ no: '3', 머리: '앱 안에서<br>사진 고르기', 부제: '앱을 안 나가고 · 보면서 고칠 수 있어요', 파일: 앱('33-가져오기-앱사진'), 곰: 'au_b28',
+      단계: [['1', '가져오기'], ['2', '사진 고르기', '여러 장도'], ['3', '재료·순서 채워짐']] }),
+    '캐러셀C-05-글붙여넣기': () => C장({ no: '4', 머리: '글을 복사해서<br>붙여넣기', 부제: '블로그 레시피에 딱', 파일: 앱('35-가져오기-텍스트'), 곰: 'au_b27', 곰자리: 'right', 무료: '열쇠 안 써요',
+      단계: [['1', '레시피 글 복사'], ['2', '텍스트 붙여넣기'], ['3', '자동 정리']] }),
+    '캐러셀C-06-직접입력': () => C장({ no: '5', 머리: '빈 종이에<br>직접 적기', 부제: '엄마 레시피 · 우리 집 비법', 파일: 앱('34-가져오기-직접입력'), 곰: 'au_b20', 무료: '열쇠 안 써요',
+      단계: [['1', '직접 입력하기'], ['2', '제목 · 재료 · 만드는 법'], ['3', '사진은 「카메라」로']] }),
+    '캐러셀C-07-링크': () => C장({ no: '6', 머리: '링크 주소만<br>담아두기', 부제: '나중에 볼 레시피는 주소만', 파일: 앱('36-가져오기-링크'), 곰: 'au_b29', 곰자리: 'right', 무료: '열쇠 안 써요',
+      단계: [['1', '주소 붙여넣기'], ['2', '임시보관함'], ['3', '나중에 채우기']] }),
+  }
+  const C08 = () => `<style>${C공통}
+.card{position:absolute;left:80px;right:80px;top:430px;z-index:5;background:#f6f9f2;border-radius:40px;padding:40px 46px;text-align:center;box-shadow:0 20px 44px rgba(47,79,58,.14)}
+.card p{font-family:'Gowun Dodum';color:${녹};font-size:32px;line-height:1.6}
+.card .go{color:#c2703a;font-weight:700}
+.pill{position:absolute;left:50%;transform:translateX(-50%);bottom:150px;z-index:6;background:${녹};color:#f3f7ee;border-radius:999px;padding:16px 40px;font-size:32px;font-family:'Jua';white-space:nowrap}
+.end{position:absolute;left:0;right:0;bottom:56px;z-index:3;text-align:center;font-family:'Jua';color:${녹};font-size:40px;line-height:1.4}
+.peek{top:auto;bottom:215px;z-index:3}
+body{--bg:#f2f5e8}</style><div class="stage">${잎점()}
+<div class="top"><div class="tag">한끼 사용법</div><div class="hh">어디서 봤든,<br>한끼 하나면</div><div class="ss">흩어진 레시피를, 한곳에</div></div>
+<div class="card"><p>인스타에서 본 것도, 갤러리에 쌓인 것도,<br>엄마가 불러준 것도.<br><span class="go">한끼에 담으면 재료·순서가 정리돼요.</span></p><p style="margin-top:22px">담아 두면 요리모드 · 장보기 · 일기까지<br>그대로 이어져요.</p></div>
+<img class="peek" style="width:${폭('au_b30')}px;left:50%;margin-left:-${Math.round(폭('au_b30') / 2)}px" src="${스티커('au_b30')}">
+<div class="pill">▶ Play 스토어에서 「한끼」 검색</div>
+<div class="end">오늘도 한 끼 해냈다면, 한끼에서 만나요</div></div>`
+  const br2 = await chromium.launch(CHROMIUM ? { executablePath: CHROMIUM } : {})
+  const p2 = await br2.newPage({ viewport: { width: 1080, height: process.env.REEL ? 1920 : 1350 }, deviceScaleFactor: 2 })
+  const names = []
+  for (const [n, f] of Object.entries({ ...C장들, '캐러셀C-08-마무리': C08 })) {
+    await p2.setContent(`<!doctype html><meta charset="utf-8">${f()}`)
+    await p2.evaluate(() => document.fonts.ready); await p2.waitForTimeout(300)
+    await p2.screenshot({ path: `${OUTC}/${n}.png` }); names.push(n); console.log('  ✅', n)
+  }
+  await br2.close()
+  execFileSync('python3', ['-c', `from PIL import Image
+names=${JSON.stringify(names)}
+w=500; h=625
+sh=Image.new('RGB',(w*4+50,h*2+30),'white')
+for i,n in enumerate(names):
+  sh.paste(Image.open('${OUTC}/'+n+'.png').resize((w,h)),(10+(i%4)*(w+10),10+(i//4)*(h+10)))
+sh.save('${OUTC}/캐러셀-검수판.png')`])
+  console.log(`\n📸 C 8장 ＋ 검수판 → ${OUTC}`)
+}

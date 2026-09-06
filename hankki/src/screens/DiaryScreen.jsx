@@ -97,7 +97,7 @@ export default function DiaryScreen({ day }) {
   //   ⛔ 전엔 선만 「줄」이었다 — 내가 *"쓰는 판이라 줄이 있어야 정돈된다"* 며 «둘째»를 기본으로 뒀다.
   //      창업자가 *"줄눈을 그어주는게 좋을까...? 그건 잘 모르겠네"* 라 했을 때 **우리가 정하지 않기로** 해놓고
   //      내 판단으로 정해버린 것이다. 골라 쓰는 건 한 번 누르면 된다.
-  const FIRST = { rule: 'plain', skin: 'ivory', art: 'none' }
+  const FIRST = { rule: 'plain', skin: 'cream', art: 'none' }
   const [pick, setPick] = useState(() => entry?.paper || FIRST)
   // ⚠️⚠️ **날이 바뀌면 고른 속지도 따라가야 한다** — 이게 창업자가 본 *"막 중구난방으로 골라져있어"* 다.
   //   `useState` 초기값은 **한 번만** 읽는다. 화면이 안 갈리고 `day` 만 바뀌면(달력에서 옆날로)

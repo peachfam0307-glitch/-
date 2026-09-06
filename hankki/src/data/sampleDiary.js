@@ -64,7 +64,7 @@ export const makeSampleDiary = () => {
     sample: true,            // 🏷 이 한 칸이 화면의 「샘플」 표시와 「지우면 다시 안 생김」을 함께 가른다
     // ⚠️ `at` 은 백업의 8/12 를 안 쓴다 — 고정 날짜는 «반드시» 낡는다(v10.05 에서 겪었다).
     at: 어제.getTime(),
-    paper: { rule: 'lined', skin: 'ivory', art: 'snap' },   // 「사진 기록」 속지 · 줄노트 · 아이보리
+    paper: { rule: 'lined', skin: 'cream', art: 'snap' },   // 「사진 기록」 속지 · 줄노트 · 크림
     title: '방학언제끝나냐..',
     font: 'gamja',
     size: 'md',

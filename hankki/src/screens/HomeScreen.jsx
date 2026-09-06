@@ -62,7 +62,10 @@ import { pantryScore } from '../pantryMatch'
 // 🗓🍳 「이번 주」 박스 — 제철 줄과 우리집레시피 줄이 «똑같이» 생겼다.
 //   ⛔ 마크업을 두 번 적지 않는다 — 그러면 한쪽만 고치는 사고가 난다(2026-08-11 신설).
 //   ⚠️ HomeScreen «밖»에 둔다. 안에 정의하면 렌더마다 새 컴포넌트가 되어 리마운트가 일어난다.
-function WeekBox({ w, 기본, open }) {
+// 📅 [창업자 2026-09-07 00:05] *"홈화면에 이번주제철 옆에 월요일 업뎃을 표시할까??"* · *"sns는 수요일 업뎃인거"* · *"월 배지를 옆에 달아도 좋고"*
+//    → 키커 옆 작은 동그라미 「월」·「수」. 🔢 실측 = 제철 19주·우리집 25주 `from` 전부 월요일 · SNS 20편 전부 수요일(weekly.js·basics.js).
+//    ⛔ 요일을 코드에서 «세지» 않는다 — 데이터가 그 요일에 열리게 우리가 맞춰 두는 것이라(check-weekly 가 월요일을 지킨다) 글자로 준다.
+function WeekBox({ w, 기본, open, 요일 }) {
   return (
     <div className="weekly-box">
       <div className="weekly-text">
@@ -76,6 +79,7 @@ function WeekBox({ w, 기본, open }) {
           {/* ⛔ 여기 「이번 주 제철」이 «글자로 박혀» 있었다 — 제철이 아닌 주도 그렇게 떴다.
               (2026-09-28 「추석 남은 음식」이 실제로 그랬고, 52주 표 기준 17주가 제철이 아니다) */}
           <div className="weekly-kicker">{w.kicker || 기본}</div>
+          {요일 && <span className="weekly-day" aria-label={`${요일}요일마다 새로 와요`}>{요일}</span>}
         </div>
         <div className="weekly-title">{w.title}</div>
         <div className="t-sub weekly-why">{w.why}</div>
@@ -616,8 +620,8 @@ export default function HomeScreen() {
             ⛔ `two` 는 «둘 다 있을 때만» 붙는다 — 하나뿐이면 지금 모양(박스 안이 좌우로) 그대로다. */}
         {(weekly || homemade) && (
           <div className={`week-pair${weekly && homemade ? ' two' : ''}`}>
-            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} />}
-            {homemade && <WeekBox w={homemade} 기본="우리집레시피" open={open} />}
+            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} 요일="월" />}
+            {homemade && <WeekBox w={homemade} 기본="우리집레시피" open={open} 요일="월" />}
           </div>
         )}
 
@@ -627,7 +631,7 @@ export default function HomeScreen() {
             ⭐ 위 두 상자와 «똑같은» `WeekBox` 를 쓴다 — 마크업을 두 번 적지 않는다(2026-08-11 규칙).
             ⭐ 상세 화면을 따로 만들지 않는다 — 레시피 탭 안에 그대로 있고 「영상」 칩으로 모아 본다.
             ⛔ 재고가 없으면 `sns` 가 null 이라 이 줄이 통째로 안 그려진다(빈 자리 금지). */}
-        {sns && <div className="week-pair"><WeekBox w={sns} 기본="SNS 요리" open={open} /></div>}
+        {sns && <div className="week-pair"><WeekBox w={sns} 기본="SNS 요리" open={open} 요일="수" /></div>}
 
         {/* 2. 자주 해먹는 요리 */}
         {often.length > 0 && (

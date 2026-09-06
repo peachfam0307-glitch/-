@@ -68,7 +68,7 @@ body{background:#eef1ea;background-image:radial-gradient(rgba(93,52,16,.07) 1.6p
 .hh{font-size:112px;line-height:1.12;text-shadow:0 0 24px #eef1ea,0 0 24px #eef1ea,0 0 40px #eef1ea}
 .ss{font-size:34px;color:rgba(58,63,70,.7);margin-top:24px;text-shadow:0 0 16px #eef1ea,0 0 16px #eef1ea}
 .big{position:absolute;right:60px;top:56px;z-index:9;font-family:'Jua';font-size:150px;color:${파랑};opacity:.18;line-height:1}</style>
-<div class="tag">소소한 기능 ①</div><div class="big">0${no}</div>
+<div class="tag">소소한 기능 ① · ${no}</div>
 ${조각들}
 <div class="mid"><div class="hh">${머리}</div><div class="ss">${부제}</div></div>
 <img class="sp" src="${스(스티커)}" style="${스자리};z-index:9">
@@ -87,7 +87,7 @@ body{background:#f6f1e8}
 .time{font-family:'Gowun Dodum';font-size:22px;color:rgba(58,63,70,.45);margin:0 8px 6px}
 .col{display:flex;flex-direction:column;gap:12px}
 .hh{position:absolute;left:0;right:0;bottom:80px;text-align:center;font-size:72px;line-height:1.2;z-index:8}</style>
-<div class="head">${방} <small>소소한 기능 ① · ${no}</small></div>
+<div class="head">${방}</div><div class="tag" style="left:auto;right:64px;top:47px">소소한 기능 ① · ${no}</div>
 ${줄들}
 <div class="hh">${머리}</div>
 <div class="foot">${꼬리}</div>`
@@ -142,7 +142,7 @@ body{background:${크림}}
 .step b{font-family:'Jua';color:${갈색};font-size:38px;font-weight:400} .step small{display:block;font-family:'Gowun Dodum';color:rgba(58,63,70,.65);font-size:25px;margin-top:2px}
 .pill{position:absolute;left:50%;transform:translateX(-50%);bottom:130px;z-index:6;background:${갈색};color:#fff7ea;border-radius:999px;padding:16px 40px;font-size:32px;font-family:'Jua';white-space:nowrap}
 .end{position:absolute;left:0;right:0;bottom:56px;z-index:5;text-align:center;font-family:'Jua';color:${갈색};font-size:36px}</style>
-<div class="top"><div class="no">이렇게 돌아요</div><div class="hh">장보기 탭 하나로<br>한 바퀴</div><div class="ss">다음 편 = 홈이 알아서 · 기록은 내 것</div></div>
+<div class="top"><div class="no">소소한 기능 ① · 8</div><div class="hh">장보기 탭 하나로<br>한 바퀴</div><div class="ss">다음 편 = 홈이 알아서 · 기록은 내 것</div></div>
 <div class="card">
 <div class="step"><div class="d">1</div><div><b>영수증 찍기</b><small>냉장고 → 영수증 · 재료가 들어가요</small></div></div>
 <div class="step"><div class="d">2</div><div><b>유통기한 · 오늘 메뉴</b><small>D-day 표 · 가진 재료로 만들 수 있어요</small></div></div>

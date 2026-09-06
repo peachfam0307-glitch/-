@@ -154,6 +154,35 @@ body{background:${크림}}
 }
 
 const br = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
+
+// ⌨️ TYPE=1 — 릴스 «타자» 효과 (2026-09-06 · 창업자 "둥실은 좀 별로야.. 제목 글자들을 타자로 치는 걸 할까")
+//   장마다 제목(.hh)을 «n글자까지만 보이는» 프레임으로 뽑는다 — 글자를 지우는 게 아니라 visibility 만 끄므로 판이 안 흔들린다.
+//   f00…fNN = 커서 달린 채 0~N자 · done = 커서 없이 전부. 조립은 design/promo/인스타-2509/조립-소소1릴스-타자.sh
+if (process.env.TYPE) {
+  const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 })
+  const T = process.env.OUT || '/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소1/캐러셀-타자'
+  for (const [n, f] of Object.entries(장들)) {
+    const D = `${T}/${n}`; mkdirSync(D, { recursive: true })
+    await p.setContent(`<!doctype html><meta charset="utf-8">${f()}<style>.ch.off{visibility:hidden}.cur{display:inline-block;width:.09em;height:.86em;background:${파랑};vertical-align:-.06em;margin-left:.05em;border-radius:3px}</style>`)
+    await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(300)
+    const N = await p.evaluate(() => {
+      const h = document.querySelector('.hh'); let i = 0, out = ''
+      for (const part of h.innerHTML.split(/(<br>)/)) { if (part === '<br>') { out += '<br>'; continue } for (const ch of part) out += `<span class="ch" data-i="${i++}">${ch}</span>` }
+      h.innerHTML = out; return i
+    })
+    for (let k = 0; k <= N + 1; k++) {
+      await p.evaluate((k) => {
+        const h = document.querySelector('.hh'); h.querySelector('.cur')?.remove()
+        const chs = [...h.querySelectorAll('.ch')]; chs.forEach((c, i) => c.classList.toggle('off', i >= k))
+        if (k <= chs.length) { const cur = document.createElement('span'); cur.className = 'cur'; k ? chs[k - 1].after(cur) : h.prepend(cur) }
+      }, k)
+      await p.screenshot({ path: `${D}/${k <= N ? 'f' + String(k).padStart(2, '0') : 'done'}.png` })
+    }
+    console.log('  ⌨️', n, `${N}자`)
+  }
+  await br.close(); process.exit(0)
+}
+
 const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 2 })
 const names = []
 for (const [n, f] of Object.entries(장들)) {

@@ -126,17 +126,17 @@ const 장들 = {
   // 2 별점·한 줄 — D
   '소소3-02-별점': () => D({ no: 2, 머리: '별점 주고<br>한 줄 적어요',
     조각들: 조각({ 파일: '03-시트-기록-별넷', y: 1120, h: 880, 배율: 0.56, 회전: -3, left: 60, top: 430 }) + 테이프(110, 408) +
-      조각({ 파일: '03-시트-기록-별넷', y: 2030, h: 215, 배율: 0.46, 회전: 3, left: 420, top: 1055, z: 6 }) + 테이프(760, 1040, 150, 8),
+      조각({ 파일: '03-시트-기록-별넷', y: 1985, h: 392, 배율: 0.40, 회전: 3, left: 420, top: 1055, z: 6 }) + 테이프(760, 1040, 150, 8),
     // ⭕ 동그라미는 «별점 그 자리»에 — 조각 top 430 ＋ (별줄 1444 − 자른 1120) × 0.56 ≒ 611 (전엔 사진칸을 감쌌다)
     메모: 손동그라미(240, 618, 320, 116) + `<div class="memo" style="left:790px;top:600px;transform:rotate(4deg)">여기 눌러<br>별 주기</div>` + 손화살표(566, 644, 150, 120, true),
-    스티커: 'ka_g02', 스자리: 'left:64px;bottom:104px', 꼬리: '한끼 · 레시피 → 만들었어요' }),
+    스티커: 'ka_g02', 스자리: 'left:64px;bottom:104px', 꼬리: '한끼 · 레시피 상세 → 포스트잇 누르기' }),
 
   // 3 메모 — D
   '소소3-03-메모': () => D({ no: 3, 머리: '레시피에<br>내 메모를 적어요',
     조각들: 조각({ 파일: '04-상세-포스트잇', y: 1060, h: 400, 배율: 0.62, 회전: -2, left: 60, top: 470 }) + 테이프(110, 450) +
-      조각({ 파일: '03-시트-기록-별넷', y: 2030, h: 215, 배율: 0.46, 회전: 3, left: 430, top: 1050, z: 6 }) + 테이프(770, 1035, 150, 8),
+      조각({ 파일: '03-시트-기록-별넷', y: 1985, h: 392, 배율: 0.40, 회전: 3, left: 430, top: 1050, z: 6 }) + 테이프(770, 1035, 150, 8),
     메모: `<div class="memo" style="left:70px;top:940px;transform:rotate(-2deg)">다음에 또 할 때<br>이 한 줄이 제일 쓸모 있다</div>`,
-    스티커: 'pjs_03', 스자리: 'right:52px;top:196px;transform:rotate(4deg)', 꼬리: '한끼 · 레시피 상세 → 메모' }),
+    스티커: 'pjs_03', 스자리: 'right:52px;top:196px;transform:rotate(4deg)', 꼬리: '한끼 · 레시피 상세 → 포스트잇 누르기' }),
 
   // 4 요리모드 — F
   '소소3-04-요리모드': () => F({ no: 4, 위글: '손에 물 묻은 채<br>꺼진 화면을 자꾸 톡톡', 머리: '요리하는 동안<br>화면이 안 꺼져요', 부제: '요리모드로 들어가면 단계마다 큰 글씨<br>타이머도 그 단계에서 바로', 부제폭: 440,
@@ -173,9 +173,9 @@ body{background:${크림}}
 .pill{position:absolute;left:70px;bottom:150px;z-index:9;background:${팥};color:${크림};border-radius:999px;padding:16px 40px;font-size:36px;font-family:'Gaegu';font-weight:700;white-space:nowrap}</style>
 <div class="tag">${태그3(8)}</div>
 <div class="band"></div><div class="band2"></div>
-<div class="hh">앱 색은<br>네 가지 중에 골라요</div>
-<div class="on">그레이지 · 크림<br>살구 · 다크</div>
-${조각({ 파일: '10-설정-테마', y: 1480, h: 710, 배율: 0.40, 회전: -6, left: 520, top: 390, z: 6, 테: false, r: 22 })}
+<div class="hh">배경 테마도<br>바꿔요</div>
+<div class="on">그레이지 · 크림<br>살구 · 다크 넷</div>
+${조각({ 파일: '10-설정-테마', y: 1500, h: 740, 배율: 0.38, 회전: -6, left: 540, top: 380, z: 6, 테: false, r: 22 })}
 <div class="ss">①장보기 ②홈이 알아서 ③기록은 내 것<br>세 편 다 무료로 쓰는 기능이에요</div>
 <div class="pill">▶ Play 스토어에서 「한끼」 검색</div>
 <img class="sp" src="${스('duos_01')}" style="right:56px;bottom:140px;transform:rotate(-3deg);z-index:9">

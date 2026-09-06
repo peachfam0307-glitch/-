@@ -305,6 +305,7 @@ export default function PantryView() {
              전 = 「영수증 1장에 열쇠 1개를 써요」 ＋ 「영수증은 사진에 따라 인식률이 달라요 ·
                    안 되면 ＋재료 담기로 직접 넣어도 돼요.」
              후 = 「영수증 1장에 열쇠 1개를 써요 · 안 되면 ＋재료 담기로 직접 넣어도 돼요」
+             후후(2026-09-06) = 「영수증 1장에 열쇠 1개를 써요」 ／ 「＋재료 담기로 직접 넣어도 돼요」 — 「안 되면」 뺌 · 두 줄
              ⛔ **「를 써요」를 빼지 않는다** — 편집 화면이 「사진 1장에 열쇠 1개를 써요」라서
                 꼬리를 자르면 **자리마다 말이 갈린다**(⑯ 이 그걸 본다).
              ⛔ 「사진에 따라 인식률이 달라요」를 뺐다 — 바로 옆 「베타」 딱지가 이미 그 말이고,
@@ -318,8 +319,10 @@ export default function PantryView() {
         <img src={uiKeyOne} alt="" aria-hidden="true" draggable={false}
           style={{ height: 30, width: 'auto', flex: '0 0 auto' }} />
         <div style={{ fontSize: 16, color: 'var(--text-sub)', lineHeight: 1.5 }}>
+          {/* 🔽 [창업자 2026-09-06] *"안되면을 빼고 +재료담기를 아랫줄에 넣자"* — 한 줄 「… · 안 되면 ＋재료 담기로 …」가
+              폰에서 「안 되면 ＋」 / 「재료 담기로」 로 어정쩡하게 꺾였다. 둘째 줄을 «일부러» 갈라 ＋재료 담기가 줄 머리에 오게. */}
           <b style={{ color: 'var(--danger)', fontWeight: 800 }}>영수증 1장에 {keyCount(1)}를 써요</b>
-          {' · 안 되면 '}<b style={{ color: 'var(--brown)' }}>＋재료 담기</b>{'로 직접 넣어도 돼요'}
+          <br /><b style={{ color: 'var(--brown)' }}>＋재료 담기</b>{'로 직접 넣어도 돼요'}
         </div>
       </div>
 

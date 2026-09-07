@@ -134,6 +134,22 @@ if (열림) {
     const 안내 = p.getByText('화면이 꺼지지 않아요', { exact: false }).first()
     if (await 안내.count()) { await 보이게(안내, 'center'); await 찍('05-요리모드-화면안꺼짐') }
     else { await 찍('05-요리모드-화면안꺼짐'); console.log('  ⚠️ 「화면이 꺼지지 않아요」 글자를 못 찾았다') }
+    // 🍳 여기까지는 «재료 준비» 화면이다 — 창업자 2026-09-07 = *"요리하는 동안 안꺼지는 걸 보여줘야하는데 안맞잖아"*
+    //    「재료 준비 완료 · 시작 →」을 눌러야 «요리하는 동안»의 단계 화면(큰 글씨 ＋ 타이머)이 나온다
+    const 시작 = p.getByRole('button', { name: /재료 준비 완료/ }).first()
+    if (await 시작.count()) {
+      await 시작.click({ force: true }); await 쉼(1800)
+      await 찍('05b-요리모드-단계')
+      // ⏱ 타이머가 붙은 단계까지 넘겨 본다 — 「필요할 때 단계에서 눌러 쓰세요」의 실물
+      for (let i = 0; i < 6; i++) {
+        const 타이머 = p.getByText(/분|초/).filter({ hasText: /타이머|⏱|시작/ }).first()
+        if (await 타이머.count()) break
+        const 다음 = p.getByRole('button', { name: /다음|→/ }).last()
+        if (!(await 다음.count())) break
+        await 다음.click({ force: true }); await 쉼(900)
+      }
+      await 찍('05c-요리모드-타이머')
+    } else console.log('  ⚠️ 「재료 준비 완료」 단추를 못 찾았다')
     await p.goBack(); await 쉼(900)
   }
   await p.goBack(); await 쉼(900)

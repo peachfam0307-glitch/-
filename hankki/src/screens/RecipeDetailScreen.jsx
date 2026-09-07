@@ -11,6 +11,7 @@ import Portal from '../components/Portal'
 import ConfirmSheet from '../components/ConfirmSheet'
 import FoodIcon, { guessFoodIcon } from '../components/FoodIcon'
 import { 만회값 } from '../retidy'
+import TidyWaiting from '../components/TidyWaiting'
 import DecorLayer from '../components/DecorLayer'
 import DecorEditor from '../components/DecorEditor'
 import KitchenGuideSheet from '../components/KitchenGuideSheet'
@@ -191,11 +192,12 @@ export default function RecipeDetailScreen({ id }) {
   // ⭐ 누르는 동안 단추 자리가 「다듬는 중」으로 «남아 있는다» — 창업자 제보(*"화면이 사라지고 오래걸리니까
   //    뒤로가기하거나 앱을 나가거나 할수있을 것 같아"*)가 여기서 나왔다. 화면을 나갔다 와도 표시는 `tidyFail` 에 남는다.
   const [다시중, set다시중] = useState(false)
+  const [창닫음, set창닫음] = useState(false)   // 🧺 「끝날 때까지 뜨는 창」을 닫았나 — 닫아도 일은 계속된다
   const 다시다듬기 = async () => {
     const 원문 = String(r?.rawText || '')
     if (다시중 || 원문.length < 40) return
-    set다시중(true)
-    nav.showToast('AI가 다듬는 중이에요 · 20~60초 걸려요', 6000)
+    set다시중(true); set창닫음(false)
+    nav.showToast('AI가 다듬는 중이에요 · 다 되면 레시피에 저절로 올라가요', 6000)
     // 👁 사진이 손에 있으면 같이 보낸다(`tidy.js` 가 한 번 더 거른다) — 보관함 단추와 «같은 말»
     const 사진 = typeof r.image === 'string' && r.image.startsWith('data:image/') ? r.image : ''
     const ai = await tidyRecipe(원문, 사진)
@@ -876,6 +878,9 @@ export default function RecipeDetailScreen({ id }) {
             {!다시중 && <span style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--brown)', flex: '0 0 auto' }}>다시 하기</span>}
           </button>
         )}
+
+        {/* 🧺 AI 가 도는 «내내» 떠 있는 창 (창업자 2026-09-08 *"끝날때까지는 창을 띄워주던가 해야할 듯"*) */}
+        {다시중 && !창닫음 && <TidyWaiting onClose={() => set창닫음(true)} />}
 
         {r.ingredients?.length > 0 && (
           <>

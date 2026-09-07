@@ -139,12 +139,37 @@ const PROMPT = `너는 요리 레시피 정리기다. 아래는 인스타그램 
 --- 원문 ---
 `
 
+// 🧺 선반 — 맡긴 일의 결과가 놓이는 자리(KV). ⛔열쇠 이름을 여기 한 곳에서만 만든다.
+const 선반칸 = (번호) => `tj:${번호}`
+// ⏳ 선반에 올려두는 시간 = 1시간. 앱이 그 안에 못 가져가면 「다시 하기」 단추로 떨어진다.
+//   ⛔ 길게 두지 않는다 — 레시피 원문이 서버에 오래 남는 건 좋지 않다(개인 글이다).
+const JOB_TTL = 60 * 60
+
 export default {
-  async fetch(request, env) {
+  // ⭐ `ctx` 를 받는다 — `ctx.waitUntil` 이 「답장 먼저, 일은 끝까지」를 가능하게 하는 손잡이다.
+  async fetch(request, env, ctx) {
     const origin = request.headers.get('Origin') || ''
     const cors = corsHeaders(origin)
 
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors })
+
+    // 🧺🧺 **선반 읽기 — 「그 번호 됐어요?」** (2026-09-08)
+    //   ⭐ AI 를 «안» 부른다 → 뉴런 0. 그래서 몇 초마다 물어봐도 우리 통이 안 샌다.
+    //   ⛔ 상한(하루 200)도 안 건드린다 — 세는 건 «AI 를 부른 횟수»지 물어본 횟수가 아니다.
+    //   🔒 앱 열쇠(`x-hankki-token`)는 그대로 본다. 번호는 앱이 만든 임의 글자라 남의 것을 짚을 수 없다.
+    {
+      const 물음 = new URL(request.url).searchParams.get('job')
+      if (물음) {
+        if (env.APP_TOKEN && request.headers.get('x-hankki-token') !== env.APP_TOKEN) {
+          return json({ error: 'unauthorized' }, 401, cors)
+        }
+        if (!env.TIDY_KV) return json({ error: 'no_kv' }, 501, cors)
+        const 적힌것 = await env.TIDY_KV.get(선반칸(String(물음).slice(0, 64)))
+        // ⛔ 없으면 «모른다»고 답한다 — 「실패」라고 하면 앱이 다시 시킬 기회를 잃는다
+        if (!적힌것) return json({ 상태: '없음' }, 200, cors)
+        try { return json(JSON.parse(적힌것), 200, cors) } catch { return json({ 상태: '없음' }, 200, cors) }
+      }
+    }
 
     // 📊📊 **[창업자 확정 2026-08-31] 「오늘 몇 편 / 200」을 볼 수 있게 한다** — *"tidy도 붙여줘"*
     //   ⭐ OCR 워커에 붙인 것과 **같은 모양·같은 열쇠**다(두 워커가 다르면 창업자가 두 번 배운다).
@@ -286,6 +311,25 @@ export default {
       if (!founder && ipC >= LIMITS.PER_IP_PER_MIN) return json({ error: 'too_fast' }, 429, cors)
     }
 
+    // 🧺🧺🧺 **[2026-09-08 · 창업자 확정] 「기다리기」를 «맡기기»로 — 60초 벽을 통째로 없앤다.**
+    //
+    // 📮 창업자 폰 실물 01:17 = 「AI 다듬기는 못 했어요 · 기본 정리예요(timeout) · 📷없음」
+    // 📮 창업자 = *"이유가 너무오래기다려야해"* → *"지금해야지"*
+    //
+    // ⛔⛔ **고치기 전 모양** = 폰이 60초를 붙잡고 기다리다 끊는다. 워커는 그 뒤에도 답을 «만들어» 놓는데
+    //    받을 사람이 없어 **뉴런은 태우고 결과는 버린다.** 유저는 60초를 버리고 아무것도 못 얻는다.
+    //    📌 세탁소에 서서 기다리다 60초 만에 그냥 나오는 것과 같다 — 옷은 다 됐는데 못 받는다.
+    //
+    // ✅ **바꾼 모양** = 번호표를 «즉시» 주고(202), 다림질은 뒤에서 계속하고, 다 되면 **선반(KV)에 올려둔다.**
+    //    앱은 가끔 「그 번호 됐어요?」만 물어본다(`?job=…` · AI 를 안 부르니 뉴런 0).
+    //    ⭐ 앱을 껐다 켜도 선반에 남아 있다 — 그게 이 고침의 심장이다.
+    //
+    // ⛔ **옛 앱은 한 글자도 안 바뀐다** — `job` 을 «안» 보내면 예전처럼 기다렸다 받는다(아래 `맡김`).
+    // ⛔ KV 가 없으면 선반이 없으니 맡길 수 없다 → 그때도 예전 길로 간다.
+    // ⛔ 재시도·모델 차례·상한은 «한 글자도» 안 건드렸다 — 바꾼 건 「누가 결과를 받나」 하나뿐이다.
+    const 맡김 = !!(kv && ctx && typeof ctx.waitUntil === 'function' && String(body.job || '').trim())
+    const 번호 = String(body.job || '').trim().slice(0, 64)
+
     // ── AI 부르기 ── ⭐⭐ **모델을 «차례로» 시도한다 (2026-08-29 오후)**
     //
     // 📮 창업자 = 대시보드에서 변수 넣고 Deploy 누르고 로그 새로고침하는 왕복이 반나절 갔다.
@@ -304,6 +348,10 @@ export default {
     // 👁 **차례 = 사진이 있으면 «눈 모델»을 맨 앞에 세운다.**
     //   ⭐⭐ 그 뒤에 «지금 쓰던 글자 전용 모델»이 그대로 남는다 —
     //      눈이 실패해도 **오늘까지와 똑같은 결과**로 떨어진다. ⛔ⓒ가 앱을 나쁘게 만들 길이 없다.
+    // 🧺 아래 「일하기」는 **여태 이 자리에 그대로 있던 코드**다 — 감싸기만 했다.
+    //   ⛔ `return json(...)` 이던 자리가 `return { … }` 로 바뀐 것 말고는 로직이 같다.
+    //      감싼 이유 = 이 일을 «기다릴 수도»(예전 길) «맡길 수도»(새 길) 있어야 해서다.
+    const 일하기 = async () => {
     const 차례 = [
       ...(image ? [{ model: VISION_MODEL, 눈: true }] : []),
       ...모델차례(env).map((m) => ({ model: m, 눈: false })),
@@ -414,13 +462,39 @@ export default {
       //      처방이 다르다 — 앞은 프롬프트·모델 문제고, 뒤는 다시 걸면 되는 것이다.
       // 📢 `model`·`ms` = 「어디서 몇 초 쓰고 멈췄나」. 앱이 운영자 토스트에 그대로 붙인다(위 「멈춘모델」 절).
       const 어디서 = { model: 멈춘모델, ms: Date.now() - 시작전체 }
-      if (예산끊김) return json({ error: 'budget_out', why: 마지막오류 || '', ...어디서 }, 502, cors)
-      return json({ error: 마지막오류 ? 'ai_failed' : 'bad_ai_output', why: 마지막오류 || '', ...어디서 }, 502, cors)
+      if (예산끊김) return { 몸: { error: 'budget_out', why: 마지막오류 || '', ...어디서 }, 코드: 502 }
+      return { 몸: { error: 마지막오류 ? 'ai_failed' : 'bad_ai_output', why: 마지막오류 || '', ...어디서 }, 코드: 502 }
     }
 
     if (kv) await inc(kv, `ti:${ip}:${minute}`, 120)
 
-    return json(답, 200, cors)
+    return { 몸: 답, 코드: 200 }
+    }
+
+    // 🧺🧺 **길 둘 — 「맡기기」(새 앱)와 「기다리기」(옛 앱). 옛 길이 기본값이다.**
+    if (맡김) {
+      // 🔖 선반에 «하는 중» 표를 먼저 올린다 — 앱이 곧바로 물어봐도 「그런 번호 없다」가 안 나오게.
+      await kv.put(선반칸(번호), JSON.stringify({ 상태: '하는중', 시작: Date.now() }), { expirationTtl: JOB_TTL })
+      // ⭐⭐ `waitUntil` = 「답장은 먼저 보내고, 일은 끝까지 한다」. 앱이 끊어도 이 일은 안 죽는다.
+      //   ⛔ 그래서 유저가 앱을 나가도 결과가 «선반»에 남는다 — 이게 60초 벽을 없애는 자리다.
+      ctx.waitUntil((async () => {
+        let 결과
+        try { 결과 = await 일하기() } catch (e) {
+          결과 = { 몸: { error: 'worker_crash', why: String((e && e.message) || e).slice(0, 200) }, 코드: 502 }
+        }
+        // ⛔ 실패도 «선반에 올린다» — 안 올리면 앱이 2분을 헛되이 물어보고 「모른다」로 끝난다.
+        await kv.put(
+          선반칸(번호),
+          JSON.stringify({ 상태: 결과.코드 === 200 ? '됐음' : '실패', 몸: 결과.몸, 코드: 결과.코드, 끝: Date.now() }),
+          { expirationTtl: JOB_TTL },
+        )
+        console.log('JOB_DONE', 번호, 결과.코드)
+      })())
+      return json({ 맡음: true, job: 번호, 상태: '하는중' }, 202, cors)
+    }
+
+    const 결과 = await 일하기()
+    return json(결과.몸, 결과.코드, cors)
   },
 }
 
@@ -644,7 +718,8 @@ function corsHeaders(origin) {
   const ok = ALLOWED_ORIGINS.includes(origin)
   return {
     'Access-Control-Allow-Origin': ok ? origin : ALLOWED_ORIGINS[0],
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    // ⭐ GET 을 더했다 — 선반 읽기(`?job=…`)가 GET 이다(2026-09-08). 빼면 브라우저가 그 길을 막는다.
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, x-hankki-token, x-hankki-founder',
     'Access-Control-Max-Age': '86400',
   }

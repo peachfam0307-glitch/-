@@ -158,7 +158,13 @@ if (열림) {
 // ── ④ 한끼 일기 — 달력 ──────────────────────────────────────
 await 탭('일기'); await 맨위(); await 쉼(900)
 const 달력 = p.locator('[data-coach="cal"]').first()
-if (await 달력.count()) { await 보이게(달력, 'start'); await 찍('06-일기-달력') }
+// 📮 창업자 2026-09-07 = *"해먹은 날이 달력에 쌓여요에서 달력에 쌓인게 별로 없어"* — 맞다.
+//    9월은 7일까지라 일기가 6일치뿐이다(8월은 17일치). ⛔데이터를 지어내지 않고 «지난 달»로 넘겨 찍는다.
+if (await 달력.count()) {
+  await 보이게(달력, 'start')
+  await p.locator('button[aria-label="이전 달"]').first().click(); await 쉼(900)
+  await 찍('06-일기-달력')
+}
 else console.log('  ⚠️ 달력을 못 찾았다')
 
 // ── ⑤ 일기 꾸미기 — 속지(종이·선) · 글씨체 ─────────────────────

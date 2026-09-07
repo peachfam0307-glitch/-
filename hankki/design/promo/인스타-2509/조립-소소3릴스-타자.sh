@@ -5,7 +5,7 @@
 set -euo pipefail
 S=/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad
 FF=/tmp/claude-0/-home-user-hankki/c8579c7b-bce4-4936-bf78-f2c0a398662b/scratchpad/ff/node_modules/ffmpeg-static/ffmpeg
-T=$S/소소3/캐러셀-타자; W=$S/소소3/묶음/타자조각; mkdir -p $W
+T=${T:-$S/소소3/캐러셀-타자}; W=${W:-$S/소소3/묶음/타자조각}; OUT=${OUT:-$S/소소3/묶음/소소3-릴스-타자.mp4}; mkdir -p $W
 BG=0xe7ebe0; TR=0.4
 NAMES=($(ls $T | sort))
 for n in "${NAMES[@]}"; do
@@ -25,5 +25,5 @@ done
 G="${G%;}"
 "$FF" -hide_banner -loglevel error "${IN[@]}" -filter_complex "$G" -map "[v]" -r 60 \
   -c:v libx264 -preset medium -b:v 6500k -maxrate 7500k -bufsize 13000k -pix_fmt yuv420p -movflags +faststart -an \
-  -y $S/소소3/묶음/소소3-릴스-타자.mp4
-ls -la $S/소소3/묶음/소소3-릴스-타자.mp4
+  -y $OUT
+ls -la $OUT

@@ -105,6 +105,36 @@ console.log('\n  ⑶ 이미 뱉은 답을 재는 자리 (PostToolUse)')
   }
 }
 
+console.log('\n  ⑷ «턴 합계» (2026-09-07 창업자 캡처 = Messages 1.3M/1M · 답 하나는 작아도 합치면 넘는다)')
+{
+  const sid = 'repro-turn-' + process.pid
+  const 답 = (n) => ({ session_id: sid, tool_name: 'Bash', tool_response: { stdout: 'ㄱ'.repeat(n) } })
+  눌러보기({ session_id: sid }, 'reset')
+  // 55,000 B 답 넷 = 하나하나는 상한(60,000) 아래 · 합계 220,000 > 200,000
+  const 앞셋 = [1, 2, 3].map(() => 눌러보기(답(55000 / 3 | 0), 'after').종료값)   // ≈55,000 B 씩(3바이트 글자)
+  적기(앞셋.every((v) => v === 0), '작은 답 셋 → 조용히 통과', 앞셋.join(','))
+  const r4 = 눌러보기(답(55000 / 3 | 0), 'after')
+  적기(r4.종료값 === 2 && /합쳐서/.test(r4.말), '넷째에서 합계가 넘으면 멈춘다', r4.종료값 === 2 ? '' : `종료값 ${r4.종료값}`)
+  // 알린 뒤엔 계수기가 비워져 다음 답은 조용하다 · reset 뒤에도 조용하다
+  const r5 = 눌러보기(답(1000), 'after')
+  적기(r5.종료값 === 0, '알린 뒤 계수기 비움 → 다음 답 조용', r5.종료값 === 0 ? '' : `종료값 ${r5.종료값}`)
+  눌러보기({ session_id: sid }, 'reset')
+  const r6 = 눌러보기(답(55000 / 3 | 0), 'after')
+  적기(r6.종료값 === 0, '창업자가 말하면(reset) 새 턴 → 조용', r6.종료값 === 0 ? '' : `종료값 ${r6.종료값}`)
+}
+
+console.log('\n  ⑸ «그림 오탐» (2026-09-07 · 615KB 비교 그림 한 장이 600KB 답으로 잡혀 턴을 멈췄다)')
+{
+  const sid = 'repro-img-' + process.pid
+  눌러보기({ session_id: sid }, 'reset')
+  const 그림 = { session_id: sid, tool_name: 'Read', tool_response: [{ type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'A'.repeat(700000) } }] }
+  const r1 = 눌러보기(그림, 'after')
+  적기(r1.종료값 === 0, '700KB 그림 한 장 → 글자가 아니라 조용히 통과', r1.종료값 === 0 ? '' : `종료값 ${r1.종료값}`)
+  const 여러장 = [...Array(4)].map(() => 눌러보기(그림, 'after').종료값)
+  적기(여러장.every((v) => v === 0), '그림 다섯 장(3.5MB)도 합계로 안 잡힌다(장당 6,000 B 로 친다)', 여러장.join(','))
+  눌러보기({ session_id: sid }, 'reset')
+}
+
 if (틀림) {
   console.log(`\n❌ ${틀림}개 틀렸다 — 게이트가 제 일을 못 한다.\n`)
   process.exit(1)

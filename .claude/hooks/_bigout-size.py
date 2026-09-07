@@ -19,7 +19,24 @@
 #    ⛔ 그렇다고 상한을 올리지는 않는다. 올리면 진짜 사고도 같이 통과한다.
 면제도구 = {'Edit', 'Write', 'MultiEdit', 'NotebookEdit'}
 
+# 🖼 **그림은 글자로 치지 않는다** (2026-09-07 · 615KB 그림 한 장이 「600KB 답」으로 잡혀 턴을 멈췄다)
+#    그림은 크기와 무관하게 대화 창에서 ≈1.5천 토큰(≈6,000 B 글자 몫)만 차지한다.
+#    base64 를 그대로 세면 «오탐»이라 → 그림 한 장 = 고정 6,000 B 로 친다.
+#    🔒 판 = `_repro-도구답크기-0903.mjs` ⑸
+그림몫 = 6000
+
 import sys, json
+
+
+def 그림빼기(x):
+    """tool_response 안의 그림(base64)을 고정 크기 표로 바꾼다."""
+    if isinstance(x, dict):
+        if x.get('type') == 'image' or (isinstance(x.get('source'), dict) and 'data' in x['source']):
+            return 'X' * 그림몫
+        return {k: 그림빼기(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [그림빼기(v) for v in x]
+    return x
 
 
 def main():
@@ -44,7 +61,7 @@ def main():
         본문 = 답
     else:
         try:
-            본문 = json.dumps(답, ensure_ascii=False)
+            본문 = json.dumps(그림빼기(답), ensure_ascii=False)
         except Exception:
             본문 = str(답)
 

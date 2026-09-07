@@ -23,7 +23,8 @@ const OUT = process.env.OUT || '/tmp/소소3/짜임시안'
 mkdirSync(OUT, { recursive: true })
 const b64 = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`
 const 폰트 = readFileSync(join(ROOT, 'design/promo/fonts-embed.css'), 'utf8')
-const 앱 = (f) => b64(join(ROOT, `design/promo/소소기능-앱화면-2509/홈/${f}.png`))
+// ⛔ 시안 첫 판은 «홈» 캡처를 임시로 썼다 — ③ 진짜 재료(기록/)로 갈아끼웠다(2026-09-07 · 창업자 「글로봐서는 잘 모르겠어」 → 실물로 판정)
+const 앱 = (f) => b64(join(ROOT, `design/promo/소소기능-앱화면-2509/기록/${f}.png`))
 const 스 = (k) => b64(join(ROOT, `src/assets/sharepool/${k}.png`))
 
 // 🎨 ③ 팔레트 = «오래 쓴 노트» — 세이지 종이 · 먹빛 글자 · 팥죽색 포인트
@@ -64,9 +65,9 @@ body{background:${종이};${줄무늬}}
 .foot{position:absolute;left:64px;bottom:54px;font-family:'NanumPen';font-size:32px;color:#7d867e;z-index:9}</style>
 <div class="tag">소소한 기능 ③ · 5</div>
 <div class="hh">별 다섯 개 주고<br>한 줄 남겨요</div>
-${조각({ 파일: '05-홈-자주해먹는', y: 150, h: 560, 배율: 0.56, 회전: -3, left: 70, top: 430 })}
+${조각({ 파일: '03-시트-기록-별넷', y: 1150, h: 700, 배율: 0.56, 회전: -3, left: 70, top: 430 })}
 ${테이프(120, 405)}${테이프(560, 745, 150, 7)}
-${조각({ 파일: '09-레시피-자주폴더', y: 500, h: 150, x: 20, w: 1130, 배율: 0.52, 회전: 2.5, left: 470, top: 990, z: 6 })}
+${조각({ 파일: '06-일기-달력', y: 55, h: 300, x: 20, w: 1130, 배율: 0.52, 회전: 2.5, left: 470, top: 1010, z: 6 })}
 ${손동그라미(90, 455, 330, 130)}
 <div class="memo" style="left:700px;top:430px;transform:rotate(4deg)">이만큼<br>해먹었네</div>
 ${손화살표(640, 500, 120, 130, true)}
@@ -89,7 +90,7 @@ body{background:${크림}}
 <div class="band"></div><div class="band2"></div>
 <div class="hh">별 다섯 개 주고<br>한 줄 남겨요</div>
 <div class="on">해먹은 날<br>그 자리에서</div>
-${조각({ 파일: '05-홈-자주해먹는', y: 150, h: 520, 배율: 0.44, 회전: -6, left: 590, top: 400, z: 6, 테: false, r: 22 })}
+${조각({ 파일: '03-시트-기록-별넷', y: 1150, h: 700, 배율: 0.44, 회전: -6, left: 590, top: 400, z: 6, 테: false, r: 22 })}
 <div class="ss">별점·한 줄·메모가 한 화면에<br>다음 장에서 달력으로 모여요 →</div>
 <div class="next">넘겨 보세요 ⟶</div>
 <img class="sp" src="${스('duos_03')}" style="right:60px;bottom:200px;width:200px;z-index:9">
@@ -114,7 +115,7 @@ body{background:${크림}}
 <div class="gray">"저번에 그거… 맛있었는데<br>뭐였더라"</div>
 <div class="hh">별 다섯 개 주고<br>한 줄 남겨요</div>
 <div class="ss">해먹은 날 그 자리에서<br>별점·한 줄·메모까지</div>
-${조각({ 파일: '05-홈-자주해먹는', y: 150, h: 560, 배율: 0.45, 회전: -2, left: 555, top: 720, z: 6 })}
+${조각({ 파일: '03-시트-기록-별넷', y: 1150, h: 700, 배율: 0.45, 회전: -2, left: 555, top: 720, z: 6 })}
 <img class="sp" src="${스('pjs_02')}" style="left:64px;bottom:110px;width:180px;z-index:9">
 <div class="foot">한끼 · 레시피 → 만들었어요</div>`,
 }

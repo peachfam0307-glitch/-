@@ -194,6 +194,55 @@ ${조각({ 파일: '10-설정-테마', y: 1292, h: 1040, 배율: 0.34, 회전: -
 }
 
 const br = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
+// 🎬 TYPE=1 — 릴스 «쌓이기 ＋ 타자» 프레임 (2026-09-07 · 창업자 "쌓이기로 가고 타자 효과까지 얹어줘")
+//   ②편(_판-소소홈캐러셀-0907.mjs)의 판을 그대로 물려받았다 — 조각·메모·띠·스티커가 하나씩 툭 내려앉고, 제목이 커서 달고 한 자씩 찍힌다.
+//   조립 = design/promo/인스타-2509/조립-소소3릴스-타자.sh (ffmpeg concat · list.txt 가 머무는 시간을 갖고 있다)
+if (process.env.TYPE) {
+  const { writeFileSync } = await import('node:fs')
+  const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 1 })
+  const T = process.env.OUT || '/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/소소3/캐러셀-타자'
+  const TICK = 0.085
+  for (const [n, f] of Object.entries(장들)) {
+    const D = `${T}/${n}`; mkdirSync(D, { recursive: true })
+    const list = []; let k = 0
+    const 찍 = async (dur) => { const file = `${D}/f${String(k++).padStart(3, '0')}.png`; await p.screenshot({ path: file }); list.push(`file '${file}'\nduration ${dur.toFixed(3)}`) }
+    await p.setContent(`<!doctype html><meta charset="utf-8">${f()}<style>.ch.off{visibility:hidden}.cur{display:inline-block;width:.09em;height:.86em;background:${팥};vertical-align:-.06em;margin-left:.05em;border-radius:3px}.hid{visibility:hidden!important}</style>`)
+    await p.evaluate(() => document.fonts.ready); await p.waitForTimeout(300)
+    const N = await p.evaluate(() => {
+      const h = document.querySelector('.hh'); let i = 0, out = ''
+      for (const part of h.innerHTML.split(/(<br>)/)) { if (part === '<br>') { out += '<br>'; continue } for (const ch of part) out += `<span class="ch off" data-i="${i++}">${ch}</span>` }
+      h.innerHTML = out
+      const els = [...document.querySelectorAll('.piece, .tape, .memo, .band, .band2, .cut, .up, .dn, .lab, .ss, .pill, .foot, .next, .on, .gray, .sp')]
+      els.forEach((e, j) => { e.dataset.step = j; e.classList.add('hid') })
+      return i
+    })
+    await 찍(0.35)   // 빈 판 — 「지금부터 쌓인다」
+    const steps = await p.evaluate(() => [...document.querySelectorAll('[data-step]')].map((e) => [Number(e.dataset.step), e.classList.contains('tape')]))
+    for (const [j, tape] of steps) {
+      await p.evaluate((j) => { const e = document.querySelector(`[data-step="${j}"]`); e.classList.remove('hid'); e.style.translate = '0 -28px'; e.style.opacity = '.55' }, j)
+      if (!tape) await 찍(0.07)
+      await p.evaluate((j) => { const e = document.querySelector(`[data-step="${j}"]`); e.style.translate = ''; e.style.opacity = '' }, j)
+      await 찍(tape ? 0.06 : 0.2)
+    }
+    for (let c = 0; c <= N; c++) {
+      await p.evaluate((c) => {
+        const h = document.querySelector('.hh'); h.querySelector('.cur')?.remove()
+        const chs = [...h.querySelectorAll('.ch')]; chs.forEach((x, i) => x.classList.toggle('off', i >= c))
+        const cur = document.createElement('span'); cur.className = 'cur'; c ? chs[c - 1].after(cur) : h.prepend(cur)
+      }, c)
+      await 찍(c === 0 ? 0.3 : TICK)
+    }
+    const last = list.length - 1
+    await p.evaluate(() => document.querySelector('.hh .cur')?.remove()); await 찍(0.3)
+    list.push(list[last].replace(/duration .*/, 'duration 0.3')); list.push(list[list.length - 2].replace(/duration .*/, 'duration 0.3'))   // 커서 깜빡 두 번
+    await 찍(1.2)
+    const total = list.reduce((a, l) => a + Number(l.match(/duration ([\d.]+)/)[1]), 0)
+    writeFileSync(`${D}/list.txt`, list.join('\n') + '\n' + list[list.length - 1].split('\n')[0] + '\n')
+    console.log('  🎬', n, `${steps.length}단 · ${N}자 · ${total.toFixed(2)}초`)
+  }
+  await br.close(); process.exit(0)
+}
+
 const p = await br.newPage({ viewport: { width: 1080, height: 1350 }, deviceScaleFactor: 2 })
 const names = []
 for (const [n, f] of Object.entries(장들)) {

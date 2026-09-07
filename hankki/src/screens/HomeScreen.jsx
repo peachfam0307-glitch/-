@@ -246,8 +246,14 @@ export default function HomeScreen() {
   //    ⛔ 홈 한 줄(cloudRow)과 같은 잣대(클라우드보임·!로그인해뒀나) ＋ «잃을 게 있나» = 내 레시피 **또는** 내 일기 1편↑
   //       (창업자 2026-09-06 *"레시피나 일기가 사라진다고 해야하려나"* → *"그렇게 하자"* — 일기만 쓰는 사람도 폰 바꾸면 똑같이 잃는다).
   //    ⭐ 뜨는 날은 홈 한 줄을 «같이» 그리지 않는다 — 같은 말을 두 번 하면 그게 재촉이다.
+  // 🔐🔐 **[창업자 확정 2026-09-08 00:14] 「0편인 사람한테도 뜨게 하자」**
+  //   ⛔⛔ 그 전엔 «레시피 또는 일기 1편 이상»이라야 떴다 — 그래서 **0편인 사람에겐 아예 안 떴다.**
+  //      ⭐ 그런데 **0편이 제일 위험하다** — 잃을 게 없어 보이지만 «앞으로 쌓을 것»을 통째로 잃는다.
+  //   ⭐ 대상이 좁아졌다 = v12.73 부터 새로 깐 사람은 로그인하고 시작한다(CloudGate).
+  //      그러니 여기 걸리는 0편 비로그인은 **이미 쓰던 사람** 또는 **로그인이 안 돼 탈출구로 온 사람**뿐이다.
+  //   ⛔ 문구는 `LoginNudge` 가 0편 갈래를 «따로» 그린다 — 안 그러면 「내가 저장한 이 사라져요」로 깨진다.
   const [loginPop, setLoginPop] = useState(
-    () => 클라우드보임() && !로그인해뒀나() && (myRecipeCount(recipes) >= 1 || myDiaryCount(diary) >= 1)
+    () => 클라우드보임() && !로그인해뒀나()
       && needsLoginNudge() && !needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY)
   )
   const closeLoginPop = () => { markLoginNudgeSeen(); setLoginPop(false) }

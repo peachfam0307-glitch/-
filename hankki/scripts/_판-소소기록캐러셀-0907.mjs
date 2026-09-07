@@ -30,7 +30,12 @@ const b64 = (p) => `data:image/png;base64,${readFileSync(p).toString('base64')}`
 const 폰트 = readFileSync(join(ROOT, 'design/promo/fonts-embed.css'), 'utf8')
 const 앱 = (f) => b64(join(앱폴더, `${f}.png`))
 // 🦫 ka_* 는 앱 스티커 폴더(photo)에 있다 — pjs_·duos_·gp_ 는 sharepool 정본
-const 스 = (k) => b64(join(ROOT, /^(pjs|duos|gp|gom|gn|peng|pn|duo|sm)_/.test(k) ? `src/assets/sharepool/${k}.png` : `src/assets/stickers/photo/${k}.png`))
+const 스 = (k) => b64(join(ROOT, /^(pjs|duos|gp|gom|gn|peng|pn|duo|sm|gc|pc|kc|tc)_/.test(k) ? `src/assets/sharepool/${k}.png` : `src/assets/stickers/photo/${k}.png`))
+// 🎬 창업자 장면 컷 — 배경이 통째로 그려진 네모. 스크랩북 짜임에 «사진처럼» 붙인다
+const 장면 = (f) => b64(join(ROOT, `docs/stickers/펭펭카롱-창업자-2026-09-07/장면/${f}.png`))
+const 사진 = ({ 파일, w = 300, 회전 = 0, left, top, z = 6 }) =>
+  `<div class="piece" style="position:absolute;z-index:${z};left:${left}px;top:${top}px;width:${w}px;height:${w}px;overflow:hidden;border:12px solid #fff;border-bottom-width:44px;background:#fff;box-shadow:0 14px 30px rgba(50,60,52,.26);transform:rotate(${회전}deg)">
+  <img src="${장면(파일)}" style="width:100%;display:block"></div>`
 
 // 🎨 ③ 팔레트 = «오래 쓴 노트» — 세이지 종이 · 먹빛 글자 · 팥죽색 포인트
 const 종이 = '#e7ebe0', 먹 = '#38403a', 팥 = '#9c4a3c', 크림 = '#fbf9f3', 흐림 = '#6b746c'
@@ -70,7 +75,7 @@ body{background:${종이};${줄무늬}}
 <div class="tag">${태그3(no)}</div>
 <div class="hh">${머리}</div>
 ${조각들}${메모}
-<img class="sp${/^gp_/.test(스티커) ? ' gom' : /^kp_/.test(스티커) ? ' wide' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
+<img class="sp${/^gp_/.test(스티커) ? ' gom' : /^(kp|tc)_/.test(스티커) ? ' wide' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
 <div class="foot">${꼬리}</div>`
 
 // ── E 이어지는 띠 ─────────────────────────────────────────────
@@ -89,7 +94,7 @@ body{background:${크림}}
 ${조각들}
 <div class="ss">${부제}</div>
 ${다음 ? `<div class="next">${다음}</div>` : ''}
-<img class="sp${/^gp_/.test(스티커) ? ' gom' : /^kp_/.test(스티커) ? ' wide' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
+<img class="sp${/^gp_/.test(스티커) ? ' gom' : /^(kp|tc)_/.test(스티커) ? ' wide' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
 <div class="foot">${꼬리}</div>`
 
 // ── F 반반 대비 ───────────────────────────────────────────────
@@ -111,7 +116,7 @@ body{background:${크림}}
 <div class="hh">${머리}</div>
 <div class="ss">${부제}</div>
 ${조각들}
-<img class="sp${/^gp_/.test(스티커) ? ' gom' : /^kp_/.test(스티커) ? ' wide' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
+<img class="sp${/^gp_/.test(스티커) ? ' gom' : /^(kp|tc)_/.test(스티커) ? ' wide' : ''}" src="${스(스티커)}" style="${스자리};z-index:9">
 <div class="foot">${꼬리}</div>`
 
 // ── 8장 ───────────────────────────────────────────────────────
@@ -123,7 +128,7 @@ const 장들 = {
   // 1 표지 — E
   '소소3-01-표지': () => E({ no: 1, 머리: '해먹은 건<br>기록으로 남아요', 띠글: '별점 · 한 줄 ·<br>사진 · 일기까지', 부제: '「만들었어요」 한 번이면 그날이 남아요<br>달력에 쌓이고, 백업으로 안 잃어요',
     조각들: 조각({ 파일: '03-시트-기록-별넷', y: 1120, h: 880, 배율: 0.40, 회전: -6, left: 560, top: 400, z: 6, 테: false, r: 22 }),
-    스티커: 'duos_07', 스자리: 'right:56px;bottom:180px', 다음위: 'right:56px;bottom:64px', 꼬리: '한끼 · 레시피 → 만들었어요' }),
+    스티커: 'tc_01', 스자리: 'right:44px;bottom:170px', 다음위: 'right:56px;bottom:64px', 꼬리: '한끼 · 레시피 → 만들었어요' }),
 
   // 2 별점·한 줄 — D
   '소소3-02-별점': () => D({ no: 2, 머리: '별점 주고<br>한 줄 적어요',
@@ -180,7 +185,7 @@ body{background:${크림}}
 ${조각({ 파일: '10-설정-테마', y: 1500, h: 740, 배율: 0.38, 회전: -6, left: 540, top: 380, z: 6, 테: false, r: 22 })}
 <div class="ss">①장보기 ②홈이 알아서 ③기록은 내 것<br>세 편 다 무료로 쓰는 기능이에요</div>
 <div class="pill">▶ Play 스토어에서 「한끼」 검색</div>
-<img class="sp" src="${스('duos_06')}" style="right:56px;bottom:140px;transform:rotate(-3deg);z-index:9">
+<img class="sp" src="${스('tc_04')}" style="right:40px;bottom:132px;height:250px;transform:rotate(-2deg);z-index:9">
 <div class="foot">오늘도 한 끼 해냈다면, 한끼에서 만나요</div>`,
 }
 

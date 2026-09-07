@@ -360,6 +360,20 @@ export function 짧은모델(m) {
 // ⛔ 문구는 «여기 한 곳»에서만 고친다 — 두 문에 복붙하면 한쪽만 낡는다(v11.30 「열쇠 이름」과 같은 결).
 export const AI다듬는중 = ' · AI가 더 다듬는 중이에요(20~60초)'
 
+/**
+ * 🔍🔍 **[2026-09-08 · 창업자 제보] 「AI 다듬기는 못 했어요」만 뜨고 «왜»가 어디에도 안 남았다.**
+ *   📮 창업자 = *"그리고 이거 또안돼"* → 캡처엔 실패 줄뿐이라 **나도 원인을 못 짚었다.**
+ *   ⛔ 유저에게 `timeout`·`http_429` 를 보이지 않는다(그대로 두면 「고장」으로 읽힌다) —
+ *      **운영자 통로(`hankki:founder`)일 때만** 꼬리로 붙인다. `tidyTail` 과 같은 잣대다.
+ *   ⭐ 이건 「고침」이 아니라 «볼 수 있게 하는 것»이다 — 원인을 모르면 다음 고침도 짐작이 된다.
+ */
+export function 실패꼬리() {
+  if (!tidyFounder()) return ''
+  const v = _마지막
+  const 어디서 = v && v.model ? ` ${짧은모델(v.model)}${v.ms ? ' ' + (v.ms / 1000).toFixed(1) + '초' : ''}` : ''
+  return ` (${(v && v.why) || '안부름'}${어디서})`
+}
+
 export function tidyTail() {
   const v = _마지막
   const 운영자 = tidyFounder()

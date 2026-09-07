@@ -7,7 +7,7 @@ import SourceBadge from '../components/SourceBadge'
 import ConfirmSheet from '../components/ConfirmSheet'
 import { timeAgo } from '../utils'
 import { getOcrLeft, KEY_NAME, KEY_UNIT } from '../ocr'
-import { tidyRecipe } from '../tidy'
+import { tidyRecipe, 실패꼬리 } from '../tidy'
 import { 만회값 } from '../retidy'
 import uiKeyOne from '../assets/ui/key_one.png'
 import uiKeyHole from '../assets/ui/key_hole.png'
@@ -63,7 +63,8 @@ export default function InboxScreen() {
       // ⛔ 유저가 «직접 눌렀으니» 실패도 말한다(공유받기 때 조용한 것과 다르다)
       updateRecipe(r.id, { tidyFail: 2 })
       // ⛔ `tidyFounder`·`tidyTail` 을 여기서 직접 부르지 않는다 — 운영자 판정 잣대는 `getOcrLeft().무제한` 한 곳(_repro-운영자무제한-0902)
-      nav.showToast('AI 다듬기는 못 했어요 · 한 번 더 눌러 보세요', 6000)
+      // 🔍 운영자에게만 «왜»를 붙인다(`실패꼬리` · 유저에겐 빈 글자) — 창업자 2026-09-08 제보로 넣었다
+      nav.showToast('AI 다듬기는 못 했어요 · 한 번 더 눌러 보세요' + 실패꼬리(), 6000)
       return
     }
     const { 바꿀것 } = 만회값(r, 원문, ai)

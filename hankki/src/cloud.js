@@ -141,6 +141,7 @@ export async function 로그아웃() {
   await A.signOut(auth)
   표식쓰기(false)
   번호쓰기('')
+  지문지우기()   // 🕒 다음 사람은 처음부터(지문 · 받은 때 둘 다)
 }
 
 // ⏳⏳ **[2026-09-04 · 오늘 하루를 먹은 자리] 「로그인했나」를 «기다린 뒤에» 묻는다.**
@@ -243,7 +244,25 @@ function 이름으로(id) {
 const 지문칸 = 'hankki:cloud:sent'
 const 지문읽기 = () => { try { return JSON.parse(localStorage.getItem(지문칸)) || {} } catch { return {} } }
 const 지문쓰기 = (m) => { try { localStorage.setItem(지문칸, JSON.stringify(m)) } catch { /* 못 써도 다음에 전부 올릴 뿐이다 */ } }
-export function 지문지우기() { try { localStorage.removeItem(지문칸) } catch { /* noop */ } }
+// 🕒 「마지막으로 받은 때」 = **클라우드가 준 값(ms)** — 폰 시계가 아니다. 없으면 «통째로» 받는다.
+const 받은때칸 = 'hankki:cloud:pulledAt'
+const 마지막받은때읽기 = () => { try { const v = Number(localStorage.getItem(받은때칸)); return v > 0 ? v : null } catch { return null } }
+const 마지막받은때쓰기 = (ms) => { try { localStorage.setItem(받은때칸, String(ms)) } catch { /* 못 쓰면 다음에 통째로 받을 뿐 */ } }
+export function 지문지우기() {
+  try { localStorage.removeItem(지문칸) } catch { /* noop */ }
+  // ⛔ 지문을 지우면 «받은 때»도 같이 — 다른 사람으로 로그인하거나 비운 뒤엔 처음부터 통째로.
+  try { localStorage.removeItem(받은때칸) } catch { /* noop */ }
+}
+// 파이어스토어 Timestamp → ms. 옛 판이 올린 문서엔 없다 → null.
+function 서버때로(st) {
+  try {
+    if (!st) return null
+    if (typeof st.toMillis === 'function') return st.toMillis()
+    if (typeof st === 'number') return st
+    const n = new Date(st).getTime()
+    return Number.isFinite(n) ? n : null
+  } catch { return null }
+}
 
 function 지문(글) {
   let h = 5381
@@ -317,7 +336,11 @@ export async function 올리기(백업, { 진행, 통째로, 기기, 안바뀌�
     const 열쇠 = 갈래 + ':' + id
     새지문[열쇠] = 지문(글)
     if (옛지문[열쇠] === 새지문[열쇠]) return // 안 바뀐 것은 안 쓴다
-    할일.push({ 자리: F.doc(db, 'users', 사람.번호, 갈래, 이름으로(id)), 값: { j: 글 }, 크기: 글.length })
+    // 🕒 [2026-09-07] `st` = **클라우드 시계**(serverTimestamp). 「바뀐 것만 받기」가 이 칸으로 거른다.
+    //   ⛔ 「고친때」를 쓰지 않는다 — 앱 어디에서도 고친때를 안 찍는다(`store.jsx` 는 `savedAt` 만) →
+    //      그걸 썼으면 늘 0 이라 «바뀐 것만»이 영원히 0건이었다(계획 §9 · 실측).
+    //   ⛔ 폰 시계도 안 쓴다 — 기기마다 달라 두 기기를 못 견준다. 서버가 찍어야 같은 자로 잰다.
+    할일.push({ 자리: F.doc(db, 'users', 사람.번호, 갈래, 이름으로(id)), 값: { j: 글, st: F.serverTimestamp() }, 크기: 글.length })
   }
 
   const 레시피들 = Array.isArray(백업.recipes) ? 백업.recipes : []
@@ -375,7 +398,9 @@ export async function 올리기(백업, { 진행, 통째로, 기기, 안바뀌�
   //   ⭐⭐ 그래서 **숫자를 고치지 않고 «자리»를 옮겼다**(절대원칙 34) —
   //      올리는 길이 셋(수동·자동·첫 로그인)인데 도장이 «길마다» 있으면 언젠가 반드시 어긋난다.
   //      **올리기 안에 두면 길이 몇 개로 늘어도 안 샌다.**
-  const 메타값 = { j: 메타글, at: 언제, v: 2, n레시피: 레시피들.length, n일기: 일기들.length, 기기: 기기 || 내기기() }
+  // 🕒 meta 의 `st` 는 «이 묶음의 마지막 할일»이라 편들의 st 보다 늦거나 같다 →
+  //    받는 쪽이 「meta.st 이후」로 다음에 받아도 빠지는 편이 없다(계획 §9 사고 각도).
+  const 메타값 = { j: 메타글, at: 언제, v: 2, n레시피: 레시피들.length, n일기: 일기들.length, 기기: 기기 || 내기기(), st: F.serverTimestamp() }
   새지문.meta = 지문(메타글)
 
   // ⛔ 「저절로 올리기」에서 아무것도 안 바뀌었으면 **한 건도 안 쓴다.**
@@ -423,17 +448,31 @@ export async function 요약() {
  *    잠긴 일기 비번 묻기까지 **이미 있는 흐름**이 처리한다(보험 ②).
  * ⛔ 되돌려주는 값을 «앱에 바로 밀어넣지 말 것» — 덮어쓰기라 유저가 골랐어야 한다.
  */
-export async function 내려받기() {
+// 📉 [2026-09-07] **「바뀐 것만」** — `이후`(ms 숫자)를 주면 `st > 이후` 인 편만 읽는다.
+//   ⭐ 안 주면 지금처럼 «통째로». 수동 「가져오기」는 늘 통째로다 —
+//      옛 앱이 올린 `st` 없는 문서를 건질 «유일한 길»이라 그대로 둔다.
+//   ⭐ `메타문서` 를 넘겨받으면 meta 를 «다시 안 읽는다»(저절로받기가 이미 읽었다 · 읽기 2→1).
+//   되돌려주는 값에 `_서버때`(meta.st → ms · 없으면 null) 와 `_부분인가` 가 붙는다.
+export async function 내려받기({ 이후 = null, 메타문서 = null } = {}) {
   const { F, auth, db } = await 붙기()
   const 사람 = 사람으로(auth.currentUser)
   if (!사람) throw new Error('로그인부터 해주세요')
 
-  const [메타문서, 레시피들, 일기들] = await Promise.all([
-    F.getDoc(F.doc(db, 'users', 사람.번호)),
-    F.getDocs(F.collection(db, 'users', 사람.번호, 'recipes')),
-    F.getDocs(F.collection(db, 'users', 사람.번호, 'diary')),
+  const 부분인가 = 이후 != null
+  const 모음 = (갈래) => {
+    const c = F.collection(db, 'users', 사람.번호, 갈래)
+    // ⛔ `st` 가 «없는» 문서는 이 조건에 안 걸린다(파이어스토어 = 칸 없는 문서는 범위 질의에서 빠진다).
+    //    그래서 처음(받은 때 없음)엔 통째로 읽어야 한다 — 위 머리주석.
+    return 부분인가 ? F.query(c, F.where('st', '>', F.Timestamp.fromMillis(Number(이후)))) : c
+  }
+  const [메타읽은것, 레시피들, 일기들] = await Promise.all([
+    메타문서 || F.getDoc(F.doc(db, 'users', 사람.번호)),
+    F.getDocs(모음('recipes')),
+    F.getDocs(모음('diary')),
   ])
+  메타문서 = 메타읽은것
   if (!메타문서.exists()) return null
+  const 서버때 = 서버때로((메타문서.data() || {}).st)
 
   const 풀기 = (묶음) => {
     const 나온것 = []
@@ -455,6 +494,8 @@ export async function 내려받기() {
     _v: 2,
     _at: 메타문서.data().at || new Date().toISOString(),
     _from: 'cloud',
+    _서버때: 서버때,      // ms · 없으면 null(옛 판이 올린 meta)
+    _부분인가: 부분인가,  // true = 바뀐 편만 들어 있다(안 온 편은 «없는 게 아니라 안 바뀐 것»)
     recipes: 풀기(레시피들),
     diary: 풀기(일기들),
     folders: 메타.folders,
@@ -786,8 +827,11 @@ export function 안올린변경있나(백업) {
 // 받은 판을 «방금 올린 것»으로 쳐서 지문을 맞춘다.
 //   ⛔ 이게 없으면 받고 «난 다음»에 `안올린변경있나` 가 계속 참이 되어
 //      두 번째부터 자동 받기가 영영 막힌다(＝창업자가 또 손으로 눌러야 한다).
-function 지문맞추기(판) {
-  const m = {}
+function 지문맞추기(판, { 부분 = false } = {}) {
+  // 🧩 [2026-09-07] «부분 받기»면 받은 편만 갱신한다.
+  //   ⛔ 통째로 갈아끼우면 안 받은 편(＝안 바뀐 편)이 지문에서 사라져 「안 올린 것」으로 둔갑 →
+  //      다음 올리기가 그걸 전부 다시 쓴다(쓰기 낭비) — 재현판 ⑫가 잡는다.
+  const m = 부분 ? 지문읽기() : {}
   const 담기 = (갈래, 목록) => {
     for (const x of Array.isArray(목록) ? 목록 : []) {
       if (!x || x.id == null) continue
@@ -838,7 +882,14 @@ export async function 저절로받기(백업만들기) {
     //   🛟 그래도 «맨몸»으로 가지 않는다 — 얹기 «전»에 되돌릴 벌을 뜨고(아래), 무엇이 오갔는지 남긴다.
     const 양쪽이바뀜 = 안올린변경있나(백업)
 
-    const 받은판 = await 내려받기()
+    // 📉 [2026-09-07] 바뀐 것만 — 지난번 받은 때(클라우드 시계)가 있고 지문도 있으면 그 «이후»만.
+    //   ⛔ 지문이 비어 있으면(새 폰·앱 지웠다 깜) 통째로 — 안 그러면 옛 편이 «없는 것»으로 보인다.
+    //   ⭐ 위에서 읽은 meta 문서를 넘겨 «다시 안 읽는다»(읽기 2→1).
+    //   ⛔ meta 에 `st` 가 없으면(마지막에 올린 쪽이 «옛 판» 앱) 그 편들에도 st 가 없다 → 통째로.
+    //      이 한 줄이 「옛 판이 올린 편은 자동으로 안 온다」는 구멍을 막는다(값 = 상대가 옛 판인 동안만 통째로).
+    const 옛지문 = 지문읽기()
+    const 이후 = (Object.keys(옛지문).length && 서버때로(d.st) != null) ? 마지막받은때읽기() : null
+    const 받은판 = await 내려받기({ 이후, 메타문서: 문서 })
     if (!받은판) return { 했나: false, 왜: '클라우드비었음' }
 
     // 🛟🛟 **되돌릴 자리를 «먼저» 만든다.** 못 만들면 «아예 안 얹는다».
@@ -852,7 +903,9 @@ export async function 저절로받기(백업만들기) {
 
     // 🪦 무덤 = 「지웠다」 표시. 이게 있어야 지운 것이 다른 기기에서 안 되살아난다.
     let 무덤 = []
-    try { const G = await import('./syncGrave.js'); 무덤 = await G.무덤읽기() } catch { /* 없으면 아무것도 안 지운다 */ }
+    let 무덤읽음 = false
+    // 🔢 무덤은 «창고가 붙어 있을 때만» 진짜 읽기 1건이다(안 붙었으면 스스로 삼키고 [] 를 준다 — 읽기 0).
+    try { const G = await import('./syncGrave.js'); 무덤읽음 = G.붙었나(); 무덤 = await G.무덤읽기() } catch { /* 없으면 아무것도 안 지운다 */ }
 
     // 🔀 합치기 — ⛔여기서 «지우는 일»은 무덤이 시킬 때만 일어난다
     const { 합치기 } = await import('./syncMerge.js')
@@ -860,7 +913,6 @@ export async function 저절로받기(백업만들기) {
     //   ⭐ 옛 데이터엔 «고친때»가 없어 시각으로 못 가른다. 그때 이 값이 답을 준다:
     //      지문과 같으면 «나는 안 고쳤다» → 받은 것이 더 최근. 다르면 «나도 고쳤다» → 내 것을 지킨다.
     //   ⛔ 이게 없으면 옛 데이터가 «영영» 안 바뀐다 = 창업자가 겪은 증상이 그대로 남는다.
-    const 옛지문 = 지문읽기()
     const 내가바꿨나 = (갈래, 편) => {
       if (!편 || 편.id == null) return false
       const 있던것 = 옛지문[갈래 + ':' + 편.id]
@@ -898,7 +950,9 @@ export async function 저절로받기(백업만들기) {
     //   ✅ 방금 «내려받은 것»이 곧 클라우드의 내용이다 — 그걸 그대로 지문으로 삼는다.
     //      그러면 내 것 중 클라우드에 없는 편은 «안 올린 것»으로 남아 다음 올리기가 올린다.
     //   ⭐ 읽기를 더 쓰지 않는다 — 방금 받은 것을 쓰는 것뿐이다.
-    지문맞추기(받은판)
+    지문맞추기(받은판, { 부분: !!받은판._부분인가 })
+    // 🕒 서버가 준 때만 적는다 — 안 주면(옛 판 meta) «갱신하지 않는다». 엉뚱한 값을 적으면 그 뒤로 계속 어긋난다.
+    if (받은판._서버때 != null) 마지막받은때쓰기(받은판._서버때)
     const 되올림 = 0
     const 되올리며읽음 = 0
 
@@ -917,7 +971,8 @@ export async function 저절로받기(백업만들기) {
       // ⛔ meta 문서를 «두 번» 읽는다 — 저절로받기 맨 위에서 한 번(기기 확인), 내려받기 안에서 또 한 번.
       //    🧪 [2026-09-04] 판이 「계기판 2건 vs 진짜 3건」으로 잡았다. 틀린 계기판은 감보다 나쁘다.
       //    ⏳ 그 두 번을 한 번으로 줄이는 건 «바뀐 것만 읽기»를 붙일 때 같이 한다(syncPull).
-      await M.세기({ 읽기: 2 + 받은편수 + (받은판.diary || []).length + 되올리며읽음 })
+      // 🔢 [2026-09-07] meta 1 ＋ 받은 편 ＋ 무덤 1(읽었으면). 이제 meta 는 «한 번»만 읽는다.
+      await M.세기({ 읽기: 1 + 받은편수 + (받은판.diary || []).length + (무덤읽음 ? 1 : 0) + 되올리며읽음 })
     } catch { /* 곁다리 */ }
     return 결과
   } catch (e) {

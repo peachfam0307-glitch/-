@@ -87,12 +87,37 @@ export default function LoginNudge({ recipes = 0, diaries = 0, onLater, onLogged
           <div style={{ padding: '6px 22px 0', textAlign: 'center', fontFamily: "'Jua', sans-serif" }}>
             <img src={duoHi} alt="" aria-hidden draggable={false} style={{ width: 150, maxWidth: '48%', display: 'block', margin: '0 auto' }} />
 
+            {/* 🔐🔐 **[창업자 확정 2026-09-08 00:1x] 「앞으로 저장할 것」까지 말한다 ＋ 0편에게도 띄운다.**
+                📮 창업자 = *"**앞으로 저장하는 것들을 잃게 된다고 알려줘야할 듯**"* → *"**0편인 사람한테도 뜨게 하자**"*
+                ⛔⛔ 그 전 문구는 **이미 쌓은 것만** 말했다 — 「내가 저장한 레시피 1편이 사라져요」.
+                   1편 있는 사람은 «1편쯤이야» 하고 넘긴다. **진짜 손해는 앞으로 쌓을 전부**인데 그 말이 없었다.
+                ⛔⛔ 그리고 0편이면 이 자리가 **통째로 깨졌다** — `잃을것` 이 빈 배열이라
+                   「내가 저장한 **이** 사라져요」가 된다. 0편에게 띄우려면 이 갈래가 «반드시» 있어야 한다.
+                ⭐ 0편이 제일 위험하다 — 잃을 게 없어 보이지만 **앞으로 쌓을 것을 통째로** 잃는다. */}
             <div style={{ fontSize: 24, fontWeight: 400, lineHeight: 1.35, letterSpacing: '-0.01em', marginTop: 10, textWrap: 'balance' }}>
-              앱을 지우거나 폰을 바꾸면
-              <br />내가 저장한 {잃을것.map((x, i) => (
-                <span key={x.말}>{i > 0 && '·'}{x.말} <span style={{ color: 'var(--brown)' }}>{x.n}편</span></span>
-              ))}이 사라져요
+              {잃을것.length ? (
+                <>
+                  앱을 지우거나 폰을 바꾸면
+                  <br />내가 저장한 {잃을것.map((x, i) => (
+                    <span key={x.말}>{i > 0 && '·'}{x.말} <span style={{ color: 'var(--brown)' }}>{x.n}편</span></span>
+                  ))}이 사라져요
+                </>
+              ) : (
+                <>
+                  앱을 지우거나 폰을 바꾸면
+                  <br />앞으로 저장할 레시피와 일기가
+                  <br /><span style={{ color: 'var(--brown)' }}>모두</span> 사라져요
+                </>
+              )}
             </div>
+
+            {/* ⭐ 쌓인 게 있는 사람에게도 «앞으로»를 알려준다 — 위 큰 글씨는 짧게 두고 여기서 한 줄로.
+                ⛔ 0편이면 위에서 이미 「앞으로」를 말했으므로 두 번 하지 않는다. */}
+            {잃을것.length > 0 && (
+              <div className="t-sub" style={{ fontSize: 15, lineHeight: 1.6, marginTop: 8 }}>
+                앞으로 저장할 것도 함께 사라져요
+              </div>
+            )}
 
             <div className="t-sub" style={{ fontSize: 16, lineHeight: 1.7, marginTop: 14 }}>
               구글로 로그인하면 —

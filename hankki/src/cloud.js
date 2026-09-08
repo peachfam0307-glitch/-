@@ -45,7 +45,8 @@
 //   ⭐ 이건 맨 위에서 받아도 된다(1KB · 파이어베이스와 달리 무겁지 않다).
 import { 카드표지인가 } from './cardCover.js'
 
-const 설정 = {
+// 📊 [2026-09-08] 통계(`stats.js`)도 «같은» 설정을 쓴다 — ⛔주소를 두 번 적지 않는다(손으로 적으면 낡는다).
+export const FIREBASE_설정 = {
   apiKey: 'AIzaSyBngI2jsjsiEpvnyjV1mRm16XV3XnGjdAc',
   authDomain: 'hankki-6a768.firebaseapp.com',
   projectId: 'hankki-6a768',
@@ -53,6 +54,7 @@ const 설정 = {
   messagingSenderId: '741474124689',
   appId: '1:741474124689:web:c01a03f5a669e249f91030',
 }
+const 설정 = FIREBASE_설정
 
 // ⛔⛔ **맨 위에서 import 하지 않는다.** 파이어베이스는 압축해도 **167KB** 다(실측 2026-08-21).
 //   로그인 안 한 사람에게 그걸 먼저 받게 하면 첫 화면이 느려진다.

@@ -44,6 +44,12 @@ export function 통계끄기설정(끌까) {
   try { if (MEASUREMENT_ID) window[`ga-disable-${MEASUREMENT_ID}`] = !!끌까 } catch { /* noop */ }
 }
 
+// ⛔⛔ [2026-09-08 실측] 처음엔 `firebase/analytics` 를 썼는데 **배포가 죽었다**(run 2285).
+//    🔢 로그 = `13/13 통과 · 자바스크립트 오류 = PAGEERROR Failed to fetch`
+//    그 SDK 는 gtag 를 «자기가» 내려받고, 실패하면 오류를 **밖으로 던진다** → 내 try/catch 가 못 잡는다.
+//    ⛔ 이건 시험판 탓이 아니다 — **인터넷이 나쁜 유저 폰에서 똑같이 난다.**
+//    ⭐ 그래서 gtag 를 «내가» 넣는다 — 실패를 `onerror` 로 잡을 수 있고(조용히 넘어간다),
+//       firebase/app(30KB)도 안 받는다. 콘솔에는 똑같이 쌓인다(같은 GA4 속성이다).
 let 붙였나 = false
 
 /** 🚀 앱이 뜬 «뒤에» 부른다. 두 번 불러도 한 번만 붙는다. */
@@ -54,17 +60,21 @@ export function 통계시작() {
   if (통계꺼짐()) { 통계끄기설정(true); return }
 
   const 나중에 = window.requestIdleCallback || ((f) => setTimeout(f, 2000))
-  나중에(async () => {
+  나중에(() => {
     try {
-      const [{ initializeApp, getApps }, { getAnalytics, isSupported }] = await Promise.all([
-        import('firebase/app'),
-        import('firebase/analytics'),
-      ])
-      if (!(await isSupported())) return   // ⛔ 사파리 사생활 모드 등 — 조용히 넘어간다
-      // ⭐ 주소는 `cloud.js` 것을 그대로 쓴다 — 두 곳에 적으면 한쪽이 반드시 낡는다.
-      const { FIREBASE_설정 } = await import('./cloud.js')
-      const app = getApps().length ? getApps()[0] : initializeApp({ ...FIREBASE_설정, measurementId: MEASUREMENT_ID })
-      getAnalytics(app)
+      window.dataLayer = window.dataLayer || []
+      // eslint-disable-next-line prefer-rest-params
+      function gtag() { window.dataLayer.push(arguments) }
+      window.gtag = gtag
+      gtag('js', new Date())
+      // 🙈 `send_page_view` 는 그대로 둔다 — 화면 이름만 간다(유저가 쓴 글자는 안 담긴다).
+      gtag('config', MEASUREMENT_ID, { anonymize_ip: true })
+      const s = document.createElement('script')
+      s.async = true
+      s.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`
+      // ⭐⭐ 이 한 줄이 배포를 살린다 — 못 받아와도 «조용히» 끝난다(오류를 밖으로 안 던진다).
+      s.onerror = () => {}
+      document.head.appendChild(s)
     } catch { /* ⛔ 통계가 죽어도 앱은 그대로 돈다 */ }
   })
 }

@@ -9,7 +9,7 @@
 //   · 크기 = 다른 로그인 단추보다 «작지 않게» → GoogleButton 과 같은 높이·폭
 //   · ⛔⛔ **로고는 «Apple Design Resources 에서 내려받은 원본»만** — *"never create a custom Apple logo"*
 //        그래서 여기에 로고를 «그리지 않는다». `public/apple-logo-white.svg` 가 있으면 보여 주고 없으면 글자만 둔다.
-//        ⏳ 그 파일 = 창업자가 developer.apple.com/design/resources (Sign in with Apple › Logos) 에서 받아 넣는다(HANDOVER 할 일).
+//        ✅ 2026-09-08 창업자가 `Logo-Sign-in-with-Apple.dmg` 를 받아 줬고, 그 안의 「Left White Logo Small」 SVG 를 «한 글자도 안 고치고» 넣었다.
 //   · App Review 가 «모든 custom 단추»를 본다 → 로고 없이 제출하지 않는다(게이트 = 재현판 ⑥이 파일 유무를 «알린다»).
 //
 // ⛔ 「Apple」은 남의 상표라 영어 그대로 — 우리 「화면에 영어 0개」 원칙의 두 번째 예외(첫째 = Google 단추).
@@ -34,8 +34,9 @@ export default function AppleButton ({ label = 'Apple로 로그인', busy = fals
       }}
     >
       {로고있나 && (
+        {/* 원본 = Apple Design Resources 「Left White Logo Small」(24×44 · 여백 포함 · 검정 바탕에 흰 로고) — 비율 그대로 높이만 맞춘다(⛔늘리거나 자르지 않는다) */}
         <img
-          src={base + 애플로고경로} alt="" aria-hidden="true" width={19} height={19}
+          src={base + 애플로고경로} alt="" aria-hidden="true" width={12} height={22}
           style={{ display: 'block', flex: '0 0 auto' }}
           onError={() => set로고있나(false)}
         />

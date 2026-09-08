@@ -1230,6 +1230,17 @@ img {
 .grid2 .fav-dot .idx-clip {
   height: 36px;
 }
+/* 🔴 **하트만 더 작게** — 창업자 2026-09-08 *"하트 26으로 줄이고"*
+   🔢 실측 = 둘 다 30px 인데 하트가 «덩어리»가 더 커 보였다. 높이가 같아도
+      모자 121×180(폭 0.67) ↔ 하트 116×180(폭 0.64)에 색이 진해 면적 존재감이 다르다.
+   ⭐ 같은 px 이 같은 존재감이 아니다 — 바로 위 큰 격자 칸에서 이미 겪은 것과 같은 이치다.
+   📐 큰 격자는 같은 비율로 = 36 × 26/30 = 31px. */
+.fav-dot .idx-clip.heart {
+  height: 26px;
+}
+.grid2 .fav-dot .idx-clip.heart {
+  height: 31px;
+}
 .card-del {
   position: absolute;
   top: 7px;

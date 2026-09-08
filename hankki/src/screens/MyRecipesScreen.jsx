@@ -964,7 +964,7 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                                   ⛔ 하트의 연한 판은 안 만든다 — 「비어 있음」은 한 가지면 된다. */
                             src={!r.favorite ? idxChefFaint : pinOf(r) === 'heart' ? idxHeart : idxChef}
                             alt=""
-                            className="idx-clip"
+                            className={`idx-clip${r.favorite && pinOf(r) === 'heart' ? ' heart' : ''}`}
                           />
                         </button>
                       )}

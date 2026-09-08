@@ -278,7 +278,13 @@ body{width:${W}px;height:${H}px;position:relative;overflow:hidden;
     linear-gradient(180deg,${크림} 0%,#f3ebf8 55%,${살구} 100%)}   /* ⛔살구빛(#f7e9d6)을 뺐다 — 창업자 *"그라데이션이 살구를 빼줘"* */
 .hole{position:absolute;left:${앱X}px;top:${앱Y}px;width:${앱W}px;height:${앱H}px;border-radius:44px;
   background:#fff;box-shadow:0 30px 66px rgba(60,35,10,.26)}
-</style><div class="hole"></div>`
+/* 🐻 창업자 = *"한끼 로고를 핑크배경에 투명으로도 넣자 광고는해야지"*
+   ⭐ 자리 = **아래 한가운데** — 곰펭 컷은 좌우 끝, 자막은 그 위라 여기만 여덟 장면 내내 비어 있다.
+   ⭐ 배경 층에 둔다 — 전 장면에 같은 자리로 박히고 앞면 글자를 안 가린다.
+   ⛔ 너무 흐리게 두지 않는다 — 광고인데 안 읽히면 붙인 뜻이 없다. */
+.logo{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:250px;opacity:.92;
+  filter:drop-shadow(0 6px 14px rgba(93,52,16,.18))}
+</style><div class="hole"></div><img class="logo" src="${b64(join(ROOT, 'design/promo/logo/한끼로고-곰ㅎ-투명-2507.png'))}">`
 
 const 앞면 = (제목, 자막, 컷, 옵션 = {}) => `<style>${폰트}
 *{margin:0;padding:0}

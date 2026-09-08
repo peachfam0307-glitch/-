@@ -7,8 +7,9 @@ import SourceBadge from '../components/SourceBadge'
 import ConfirmSheet from '../components/ConfirmSheet'
 import { timeAgo } from '../utils'
 import { getOcrLeft, KEY_NAME, KEY_UNIT } from '../ocr'
-import { tidyRecipe } from '../tidy'
+import { tidyRecipe, 실패꼬리 } from '../tidy'
 import { 만회값 } from '../retidy'
+import TidyWaiting from '../components/TidyWaiting'
 import uiKeyOne from '../assets/ui/key_one.png'
 import uiKeyHole from '../assets/ui/key_hole.png'
 
@@ -50,11 +51,15 @@ export default function InboxScreen() {
   //   ⭐ 얹는 규칙은 `retidy.js` 의 `만회값()` «한 곳» — 상세 화면의 자동 만회와 «같은 말»이라야 안 갈린다.
   //   ⛔ 원문(`rawText`)이 없는 편(8/22 이전에 담은 것)엔 단추를 안 그린다 — 없는 걸 있는 척하지 않는다.
   const [다듬는중, set다듬는중] = useState('')   // 지금 AI 가 도는 줄의 id (한 번에 하나)
+  // 🧺 「끝날 때까지 뜨는 창」을 닫았나 (창업자 2026-09-08 *"끝날때까지는 창을 띄워주던가 해야할 듯"*)
+  //   ⛔ 닫아도 일은 «계속된다» — 창만 치우는 것이다(TidyWaiting 머리 주석 참고).
+  const [창닫음, set창닫음] = useState(false)
   const 다듬기 = async (r) => {
     const 원문 = String(r.rawText || '')
     if (다듬는중 || 원문.length < 40) return
     set다듬는중(r.id)
-    nav.showToast('AI가 다듬는 중이에요 · 20~60초 걸려요', 6000)
+    set창닫음(false)   // ⭐ 새로 시작할 땐 창을 «다시» 연다(먼젓번에 닫아 뒀어도)
+    nav.showToast('AI가 다듬는 중이에요 · 다 되면 레시피에 저절로 올라가요', 6000)
     // 👁 사진도 같이(ⓒ) — 저장된 캡처가 dataURL 이면 그것(`tidy.js` 가 한 번 더 거른다)
     const 사진 = typeof r.image === 'string' && r.image.startsWith('data:image/') ? r.image : ''
     const ai = await tidyRecipe(원문, 사진)
@@ -63,7 +68,8 @@ export default function InboxScreen() {
       // ⛔ 유저가 «직접 눌렀으니» 실패도 말한다(공유받기 때 조용한 것과 다르다)
       updateRecipe(r.id, { tidyFail: 2 })
       // ⛔ `tidyFounder`·`tidyTail` 을 여기서 직접 부르지 않는다 — 운영자 판정 잣대는 `getOcrLeft().무제한` 한 곳(_repro-운영자무제한-0902)
-      nav.showToast('AI 다듬기는 못 했어요 · 한 번 더 눌러 보세요', 6000)
+      // 🔍 운영자에게만 «왜»를 붙인다(`실패꼬리` · 유저에겐 빈 글자) — 창업자 2026-09-08 제보로 넣었다
+      nav.showToast('AI 다듬기는 못 했어요 · 한 번 더 눌러 보세요' + 실패꼬리(), 6000)
       return
     }
     const { 바꿀것 } = 만회값(r, 원문, ai)
@@ -253,6 +259,9 @@ export default function InboxScreen() {
           onClose={() => setDelAsk(null)}
         />
       )}
+
+      {/* 🧺 AI 가 도는 «내내» 떠 있는 창 — 토스트는 6초면 사라져서 「먹통」으로 읽혔다(창업자 실물) */}
+      {다듬는중 && !창닫음 && <TidyWaiting onClose={() => set창닫음(true)} />}
     </div>
   )
 }

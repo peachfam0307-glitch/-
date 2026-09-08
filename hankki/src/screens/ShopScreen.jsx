@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { COACH } from '../coach'
 import { useStore, newId } from '../store'
+import { pantryExpiryCount } from '../pantryExpiry'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import Icon from '../components/Icon'
@@ -78,7 +79,8 @@ const secBtnStyle = { fontSize: 16.5, fontWeight: 700, color: 'var(--brown)', ba
 
 export default function ShopScreen() {
   const store = useStore()
-  const { shops, shoppingList } = store
+  const { shops, shoppingList, pantry } = store
+  const expN = pantryExpiryCount(pantry)
   const nav = useNav()
   const [editShops, setEditShops] = useState(false)
   const [shopForm, setShopForm] = useState(null) // null | {} (new) | shop (edit)
@@ -123,7 +125,10 @@ export default function ShopScreen() {
         {/* 장보기가 주(첫인상), 냉장고는 옆 토글(부). 냉장고 기능은 유지하되 앞으로 안 내세운다. */}
         <div className="segment" style={{ marginTop: 4 }}>
           <button type="button" className={`seg ${view === 'shop' ? 'on' : ''}`} onClick={() => setView('shop')}>장보기</button>
-          <button type="button" className={`seg ${view === 'pantry' ? 'on' : ''}`} data-coach="pantry" onClick={() => setView('pantry')}>냉장고</button>
+          {/* 🔴 「냉장고 ②」 — 임박·지난 재료 개수. 탭바 점과 같은 셈(`pantryExpiry.js`). 0 이면 숫자가 없다. (창업자 확정 2026-09-06) */}
+          <button type="button" className={`seg ${view === 'pantry' ? 'on' : ''}`} data-coach="pantry" onClick={() => setView('pantry')}>
+            냉장고{expN > 0 && <span className="seg-count" data-testid="pantry-exp-count">{expN}</span>}
+          </button>
         </div>
 
         {view === 'pantry' && <PantryView />}
@@ -598,7 +603,7 @@ function Curation() {
   return (
     <>
       <div className="sec-head" style={{ marginTop: 6 }}>
-        <div className="h-section" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><img src={uiGomShop} alt="" draggable={false} style={{ width: 28, height: 28, objectFit: 'contain', flex: '0 0 auto' }} />주부의 장바구니</div>
+        <div className="h-section" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><img src={uiGomShop} alt="" draggable={false} style={{ width: 28, height: 28, objectFit: 'contain', flex: '0 0 auto' }} />주부의 장바구니{/* 📅 「토」 = 매주 토요일 3개씩 새로 열린다(weeklypick.js 갓열린것 · 창업자 2026-09-07 「주부의 장바구니 토요일도 같이 달아줘」) · 홈 「이번 주」 상자의 월·수 배지와 같은 모양 */}<span className="weekly-day" aria-label="토요일마다 새로 와요">토</span></div>
         <button className="press" style={secBtnStyle} onClick={() => setOpen((v) => !v)}>{open ? '접기' : '펼치기'}</button>
       </div>
       {/* ⭐ 「계속 올라와요」를 여기로 올렸다 — 창업자 2026-08-03 *"주부의 장바구니옆에 계속 올라오다는
@@ -629,9 +634,31 @@ function Curation() {
              → ⭐**맞는 판단이다.** 쿠팡 링크가 34개나 보이는데 아무 말이 없으면
                 「안 받는다」가 아니라 **「말 안 하고 받는다」로 읽힌다.** 없는 게 오히려 의심을 산다.
           ⛔ 이 줄을 지우지 말 것. 지우면 `scripts/check-affiliate.mjs` 가 배포를 막는다(제휴 링크가 있을 때).
-          ⚠️ 제휴를 «시작하면» 이 문장을 사실에 맞게 고쳐야 한다 — 「받지 않아요」가 그대로면 거짓이 된다. */}
+
+          ⭐⭐ **[2026-09-08] 「받아도」 → 「받아요」로 갈았다 — 이제 «진짜로» 받기 때문이다.**
+             📮 창업자 확정 문구 = *"쿠팡 파트너스 활동으로 일정액의 수수료를 받아요 · 값은 그대로예요"*
+             🔎 왜 갈았나 = 공정위 「추천·보증 등에 관한 표시·광고 심사지침」(2023-12-01 시행 개정판)이
+                **「지급받을 수 있음」 같은 조건부·불확정 표현을 «부적절 예시»로 콕 집었다.**
+                「받아도」는 «가정»으로 읽혀 「지금 받는다」는 사실이 안 드러난다 → 확정형이라야 한다.
+             📌 쿠팡 파트너스 «최종» 승인 심사도 **이 문구가 보이는 스크린샷**을 요구한다.
+             ⛔ 여기서 「쿠팡 파트너스」·「수수료」·「받아요」를 빼지 말 것 —
+                `check-affiliate.mjs` 가 그 셋을 찾고, 조건부 표현이 다시 들어오면 배포를 막는다. */}
       <div className="t-sub" style={{ fontSize: 15, marginTop: 0, marginBottom: 12, lineHeight: 1.45 }}>
-        <b style={{ color: 'var(--brown)', whiteSpace: 'nowrap' }}>제휴 수수료를 받아도</b> 값은 그대로예요
+        {/* ⭐ 굵은 말에 `nowrap` — 좁은 폰에서 줄이 넘어가도 「쿠팡 파트너스」 덩어리는 안 갈린다 */}
+        <b style={{ color: 'var(--brown)', whiteSpace: 'nowrap' }}>쿠팡 파트너스 활동으로</b> 일정액의 수수료를 받아요 · 값은 그대로예요
+      </div>
+      {/* 💰💰 [2026-09-08] 쿠팡 파트너스 «표준 문구» — 📮창업자 = *"쿠팡은 파트너스링크야"*
+          ⭐ 오늘 `link.coupang.com` 파트너스 링크가 앱에 «처음» 들어왔다(리오마레·퍼시피카나).
+             그 전 69개는 파트너스가 아니라 맨 `coupang.com` 주소였다 — **성격이 다르다.**
+          📄 문구는 내가 지어낸 게 아니다 — `docs/쿠팡-링크-전수-2026-09-05.md` 151줄에
+             *「최종 승인 스샷 = ①고지 문구가 보이는 화면 ②link.coupang.com 이 보이는 화면
+               → 우리 앱은 둘 다 없다」* 라고 적혀 있고, 오늘 ②가 생겼으니 ①을 채운다.
+          ⛔ 윗줄(「값은 그대로예요」)을 지우지 않는다 — 그건 «유저를 안심시키는» 말이고
+             이 줄은 «심사·공정위가 요구하는» 말이다. 하는 일이 서로 다르다.
+          ⚠️ 한 줄이 늘어난다 — 창업자가 2026-08-03 에 *"아래위로 좀 지저분해보여"* 로 박스를 뺐던 자리라
+             글자를 13px·연한 색으로 낮춰 «읽히되 안 튀게» 뒀다. 미감 판정은 창업자 몫이다. */}
+      <div className="t-sub" style={{ fontSize: 13, marginTop: -6, marginBottom: 12, lineHeight: 1.4, opacity: 0.75 }}>
+        한끼는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
       </div>
 
       {open && (

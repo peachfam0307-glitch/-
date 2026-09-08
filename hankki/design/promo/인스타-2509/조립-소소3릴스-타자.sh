@@ -3,8 +3,9 @@
 #   프레임은 생산기가 낸다: cd hankki && TYPE=1 SMOKE_CHROMIUM=... node scripts/_판-소소기록캐러셀-0907.mjs
 #   장과 장 사이는 slideup — 앞 장이 위로 밀려나며 다음 장이 아래에서 올라온다(카드가 «쌓이는» 느낌).
 set -euo pipefail
-S=/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad
-FF=/tmp/claude-0/-home-user-hankki/c8579c7b-bce4-4936-bf78-f2c0a398662b/scratchpad/ff/node_modules/ffmpeg-static/ffmpeg
+S=${S:-/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad}
+# ffmpeg 은 세션마다 자리가 다르다 — 없으면 $S/ff 에 깔아 쓴다 (npm i ffmpeg-static)
+FF=${FF:-$S/ff/node_modules/ffmpeg-static/ffmpeg}
 T=${T:-$S/소소3/캐러셀-타자}; W=${W:-$S/소소3/묶음/타자조각}; OUT=${OUT:-$S/소소3/묶음/소소3-릴스-타자.mp4}; mkdir -p $W
 BG=0xe7ebe0; TR=0.4
 NAMES=($(ls $T | sort))

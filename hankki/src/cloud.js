@@ -44,6 +44,8 @@
 // 🎴 자랑카드 표지 판정 — 화면(`Thumb.jsx`)과 «같은 잣대»를 쓴다.
 //   ⭐ 이건 맨 위에서 받아도 된다(1KB · 파이어베이스와 달리 무겁지 않다).
 import { 카드표지인가 } from './cardCover.js'
+// 🍎 앱 안 로그인 부품 다리 (큰 틀 4 · 2026-09-08) — 열쇠 만들기도 여기 한 곳
+import { 열쇠, 앱안인가, 앱으로로그인, 앱로그아웃 } from './nativeAuth.js'
 
 const 설정 = {
   apiKey: 'AIzaSyBngI2jsjsiEpvnyjV1mRm16XV3XnGjdAc',
@@ -72,7 +74,12 @@ async function 붙기() {
       import('firebase/firestore'),
     ])
     const application = 앱.initializeApp(설정)
-    붙은것 = { A: 인증, F: 창고, auth: 인증.getAuth(application), db: 창고.getFirestore(application) }
+    // 🍎 앱 안(Capacitor)에선 `initializeAuth(indexedDBLocalPersistence)` — 부품 원문(docs/firebase-js-sdk.md):
+    //    *"This makes sure that the user is still signed in the next time the app is started."* 웹은 지금 그대로 getAuth.
+    const auth = 앱안인가()
+      ? 인증.initializeAuth(application, { persistence: 인증.indexedDBLocalPersistence })
+      : 인증.getAuth(application)
+    붙은것 = { A: 인증, F: 창고, auth, db: 창고.getFirestore(application) }
     return 붙은것
   })()
   try {
@@ -99,10 +106,12 @@ function 구글번호(user) {
   return g?.uid || null
 }
 
+// 🍎 [2026-09-08 큰 틀 4 · 열쇠 갈래 ⓑ] 열쇠는 `nativeAuth.열쇠()` 한 곳이 만든다 —
+//    구글 = 지금 그대로 «구글번호» · 애플 = «apple_애플번호». 규칙(firestore.rules)도 같은 식이다.
 function 사람으로(user) {
-  const 번호 = 구글번호(user)
-  if (!번호) return null
-  return { 번호, 이름: user.displayName || '', 사진: user.photoURL || '' }
+  const k = 열쇠(user)
+  if (!k) return null
+  return { 번호: k.번호, 공급자: k.공급자, 이름: user.displayName || '', 사진: user.photoURL || '' }
 }
 
 // 🏷 «로그인해 둔 적이 있나»를 폰에 작게 적어 둔다.
@@ -125,12 +134,22 @@ export const 내구글번호 = () => { try { return localStorage.getItem(번호�
 
 // 로그인 — ⭐팝업. TWA 안에서 «된다»는 걸 2026-08-21 창업자 폰으로 확인했다.
 //   ⛔ `signInWithRedirect` 는 우리 환경(GitHub Pages)에서 깨진다 — 서드파티 쿠키를 쓴다.
-export async function 로그인() {
+//   🍎 [2026-09-08 큰 틀 4] 앱 안(Capacitor)에선 팝업이 «확실히» 죽는다(WKWebView · 구글 원문) →
+//      부품(FirebaseAuthentication)으로 로그인하고 그 열쇠로 웹 층에 signInWithCredential. 공급자 = 'google.com' | 'apple.com'.
+//      ⛔ 웹·안드로이드에서 'apple.com' 은 안 받는다 — 애플 단추 자체가 앱 안에서만 보인다.
+export async function 로그인(공급자 = 'google.com') {
   const { A, auth } = await 붙기()
-  const r = await A.signInWithPopup(auth, new A.GoogleAuthProvider())
-  const 사람 = 사람으로(r.user)
-  // ⛔ 구글 번호가 없으면 «계속하지 않는다» — Firebase UID 로 대신 넣으면 보험 ①이 조용히 깨진다.
-  if (!사람) throw new Error('구글 번호를 못 받았어요')
+  let user
+  if (앱안인가()) {
+    user = await 앱으로로그인({ A, auth, 공급자 })
+  } else {
+    if (공급자 !== 'google.com') throw new Error('여기서는 Google 로그인만 돼요')
+    const r = await A.signInWithPopup(auth, new A.GoogleAuthProvider())
+    user = r.user
+  }
+  const 사람 = 사람으로(user)
+  // ⛔ 열쇠(구글번호 / apple_번호)가 없으면 «계속하지 않는다» — Firebase UID 로 대신 넣으면 보험 ①이 조용히 깨진다.
+  if (!사람) throw new Error('로그인 번호를 못 받았어요')
   표식쓰기(true)
   번호쓰기(사람.번호)
   return 사람
@@ -139,6 +158,7 @@ export async function 로그인() {
 export async function 로그아웃() {
   const { A, auth } = await 붙기()
   await A.signOut(auth)
+  if (앱안인가()) await 앱로그아웃()   // 🍎 앱 층도 같이 — 안 하면 다음 켤 때 부품만 「로그인돼 있다」고 우긴다
   표식쓰기(false)
   번호쓰기('')
   지문지우기()   // 🕒 다음 사람은 처음부터(지문 · 받은 때 둘 다)

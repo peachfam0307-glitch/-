@@ -3,6 +3,8 @@ import Icon from './Icon'
 import PromptSheet from './PromptSheet'
 import ConfirmSheet from './ConfirmSheet'
 import GoogleButton from './GoogleButton'
+import AppleButton from './AppleButton'          // 🍎 아이폰 앱 안에서만 보이는 둘째 단추(큰 틀 4)
+import { 앱안인가 } from '../nativeAuth'
 import { useStore } from '../store'
 import { APP_TAGLINE } from '../version'
 import { markCloudGateSeen } from '../nudges'
@@ -46,10 +48,10 @@ export default function CloudGate({ onDone }) {
 
   const 지나가기 = () => { markCloudGateSeen(); onDone() }
 
-  const 눌러로그인 = async () => {
+  const 눌러로그인 = async (공급자 = 'google.com') => {
     set탈(''); set바쁨('로그인')
     try {
-      await 로그인()
+      await 로그인(공급자)
       const r = await 요약()
       if (r.있나 && (r.레시피 || r.일기)) { set찾음(r); set바쁨(''); return }
       // ⭐ 클라우드가 비어 있으면 = 처음 쓰는 사람. **가져올 게 없으니 「봤다」로 친다.**
@@ -135,7 +137,9 @@ export default function CloudGate({ onDone }) {
 
           {/* 🔵🔴🟡🟢 구글 규정 단추 — 창업자가 보내 준 다른 앱 캡처 그대로(2026-08-21).
               ⛔ 우리 파란 단추(`btn-primary`)로 두지 말 것 — 「우리 앱 단추」로 보이지 «구글 단추»로 안 보인다. */}
-          <GoogleButton busy={바쁨 === '로그인'} disabled={!!바쁨} onClick={눌러로그인} />
+          <GoogleButton busy={바쁨 === '로그인'} disabled={!!바쁨} onClick={() => 눌러로그인('google.com')} />
+          {/* 🍎 아이폰 «앱 안»에서만 — 애플 심사 4.8(제3자 로그인이 있으면 Apple 로그인도 «같이») · 구글 «다음»에 둔다(열쇠 갈래 ⓑ) */}
+          {앱안인가() && <AppleButton busy={바쁨 === '로그인'} disabled={!!바쁨} onClick={() => 눌러로그인('apple.com')} />}
 
           {/* 📷📷 **사진 한 줄만 «펴서» 둔다** (창업자 2026-08-31 *"유저들한테 안내를 꼭 해야겠네"* → *"잘보이게 적어줘"*)
               ⛔ 그 전엔 이 말이 아래 「자세히」 «안»에 접혀 있었다 — **창업자 본인도 모르고 있었다.**

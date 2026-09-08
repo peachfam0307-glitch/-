@@ -41,7 +41,12 @@ const 스 = (k) => b64(join(ROOT, `src/assets/sharepool/${k}.png`))
 
 // 📐 짜임 값 — 앱 카드는 «가운데 크게», 위아래로 글자 자리를 남긴다
 const W = 1080, H = 1920
-const 앱W = 760, 앱H = Math.round(760 * 720 / 405)   // 9:16 그대로 = 1351
+// ✂️ 창업자 = *"그림 아래쪽을 조금 잘라내고 설명을 위로 올리고 잘보이게 해줘"*
+//    → 앱 영상에서 **아래 170px(하단 탭바 언저리)을 잘라낸다.** 카드가 짧아지니 자막이 그만큼 올라온다.
+const 영상W = 810, 영상H = 1440
+const 잘라 = 170
+const 앱크롭H = 영상H - 잘라
+const 앱W = 760, 앱H = Math.round(앱W * 앱크롭H / 영상W)
 const 앱X = Math.round((W - 앱W) / 2), 앱Y = 268
 
 // ── ① 진짜 앱을 녹화한다 (자막 없이 «깨끗하게») ─────────────────────────────
@@ -71,7 +76,9 @@ const 가족 = [
 //    📮 창업자 = *"가을이니까 꽃게조림이나 탕에 하면 더 좋고"* → **꽃게탕**(9/7 열림 · 검수 창업자)
 //    ⛔ **고구마맛탕을 뺐다** — `from 2026-10-05` 라 **아직 안 열린 편**이다(실측 `recipe.mjs`).
 //       유저 폰엔 없는 걸 홍보에 띄우면 거짓 약속이 된다. 아래 가르기가 이제 그걸 막는다.
-const 고를것 = [...가족.map((g) => g.요리), '꽃게탕', '두부 들깨 버섯전골', '버섯 솥밥']
+//    📮 창업자 = *"꽃게조림 월요일에 탕, 게장이랑 같이 올라갔어"* → **꽃게간장조림도 9/7에 열렸다**(실측)
+//    ⛔ 버섯 솥밥은 뺐다 — 「검수 창업자」 표시가 없다(실측 recipe.mjs). 홍보엔 검수된 편만 쓴다.
+const 고를것 = [...가족.map((g) => g.요리), '꽃게간장조림', '꽃게탕', '두부 들깨 버섯전골']
 const 샘플 = allBasicRecipes.filter((r) => r.sample).map((r) => r.title)
 const 겹침 = 고를것.filter((t) => 샘플.includes(t))
 if (겹침.length) throw new Error(`⛔ 샘플 표지 편이 섞였다 — ${겹침.join(', ')} (창업자 "콩국수 빼고")`)
@@ -202,9 +209,10 @@ const 칩중심 = (글) => 자리재기({ 종: '칩', 글 })
 // 잘라낼 칸은 영상과 «같은 비»(810:1440)라야 앱 카드에 넣을 때 안 늘어난다
 const 확대배 = 1.9
 const 확대칸 = (c) => {
-  const cw = Math.round(810 / 확대배 / 2) * 2, ch = Math.round(1440 / 확대배 / 2) * 2
-  const cx = Math.max(0, Math.min(810 - cw, Math.round(c.x - cw / 2)))
-  const cy = Math.max(0, Math.min(1440 - ch, Math.round(c.y - ch / 2)))
+  // 잘라낸 «뒤» 카드 비(810 : 앱크롭H)와 같아야 안 늘어난다
+  const cw = Math.round(영상W / 확대배 / 2) * 2, ch = Math.round(cw * 앱크롭H / 영상W / 2) * 2
+  const cx = Math.max(0, Math.min(영상W - cw, Math.round(c.x - cw / 2)))
+  const cy = Math.max(0, Math.min(앱크롭H - ch, Math.round(c.y - ch / 2)))
   return { cw, ch, cx, cy }
 }
 
@@ -267,7 +275,7 @@ const 바탕HTML = `<style>${폰트}
 body{width:${W}px;height:${H}px;position:relative;overflow:hidden;
   background:
     radial-gradient(circle at 16px 16px, rgba(93,52,16,.055) 3px, transparent 4px) 0 0/64px 64px,
-    linear-gradient(180deg,${크림} 0%,#f7e9d6 58%,${살구} 100%)}
+    linear-gradient(180deg,${크림} 0%,#f3ebf8 55%,${살구} 100%)}   /* ⛔살구빛(#f7e9d6)을 뺐다 — 창업자 *"그라데이션이 살구를 빼줘"* */
 .hole{position:absolute;left:${앱X}px;top:${앱Y}px;width:${앱W}px;height:${앱H}px;border-radius:44px;
   background:#fff;box-shadow:0 30px 66px rgba(60,35,10,.26)}
 </style><div class="hole"></div>`
@@ -287,14 +295,23 @@ body{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:tra
 .tag{position:absolute;left:50%;top:${앱Y - 96}px;transform:translateX(-50%);font-family:'Jua';
   background:${갈};color:${크림};font-size:34px;padding:10px 34px;border-radius:999px;
   box-shadow:0 10px 24px rgba(60,35,10,.22)}
-.sub{position:absolute;left:70px;right:70px;top:${앱Y + 앱H + 30}px;text-align:center;
-  font-family:'GowunDodum';color:${흐림};font-size:40px;line-height:1.5}
-.sub b{color:${갈};font-weight:700}
+/* 📝 창업자 = *"아래 설명문구가 너무 연하고 작아"* → **크게(52px) · 진하게(표장 갈색) · 굵게**
+   ⛔ 흐린 회갈색(rgba .62)은 폰에서 자막으로 안 읽힌다. 강조만 진하게 두면 나머지가 배경이 된다. */
+.sub{position:absolute;left:60px;right:60px;top:${앱Y + 앱H + 34}px;text-align:center;
+  font-family:'GowunDodum';color:${갈};font-size:52px;font-weight:700;line-height:1.45;
+  text-shadow:0 2px 0 rgba(255,255,255,.6)}
+.sub b{color:${팥};font-weight:700}
 .cut{position:absolute;filter:drop-shadow(0 14px 22px rgba(60,35,10,.22))}
 /* 🔴 «여기를 누른다» 표시 — 두 겹 동그라미 ＋ 말풍선 */
 .ring{position:absolute;border:9px solid ${팥};border-radius:999px;box-sizing:border-box;
   box-shadow:0 0 0 7px rgba(255,255,255,.8),0 12px 28px rgba(60,35,10,.3)}
 .ring2{position:absolute;border:5px dashed rgba(194,65,12,.5);border-radius:999px;box-sizing:border-box}
+/* ✨ 창업자 = *"골랐어요에 클립들에 반짝반짝효과같은거 넣어주고"*
+   → 꽂는 순간 «반짝임» 넷을 동그라미 둘레에 뿌린다(그림 한 장이라 크기·각도로 리듬을 준다) */
+.spark{position:absolute;width:var(--s);height:var(--s);transform:translate(-50%,-50%) rotate(var(--rot));
+  background:${팥};opacity:.92;
+  clip-path:polygon(50% 0%,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0% 50%,42% 42%);
+  filter:drop-shadow(0 0 10px rgba(184,71,126,.55))}
 .say{position:absolute;font-family:'Jua';color:${크림};background:${팥};
   padding:10px 30px;border-radius:999px;font-size:46px;white-space:nowrap;
   box-shadow:0 12px 26px rgba(60,35,10,.3)}
@@ -309,7 +326,7 @@ ${컷 || ''}`
 const 표시HTML = (표시) => {
   if (!표시) return ''
   const { 점, 확대, 말 } = 표시
-  const 칸 = 확대 ? 확대칸(점) : { cw: 810, ch: 1440, cx: 0, cy: 0 }
+  const 칸 = 확대 ? 확대칸(점) : { cw: 영상W, ch: 앱크롭H, cx: 0, cy: 0 }
   const 배 = 앱W / 칸.cw
   const x = 앱X + (점.x - 칸.cx) * 배
   const y = 앱Y + (점.y - 칸.cy) * 배
@@ -321,7 +338,12 @@ const 표시HTML = (표시) => {
   const 상자 = (dx, cls) =>
     `<div class="${cls}" style="left:${Math.round(x - w / 2 - dx)}px;top:${Math.round(y - h / 2 - dx)}px;` +
     `width:${w + dx * 2}px;height:${h + dx * 2}px"></div>`
-  return 상자(0, 'ring') + 상자(22, 'ring2') +
+  // ✨ 반짝임 — 동그라미 둘레 네 곳(오른위·왼위·오른아래·왼아래)에 크기를 달리해 뿌린다
+  const 반짝 = 확대 ? [[0.72, -0.72, 46, 0], [-0.78, -0.5, 30, 25], [0.8, 0.62, 34, -15], [-0.66, 0.78, 24, 10]]
+    .map(([dx, dy, s, rot]) =>
+      `<div class="spark" style="left:${Math.round(x + dx * (w / 2 + 34))}px;top:${Math.round(y + dy * (h / 2 + 34))}px;` +
+      `--s:${s}px;--rot:${rot}deg"></div>`).join('') : ''
+  return 상자(0, 'ring') + 상자(22, 'ring2') + 반짝 +
     `<div class="say" style="left:${Math.round(x)}px;top:${Math.round(y + h / 2 + 42)}px;transform:translateX(-50%)">${말}</div>`
 }
 
@@ -373,8 +395,9 @@ for (const s of 장면) {
     '-filter_complex',
     // 🔍 고르는 장면은 «핀 언저리만» 잘라 키운다 — 창업자 *"그 부분을 클로즈업"*
     (() => {
-      const 칸 = s.표시?.확대 ? 확대칸(s.표시.점) : null
-      const 자름 = 칸 ? `crop=${칸.cw}:${칸.ch}:${칸.cx}:${칸.cy},` : ''
+      // ✂️ 확대 장면은 핀 언저리를, 보통 장면은 «아래를 잘라낸» 위쪽을 쓴다
+      const 칸 = s.표시?.확대 ? 확대칸(s.표시.점) : { cw: 영상W, ch: 앱크롭H, cx: 0, cy: 0 }
+      const 자름 = `crop=${칸.cw}:${칸.ch}:${칸.cx}:${칸.cy},`
       return `[1:v]${자름}scale=${앱W}:${앱H}:flags=lanczos[app];[0:v][app]overlay=${앱X}:${앱Y}[bg];[bg][2:v]overlay=0:0,fps=60,format=yuv420p,setsar=1[v]`
     })(),
     '-map', '[v]', '-t', String(s.길이),

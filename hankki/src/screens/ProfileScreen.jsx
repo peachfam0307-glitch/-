@@ -16,6 +16,7 @@ import ConfirmSheet from '../components/ConfirmSheet'
 import KitchenGuideSheet from '../components/KitchenGuideSheet'
 import LabSheet from '../components/LabSheet'
 import CloudSheet from '../components/CloudSheet'
+import DeleteAccountSheet from '../components/DeleteAccountSheet'   // 🗑 계정 · 데이터 삭제(큰 틀 6-① ⓑ)
 import CoachMarks, { needsCoach } from '../components/CoachMarks'
 // 📣 [창업자 2026-09-03 · ④⑤ 스샷] 그 앱 설정엔 「정보」 갈래에 «공지사항»이 있다.
 //   🔢 실측 = 우리 「한끼 소식」 입구는 **홈 하나뿐**이었다(`HomeScreen.jsx:440` 만이 `PreviewSheet` 를 연다).
@@ -66,6 +67,7 @@ export default function ProfileScreen() {
   const [checking, setChecking] = useState(false)
   const [guide, setGuide] = useState(false) // 요리 가이드(계량·손질) 시트
   const [lab, setLab] = useState(false) // 한끼연구소(의견·설문·오류) 시트
+  const [delAccount, setDelAccount] = useState(false) // 🗑 계정 · 데이터 삭제 시트(2026-09-08)
   const [소식, set소식] = useState(false) // 한끼 소식(＝공지사항) 시트 — 홈과 «같은 부품»
   const 소식들 = whatsNew()
   const 안본소식 = isNewsUnread(소식들)
@@ -397,7 +399,10 @@ export default function ProfileScreen() {
     //   ⛔ 여기서 «바로 지우지» 않는다 — 지우는 단추는 클라우드 시트 안의 ［클라우드 비우기］다.
     //      이 줄은 «어디서 지우는지 알려주는 길»이고, 그게 Play 가 말하는 「인앱 경로」다.
     //   ⛔ 로그인 안 한 사람에게도 보인다 — 기기 안 데이터를 지우는 법도 그 페이지에 있다.
-    { icon: 'trash', label: '계정 · 데이터 삭제', 밖: true, onClick: () => { const a = document.createElement('a'); a.href = (import.meta.env.BASE_URL || './') + 'delete-account.html'; a.target = '_blank'; a.rel = 'noopener'; a.click() } },
+    //   🍎 [2026-09-08 · 큰 틀 6-① ⓑ] 이제 «앱 안 시트»가 뜬다 — 애플 5.1.1(v) = 앱 안에서 계정 삭제를 «시작»할 수 있어야 한다.
+    //      실측 = 위 주석이 가리키던 ［클라우드 비우기］ 단추가 **앱 어디에도 없었다**(`클라우드비우기()` 를 부르는 곳 0).
+    //      시트 = 「클라우드 비우기」(서버 기록만) ＋ 「계정 삭제」(기록＋계정) · ⛔이 폰의 레시피는 어느 쪽도 안 건드린다 · 웹 안내 링크는 시트 맨 아래.
+    { icon: 'trash', label: '계정 · 데이터 삭제', onClick: () => setDelAccount(true) },
     { icon: 'settings', label: '개인정보처리방침', 밖: true, onClick: () => { const a = document.createElement('a'); a.href = (import.meta.env.BASE_URL || './') + 'privacy.html'; a.target = '_blank'; a.rel = 'noopener'; a.click() } },
     { icon: 'book', label: '오픈소스 라이선스', 밖: true, onClick: () => { const a = document.createElement('a'); a.href = (import.meta.env.BASE_URL || './') + 'licenses.html'; a.target = '_blank'; a.rel = 'noopener'; a.click() } },
   ]
@@ -901,6 +906,8 @@ export default function ProfileScreen() {
 
       {guide && <KitchenGuideSheet onClose={() => setGuide(false)} />}
       {lab && <LabSheet onClose={() => setLab(false)} />}
+      {/* 🗑 계정 · 데이터 삭제 — 앱 안 시트(큰 틀 6-① ⓑ · 2026-09-08) */}
+      {delAccount && <DeleteAccountSheet onClose={() => setDelAccount(false)} showToast={nav.showToast} />}
       {소식 && <PreviewSheet onClose={() => set소식(false)} />}
 
       {/* 첫 방문 코치마크 — 백업·의견 보내기 안내 */}

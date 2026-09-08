@@ -45,7 +45,7 @@
 //   ⭐ 이건 맨 위에서 받아도 된다(1KB · 파이어베이스와 달리 무겁지 않다).
 import { 카드표지인가 } from './cardCover.js'
 // 🍎 앱 안 로그인 부품 다리 (큰 틀 4 · 2026-09-08) — 열쇠 만들기도 여기 한 곳
-import { 열쇠, 앱안인가, 앱으로로그인, 앱로그아웃 } from './nativeAuth.js'
+import { 열쇠, 앱안인가, 앱으로로그인, 앱로그아웃, 앱계정지우기 } from './nativeAuth.js'
 
 const 설정 = {
   apiKey: 'AIzaSyBngI2jsjsiEpvnyjV1mRm16XV3XnGjdAc',
@@ -549,6 +549,46 @@ export async function 클라우드비우기() {
   await 묶어쓰기(F, db, 할일)
   지문지우기()
   return { 지운것: 할일.length }
+}
+
+// 🗑🍎 **계정 삭제** — 서버 기록 ＋ 로그인 계정을 지운다. ⛔ 이 폰의 레시피는 «안» 건드린다. (2026-09-08 · 큰 틀 6-① ⓑ · 계획 §12)
+//   왜 = 애플 5.1.1(v) = 앱 «안»에서 계정 삭제를 시작할 수 있어야 한다 · Play 도 삭제 경로를 요구한다.
+//   순서가 곧 설계다:
+//   ① «지금» 다시 로그인 — Firebase 원문(auth-public.d.ts:936) = deleteUser 는 *"requires the user to have recently signed in"*.
+//      만나고 나서 다시 시키면 두 번 묻는 흐름이 되니 «먼저» 한 번 한다(앱 안 = 부품 · 웹 = 팝업).
+//      ⛔ 다시 로그인한 사람이 «다른 계정»이면 아무것도 안 지운다 — 남의(또는 내 다른) 칸을 지우는 사고.
+//   ② 서버 기록 «먼저» — 계정을 먼저 지우면 규칙이 막혀 기록이 «고아»로 남는다(아무도 못 지운다).
+//   ③ 계정(deleteUser · 앱 안이면 부품 쪽도) — 여기서 끊기면 「기록은 지웠고 계정만 남았어요 · 다시 눌러 주세요」로 «정직하게» 던진다.
+//   ④ 폰 표식(로그인 표식·번호·지문·「받았다」) 지움 — 다음 사람은 처음부터.
+export async function 계정삭제() {
+  const { A, auth } = await 붙기()
+  const 전 = 사람으로(auth.currentUser)
+  if (!전) throw new Error('로그인부터 해주세요')
+  // ① 재인증
+  let user
+  if (앱안인가()) {
+    user = await 앱으로로그인({ A, auth, 공급자: 전.공급자 })
+  } else {
+    const r = await A.signInWithPopup(auth, new A.GoogleAuthProvider())
+    user = r.user
+  }
+  const 지금 = 사람으로(user)
+  if (!지금) throw new Error('로그인 번호를 못 받았어요')
+  if (지금.번호 !== 전.번호) throw new Error('다른 계정으로 로그인됐어요. 지우려는 계정으로 다시 로그인한 뒤 눌러 주세요')
+  // ② 서버 기록
+  const { 지운것 } = await 클라우드비우기()
+  // ③ 계정
+  try {
+    await A.deleteUser(auth.currentUser)
+    if (앱안인가()) { try { await 앱계정지우기() } catch { /* 웹 층은 이미 지워졌다 — 부품 쪽 실패는 삼킨다(다음 로그아웃이 정리) */ } }
+  } catch (e) {
+    const err = new Error('기록은 지웠고 계정 삭제만 남았어요. 한 번 더 눌러 주세요')
+    err.단계 = '계정'; err.지운것 = 지운것; err.원인 = e
+    throw err
+  }
+  // ④ 폰 표식
+  표식쓰기(false); 번호쓰기(''); 지문지우기(); 받았다지우기()
+  return { 지운것 }
 }
 
 // ─────────────────────────────────────────────────────────────────────────

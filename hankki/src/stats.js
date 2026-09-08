@@ -68,13 +68,18 @@ export function 통계시작() {
       window.gtag = gtag
       gtag('js', new Date())
       // 🙈 `send_page_view` 는 그대로 둔다 — 화면 이름만 간다(유저가 쓴 글자는 안 담긴다).
-      gtag('config', MEASUREMENT_ID, { anonymize_ip: true })
+      // ⛔ `send_page_view: false` — gtag 가 «스스로» 한 번 보내면 그건 주소가 전부 같은 「/」 라
+      //    화면이 통째로 한 덩어리로 뭉친다. 화면 기록은 우리가 «이름을 실어» 보낸다(아래 `보내기`).
+      gtag('config', MEASUREMENT_ID, { anonymize_ip: true, send_page_view: false })
       const s = document.createElement('script')
       s.async = true
       s.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`
       // ⭐⭐ 이 한 줄이 배포를 살린다 — 못 받아와도 «조용히» 끝난다(오류를 밖으로 안 던진다).
       s.onerror = () => {}
       document.head.appendChild(s)
+      // ⭐ 첫 화면은 «gtag 가 붙기 전»에 그려진다 — 그때 못 보낸 것을 여기서 보낸다.
+      //   ⛔ 이 줄이 없으면 앱을 열자마자 보는 화면(대개 home)이 통째로 안 잡힌다.
+      if (못보낸화면) 보내기(못보낸화면)
     } catch { /* ⛔ 통계가 죽어도 앱은 그대로 돈다 */ }
   })
 }
@@ -112,12 +117,32 @@ export function 화면봄(이름) {
   if (!보내도되는화면.has(이름)) return   // 🔒 자물쇠
   if (이름 === 지난화면) return
   지난화면 = 이름
+  보내기(이름)
+}
+
+// ⛔⛔ **[2026-09-08 실측으로 잡았다] `screen_view` 로 보내면 «안 잡힌다».**
+//    🔢 근거 = `screen_view` 는 GA4 의 **예약된 이름**이고 **앱(네이티브) 스트림의 것**이다.
+//       우리는 웹(TWA)이라 **웹 스트림**이고, 웹의 짝은 `page_view` 다.
+//       (support.google.com 은 이 환경에서 못 열어 공식 원문을 직접 못 봤다 — 여러 경로로 같은 말을 확인했다)
+//    ⛔ 그대로 뒀으면 **콘솔에 화면 숫자가 0 으로 나왔을 것이다.** 그런데 앱은 멀쩡하니 아무도 몰랐을 것이다.
+//
+// ⭐⭐ **그래서 `page_view` 로 보내고, 화면 이름을 «페이지 제목»에 싣는다.**
+//    이러면 창업자가 **[보고서] → [참여도] → [페이지 및 화면]** 에서 «그냥» 볼 수 있다.
+//    ⛔ 맞춤 이벤트(`hankki_screen` 같은 것)로 갔으면 **맞춤 측정기준을 따로 등록해야** 보여서
+//       내일 아침에 아무것도 못 봤을 것이다. 표준 이벤트라야 표준 보고서에 뜬다.
+//    📌 주소에 `#화면이름` 을 붙이는 건 «구분용»이다 — 실제로 그 주소로 옮기지 않는다.
+function 보내기(이름) {
   try {
     if (통계꺼짐()) return
-    if (typeof window.gtag !== 'function') return  // 아직 안 붙었거나 못 받아왔다 — 조용히 넘어간다
-    window.gtag('event', 'screen_view', { screen_name: 이름 })
+    if (typeof window.gtag !== 'function') { 못보낸화면 = 이름; return }  // 아직 안 붙었다 — 붙으면 그때 보낸다
+    못보낸화면 = null
+    window.gtag('event', 'page_view', {
+      page_title: 이름,
+      page_location: `${location.origin}${location.pathname}#${이름}`,
+    })
   } catch { /* ⛔ 통계가 죽어도 앱은 그대로 돈다 */ }
 }
+let 못보낸화면 = null
 
 // ═══════════════════════════════════════════════════════════════════
 // 🔀🔀 **끄는 자리는 «방침 페이지» 안이다** (2026-09-08)

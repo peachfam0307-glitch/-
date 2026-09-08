@@ -6,6 +6,7 @@ import { makeInboxRecipe } from './screens/ImportScreen'
 import { ocrImage, getOcrLeft, 밀린열쇠보내기, 밀린기본보내기, KEY_NAME, KEY_UNIT } from './ocr'
 import { parseRecipeText, keepRaw, 자리표제목 } from './parseRecipe'
 import { tidyRecipe, mergeTidy, tidyTail, tidyFounder, AI다듬는중 } from './tidy'
+import AIConsentSheet from './components/AIConsentSheet'   // 🔐 AI 로 보내기 전 허락 시트(큰 틀 6-② ⓑ)
 // ⏳ `fetchLinkRecipe` import 는 뺐다 — 「⏳⏳ 서버 되면 되살릴 것 ④」 참조(2026-08-27 · 창업자 확정 "1번").
 //    ⛔ `src/linkReader.js` 파일은 «안 지웠다» — 되살릴 때 그대로 쓴다(v11.19 와 같은 방식).
 import { guessCategory, fitImage, imageSize } from './utils'
@@ -992,6 +993,8 @@ export default function App() {
             📮 창업자 2026-08-21 = *"새유저는 그냥 첫화면에 로그인하고시작 «왜냐면 온보드는 그냥 건너뛰기할수도있어»"*
             ⛔ 소개 «마지막 장»에 두려던 내 안을 창업자가 잡았다 — 「건너뛰기」가 매 장 오른쪽 위에 있어 첫 장에서 통째로 넘어간다. */}
         {cloudGate && <CloudGate onDone={() => setCloudGate(false)} />}
+        {/* 🤖🔐 AI 다듬기 허락 시트 — tidy.js 가 보내기 «전»에 물으면 여기서 뜬다(큰 틀 6-② ⓑ · 2026-09-08) */}
+        <AIConsentSheet />
 
         {/* 🙏 한마디 청하기 — 레시피를 저장한 직후(내 레시피 2개부터 · 30일에 한 번).
             ⛔ 자리는 «여기»라야 한다 — 편집 화면은 저장에 성공하면 popAll 로 스스로 사라진다. */}

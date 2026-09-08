@@ -33,8 +33,8 @@ export default function AppleButton ({ label = 'Apple로 로그인', busy = fals
         opacity: disabled ? 0.55 : 1,
       }}
     >
+      {/* 원본 = Apple Design Resources 「Left White Logo Small」(24×44 · 여백 포함 · 검정 바탕에 흰 로고) — 비율 그대로 높이만 맞춘다(⛔늘리거나 자르지 않는다) */}
       {로고있나 && (
-        {/* 원본 = Apple Design Resources 「Left White Logo Small」(24×44 · 여백 포함 · 검정 바탕에 흰 로고) — 비율 그대로 높이만 맞춘다(⛔늘리거나 자르지 않는다) */}
         <img
           src={base + 애플로고경로} alt="" aria-hidden="true" width={12} height={22}
           style={{ display: 'block', flex: '0 0 auto' }}

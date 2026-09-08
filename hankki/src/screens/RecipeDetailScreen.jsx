@@ -27,6 +27,7 @@ import ReviewAskSheet from '../components/ReviewAskSheet'
 import { SOURCES } from '../data/seed'
 // 🔁 AI 정리 실패 만회(아래 「만회한적」 절) — 잣대는 앱이 쓰는 그 모듈 그대로다(절대원칙 30).
 import { tidyRecipe, 실패꼬리 } from '../tidy'
+import { AI동의받기 } from '../aiConsent'   // 🔐 AI 로 보내기 전 허락(큰 틀 6-② ⓑ)
 import { picksForIngredients, productLink, productMall, curIcon, isHansalim } from '../data/curation'
 
 import { useWakeLock } from '../useWakeLock'
@@ -196,6 +197,8 @@ export default function RecipeDetailScreen({ id }) {
   const 다시다듬기 = async () => {
     const 원문 = String(r?.rawText || '')
     if (다시중 || 원문.length < 40) return
+    // 🔐 허락 «먼저»(대기창보다 앞) — 직접 눌렀으니 「사용 안 함」이었어도 다시 묻는다(큰 틀 6-② ⓑ)
+    if (!(await AI동의받기({ 다시묻기: true }))) return
     set다시중(true); set창닫음(false)
     nav.showToast('AI가 다듬는 중이에요 · 다 되면 레시피에 저절로 올라가요', 6000)
     // 👁 사진이 손에 있으면 같이 보낸다(`tidy.js` 가 한 번 더 거른다) — 보관함 단추와 «같은 말»

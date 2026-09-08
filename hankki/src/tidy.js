@@ -102,6 +102,9 @@ async function 선반기다리기(번호, headers) {
   return null                         // 2분 안에 안 왔다 — 워커는 계속 일하고 있다
 }
 
+// 🤖🔐 [2026-09-08 · 큰 틀 6-② ⓑ] 보내기 «전에» 허락 — 애플 5.1.2(i) "obtain explicit permission before doing so"
+import { AI동의받기 } from './aiConsent.js'
+
 export async function tidyRecipe(text, 사진) {
   _마지막 = null
   _사진 = ''
@@ -111,6 +114,8 @@ export async function tidyRecipe(text, 사진) {
   if (!t) { _마지막 = { ok: false, why: '글자없음' }; return null }
   // ⛔ 너무 짧으면 AI 를 부를 값어치가 없다(＋우리 무료 통을 아낀다)
   if (t.length < 40) { _마지막 = { ok: false, why: '짧음' }; return null }
+  // 🔐 허락이 없으면 «한 바이트도» 안 나간다 — 시트가 없는 자리면 못 물은 것이라 역시 안 보낸다(재현판 ②)
+  if (!(await AI동의받기())) { _마지막 = { ok: false, why: '동의안함' }; return null }
 
   const headers = { 'Content-Type': 'application/json', 'x-hankki-token': APP_TOKEN }
   try {

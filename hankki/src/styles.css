@@ -307,7 +307,16 @@ img {
   overflow-y: auto;
   overflow-x: hidden; /* hscroll(가로 목록)이 삐져나와 화면이 옆으로 밀리던 것 방지 */
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 12px);
+  /* ⛔⛔ [2026-09-08 창업자 제보] *"재료창 맨 아래있는거는 스크롤표시에 X표시가 가려져(삭제어려움)"*
+     🔎 실물로 보니 범인은 얇은 스크롤 막대가 아니라 **「맨 위로」 동그란 단추**였다 —
+        캡처에서 마지막 줄(「농심 꿀꽈배기」)만 ✕ 가 없고 그 자리에 단추가 앉아 있었다.
+     🔢 그 단추는 `position: fixed` · 바닥에서 74px · 높이 44 → **바닥 118px 까지**를 덮는데,
+        여기 여백은 `nav-h + 12` 뿐이라 **마지막 줄이 단추 밑으로 들어갔다.**
+     ⭐ 그래서 «단추가 차지하는 만큼»을 비워 둔다 — 임의의 숫자가 아니라 단추 크기에서 나온 값이다
+        (높이 44 ＋ 띄움 12 = 56). ⛔이 값을 늘려 때우지 말 것 — 단추 크기가 바뀌면 여기도 같이 바꾼다.
+     📌 냉장고만 고치지 않는다 — 떠 있는 단추는 «모든» 화면 위에 뜨므로 여기가 한 곳이다(절대원칙 35). */
+  --totop-h: 56px;
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 12px + var(--totop-h));
 }
 
 .screen::-webkit-scrollbar {

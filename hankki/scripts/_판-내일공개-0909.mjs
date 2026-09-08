@@ -53,15 +53,17 @@ const 재료줄 = (t) => {
 }
 
 // ⛔ 「봐줄 것」은 «내가 쓴 값»을 콕 집는다 — 네 것과 내 것을 갈라야 검수가 빨라진다
+// ⛔⛔ [2026-09-08 창업자] *"유튜브 어딘지 안적혀있어. 찾아서 명시해."*
+//    → 코드엔 `sourceName` 이 «있었다»(정호영의 오늘도 요리 Kitchen Caden). **판이 그걸 안 실었다.**
+//    ⭐ 그래서 출처를 손으로 안 적는다 — `r.sourceName` 을 그대로 읽는다(손으로 적으면 반드시 낡는다).
+//    ✅ 앱 화면은 원래 맞았다 — RecipeDetailScreen.jsx:848 이 「<채널> · 영상으로 보기」로 그린다.
 const 메모 = {
   'basic-aehobak-gukbap': {
-    출처: '📺 유튜브 — 창업자 2026-09-06 서식',
     누가: '영상에서 보고 우리 문장으로 (시간·인분·난이도는 내가 씀)',
     볼것: '30분 · 3인분 · 보통 — 그리고 「다시다 → 연두·백간장」 대체 문구',
   },
   'basic-eonam-dubu-jorim': {
-    출처: '📺 어남선생(KBS Entertain) — 설명란에 순서까지 있어 그대로 우리 문장으로',
-    누가: '영상 그대로 (시간·인분·난이도는 내가 씀)',
+    누가: '영상 설명란에 순서까지 있어 그대로 (시간·인분·난이도는 내가 씀)',
     볼것: '25분 · 3인분 · 쉬움 — 그리고 「후추 20바퀴」·「식용유 2바퀴」 같은 영상 말투를 남길지',
   },
 }
@@ -80,7 +82,8 @@ const 카드 = (r, i) => {
     </div>
   </header>
   <div class="from">
-    <p><b>어디서 왔나</b> ${esc(m.출처)}</p>
+    <p><b>어디서 왔나</b> 📺 <b class="src">${esc(r.sourceName || '⛔ 채널 이름이 코드에 없다')}</b></p>
+    <p class="url">${esc(r.sourceUrl || '⛔ 주소 없음')}</p>
     <p><b>누가 쓴 값</b> ${esc(m.누가)}</p>
     <p><b>봐줄 것</b> ${esc(m.볼것)}</p>
     ${r.sourceUrl ? `<p><a href="${esc(r.sourceUrl)}" target="_blank" rel="noopener">▶ 원본 영상 열기</a></p>` : ''}
@@ -137,6 +140,8 @@ const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content
  .from p{margin:3px 0}
  .from b{color:var(--brand);margin-right:6px}
  .from a{color:var(--brand)}
+ .from .src{color:var(--ink);font-weight:800}
+ .from .url{font:12.5px/1.5 ui-monospace,monospace;color:var(--faint);word-break:break-all;margin:1px 0 6px}
  h3{margin:22px 0 8px;font-size:15px;font-weight:800}
  h3 .n{font-weight:400;color:var(--faint);font-size:13px;margin-left:5px}
  .ig,.st{margin:0;padding-left:20px}

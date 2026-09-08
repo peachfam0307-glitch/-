@@ -25,41 +25,28 @@ const DIST = join(ROOT, 'dist')
 const OUT = '/tmp/claude-0/-home-user-hankki/2414fcda-d05a-5b79-84dc-8c748bfda84b/scratchpad/가을표지'
 mkdirSync(OUT, { recursive: true })
 
-// 🎨 시안 셋 — 「무엇이 다른가」를 한 가지씩만 바꿔 판정이 쉽게
-//   ㄱ = 크라프트 종이에 소품을 둘러놓은 «다꾸» 결 (콩국수와 같은 짜임: 위 테이프＋제목)
-//   ㄴ = 클레이 바닥에 곰펭이 크게 «주인공» (캐릭터가 눈에 먼저 들어온다)
-//   ㄷ = 웜크림에 소품 최소 — 음식 그림이 제일 잘 보이는 «담백한» 결
-const 시안 = [
-  {
-    이름: 'ㄱ 다꾸',
-    decorBg: 'kraft',
-    decor: [
-      { id: 'a-tape', type: 'tape', key: 'gingham', x: 0.5, y: 0.17, s: 0.62, r: -2 },
-      { id: 'a-title', type: 'text', color: 'mustard', font: 'gaegu', text: '꽃게탕', x: 0.5, y: 0.165, s: 0.58, r: -3, w: 'mid' },
-      { id: 'a-gom', type: 'sticker', key: 'au_b09', x: 0.24, y: 0.74, s: 0.30, r: -6 },
-      { id: 'a-acorn', type: 'sticker', key: 'au_i46', x: 0.82, y: 0.72, s: 0.20, r: 8 },
-      { id: 'a-leafcup', type: 'sticker', key: 'au_i44', x: 0.80, y: 0.34, s: 0.17, r: -5 },
-    ],
-  },
-  {
-    이름: 'ㄴ 곰펭 주인공',
-    decorBg: 'mclay',
-    decor: [
-      { id: 'b-title', type: 'text', color: 'charcoal', font: 'gaegu', text: '꽃게탕', x: 0.5, y: 0.15, s: 0.56, r: -2, w: 'mid' },
-      { id: 'b-duo', type: 'sticker', key: 'au_b26', x: 0.5, y: 0.80, s: 0.52, r: 0 },
-      { id: 'b-mush', type: 'sticker', key: 'au_i50', x: 0.83, y: 0.35, s: 0.18, r: 6 },
-    ],
-  },
-  {
-    이름: 'ㄷ 담백',
-    decorBg: 'gwarm',
-    decor: [
-      { id: 'c-title', type: 'text', color: 'mustard', font: 'gaegu', text: '꽃게탕', x: 0.5, y: 0.14, s: 0.54, r: 0, w: 'mid' },
-      { id: 'c-pump', type: 'sticker', key: 'au_i45', x: 0.83, y: 0.78, s: 0.20, r: -6 },
-      { id: 'c-gom', type: 'sticker', key: 'au_b28', x: 0.19, y: 0.79, s: 0.24, r: 5 },
-    ],
-  },
-]
+// 🖼🖼 **창업자가 «직접 꾸민» 표지의 짜임 그대로** (2026-09-08 20:01 캡처 = 간장비빔국수)
+//    📮 창업자 = *"이걸 꽃게탕으로"* ＋ *"ㄱ으로 하고 라벨 넣어서 다시 뽑아줘"*
+//    🔢 좌표는 지어낸 게 아니라 `docs/_내레시피-백업/2026-09-07.json` 에서 «읽어 온» 값이다.
+//    ⛔⛔ 첫 판에서 제목 종이가 안 나왔다 — JSON 을 찍을 때 `art` 칸을 «빼고» 봤기 때문이다.
+//       📮 창업자 = *"저거 포스트잇아니고 라벨일걸 글자라벨?"* → 맞다. `art: 'dtp04'`(찢은 종이)다.
+//       📌 값을 추려 볼 땐 «빠뜨린 칸이 없나»부터 본다(절대원칙 18 — 확인 방식부터 의심).
+//    ⭐ 프레임 크기만 셋으로 견준다 — 창업자 판(0.7)에선 꽃게탕 그림이 프레임 밖으로 잘렸다.
+//       꽃게탕 그림(fe_519)이 국수(gr_231)보다 넓어서다 → 0.82 · 0.90 · 0.98 로 재본다.
+const 시안 = [0.82, 0.90, 0.98].map((크기, i) => ({
+  이름: `${'ㄱㄴㄷ'[i]} 프레임 ${크기}`,
+  decorBg: 'none',
+  thumb: 'icon',        // ⭐ 창업자 판과 같게 — 음식이 프레임 «안»에 들어간다
+  decor: [
+    { id: 'f-frame', type: 'sticker', key: 'pf_au01', x: 0.508, y: 0.53, s: 크기, r: 0 },
+    { id: 'f-title', type: 'note', art: 'dtp04', text: '꽃게탕♡', font: 'gaegu', x: 0.481, y: 0.157, s: 0.62, r: -7.4, w: 'thin' },
+    { id: 'f-leaf', type: 'sticker', key: 'au_i24', x: 0.147, y: 0.16, s: 0.22, r: 8 },
+    { id: 'f-duo', type: 'sticker', key: 'au_b30', x: 0.736, y: 0.815, s: 0.409, r: 0 },
+    { id: 'f-blanket', type: 'sticker', key: 'au_i43', x: 0.14, y: 0.81, s: 0.318, r: 0 },
+    { id: 'f-boots', type: 'sticker', key: 'au_i48', x: 0.303, y: 0.857, s: 0.22, r: -4 },
+    { id: 'f-bubble', type: 'sticker', key: 'tw_funfun', x: 0.761, y: 0.285, s: 0.232, r: 14.5 },
+  ],
+}))
 
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml', '.json': 'application/json', '.woff2': 'font/woff2' }
 const srv = createServer((q, s) => {
@@ -81,7 +68,7 @@ const state = {
   recipes: 시안.map((v, i) => ({
     ...꽃게탕, id: 'v' + i, title: '꽃게탕', category: '국물', folder: '국물',
     savedAt: now - i * 1000, source: 'user', status: 'sorted', favorite: false, cooked: 0,
-    thumb: 'none',            // ⛔ 'icon' 이면 꾸민 표지가 안 보인다(콩국수 주석과 같은 함정)
+    thumb: v.thumb || 'none',   // ⚠️ 창업자 판은 'icon'
     decorBg: v.decorBg, decor: v.decor,
   })),
   diary: [], seedV: BASICS_VERSION,

@@ -39,27 +39,9 @@ export const ingredientTokens = (ingredients = []) =>
 export const pantryKey = (name) => String(name || '').trim().split(/\s+/)[0]
 
 // 이 낱말들 안에 그 재료가 있나
-// ⛔⛔ [2026-09-08 창업자 제보] *"재료에 콩국물이 있는데 콩국수가 안떠"*
-//   🔢 실측 = 냉장고 이름 **「즉석콩국물」**(한 낱말) · 레시피 낱말 **「콩국물」** → `false` 였다.
-//   ⭐⭐ 뿌리 = 규칙 C 가 **한쪽 방향만** 봤다 — 「레시피 낱말이 냉장고 이름으로 끝나나」.
-//      그래서 «냉장고 이름이 더 긴» 경우가 통째로 빠졌다. 영수증·손입력은 앞에 말이 붙는다
-//      (「즉석」콩국물 · 「국산」두부 · 「친환경」계란) — 이게 드문 경우가 아니라 «흔한» 쪽이다.
-//   ✅ 그래서 **양쪽으로 본다** — 둘 중 하나가 다른 하나로 «끝나면» 같은 물건이다.
-//      한국어 합성어는 핵심 명사가 뒤에 오므로 «끝»을 보는 근거는 원래와 같다(위 규칙 C 설명).
-//   ⚠️ 2글자 미만은 여전히 «정확히 같을 때만» — 「무」·「파」는 어느 방향으로도 아무 데나 걸린다.
-//   🔢 실측(레시피 149편 × 이름 후보 683개) = 새로 걸린 짝 **+908**, 그중 오탐은 «하나»였다.
-//      맞는 짝 = 진간장→간장 · 표고버섯→버섯 · 다진마늘→마늘 · 멸치액젓→액젓 · 숙주나물→나물 …
-//      ⛔ 틀린 짝 = **「콩국물」이 김치찌개의 「국물」에 걸렸다.**
-//   ⭐ 그래서 «형태말»만 뺀다 — 아래 넷은 **재료 이름이 아니라 「어떤 꼴인가」**를 가리키는 말이라
-//      앞에 무엇이 붙든 «같은 물건»이 되지 않는다(콩국물 ≠ 국물 · 해물가루 ≠ 가루).
-//      ⛔ 「소스」·「간장」은 안 뺀다 — 토마토소스→소스, 진간장→간장은 실제로 바꿔 쓸 수 있다.
-const 형태말 = new Set(['국물', '가루', '양념', '즙'])
-
 export const hasIngredient = (tokens, key) => {
   if (!key) return false
-  return tokens.some((t) => t === key
-    || (key.length >= 2 && t.endsWith(key))
-    || (t.length >= 2 && !형태말.has(t) && key.endsWith(t)))
+  return tokens.some((t) => t === key || (key.length >= 2 && t.endsWith(key)))
 }
 
 // 레시피 하나가 냉장고와 몇 개나 겹치나
@@ -80,44 +62,9 @@ export const countPantryHits = (recipe, pantry = []) => {
 //   ⭐ 그래서 «개수»를 먼저 보고, **같은 개수면 «가진 비율»이 높은 쪽**(＝살 게 적은 쪽)이 이긴다.
 //   ⛔ 비율«만» 쓰면 안 된다 — 재료 3개짜리에서 1개 걸린 것(33%)이
 //      재료 12개에서 3개 걸린 것(25%)을 이겨 버린다. 1개 걸린 건 사실 아무 신호가 아니다.
-//   ⛔⛔ [2026-09-08 창업자 제보] *"유통기한 임박한재료들위주로 추천을 짜줘야하는데 두부관련 레시피가 없음."*
-//      🔢 실측 = 그 냉장고에 **두부가 D-2** 로 들어 있었고 두부 레시피는 앱에 **6편** 있었다.
-//         그런데 안 떴다 — 이 점수가 **유통기한을 아예 안 봤기** 때문이다.
-//         D-2 두부가 D-83 김밥김·유통기한 «없는» 계란과 똑같은 무게였다.
-//   ⭐⭐ 고친 방식 = 숫자를 얹은 게 아니라 **「센다」의 뜻을 바꿨다.**
-//      이 점수는 원래 「내 재료를 몇 개나 쓰나」다. 그런데 **재료마다 «쓸 값어치»가 다르다** —
-//      오늘내일 상하는 두부를 쓰는 것과, 석 달 남은 김을 쓰는 것은 같은 1개가 아니다.
-//      그래서 «개수»를 **무게 있는 개수**로 바꾼다: 보통 1 · D-7 이내 1.5 · **D-3 이내 2**.
-//   ⛔ 왜 「임박한 것만 먼저」로 안 갔나 = 그러면 2026-08-10 에 고친 사고가 되살아난다
-//      (재료 1개 걸린 레시피가 3개 걸린 레시피를 이겨 **더 많이 사야 하는 쪽**이 위로 온다).
-//      무게로 얹으면 **임박 재료 하나가 보통 재료 둘과 맞먹는** 선에서 멈춘다.
-//   📌 날짜는 여기서 만들지 않는다 — 부르는 쪽이 「오늘」을 넘긴다(절대원칙 27).
-const 무게 = (남은날) => (남은날 === null ||남은날 === undefined ? 1 : 남은날 <= 3 ? 2 : 남은날 <= 7 ? 1.5 : 1)
-
-// 레시피가 쓰는 «내 재료»를 무게까지 실어 센다. `남은날()` 은 냉장고 칸 → 남은 날수(모르면 null).
-export const countPantryHitsWeighted = (recipe, pantry = [], 남은날) => {
-  const tokens = ingredientTokens(recipe?.ingredients)
-  const seen = new Map()
-  for (const p of pantry || []) {
-    const k = pantryKey(p?.name)
-    if (!k || seen.has(k) || !hasIngredient(tokens, k)) continue
-    seen.set(k, 남은날 ? 남은날(p) : null)
-  }
-  return { n: seen.size, w: [...seen.values()].reduce((a, d) => a + 무게(d), 0), 칸: seen }
-}
-
-// 🚨 이 레시피가 쓰는 «임박한» 재료 이름들 — 카드 꼬리표에 쓴다(＝왜 떴는지 보이게).
-//    ⭐ 창업자가 2026-08-12 에 *"재료 하나만 담아도 큰 이미지가 생겨서 재료가 안보였어"* 라고 했다.
-//       그래서 «줄을 새로 늘리지 않고» 이미 있는 카드에 작은 글자만 얹는다.
-export const pantryUrgent = (recipe, pantry = [], 남은날, 안쪽 = 3) => {
-  const { 칸 } = countPantryHitsWeighted(recipe, pantry, 남은날)
-  return [...칸.entries()].filter(([, d]) => d !== null && d !== undefined && d <= 안쪽)
-    .sort((a, b) => a[1] - b[1]).map(([k, d]) => ({ 이름: k, 남은날: d }))
-}
-
-export const pantryScore = (recipe, pantry = [], 남은날) => {
-  const { n, w } = countPantryHitsWeighted(recipe, pantry, 남은날)
+export const pantryScore = (recipe, pantry = []) => {
+  const n = countPantryHits(recipe, pantry)
   if (!n) return 0
   const total = (recipe?.ingredients || []).length || 1
-  return w + n / total
+  return n + n / total
 }

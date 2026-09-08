@@ -783,6 +783,23 @@ function withSample(saved) {
   return [makeSampleDiary(), ...diary]
 }
 
+// 🚑🚑 **[2026-09-08 저녁] 두 종 핀 사고로 «빠진» 핀을 도로 꽂는다.**
+//   📮 창업자 = *"하트누르니까 차례로 사라졌어"* — 실제로 지워진 건 레시피가 아니라 «핀»이다(전체 개수는 그대로).
+//   🔎 표가 남아 있다 = `favPin === 'heart'` 는 **오늘 두 종이 나간 뒤에만** 붙을 수 있는 값이다.
+//      그중 `favorite === false` 인 편 = 「모자 → 하트 → 빠짐」을 다 돈 것 ＝ 이 사고로 빠진 것.
+//   ✅ 그래서 그 편만 도로 꽂는다. ⛔ 종(`favPin`)은 지우지 않는다 — 두 종을 다시 켜는 날 하트로 돌아온다.
+//   ⚠️ 정직하게 = «일부러» 하트에서 뺀 사람도 도로 꽂힌다. 두 종이 나가 있던 시간이 반나절이라
+//      그 수는 매우 적고, **잘못 꽂힌 건 한 번 눌러 빼면 되지만 잃은 핀은 스스로 못 찾는다**(절대원칙 34).
+//   🔒 한 번만 돈다(`pinFixV`) — 그 뒤엔 유저가 뺀 것을 되살리지 않는다.
+const PIN_FIX_V = 1
+function migratePinLost(recipes, saved) {
+  if ((saved.pinFixV || 0) >= PIN_FIX_V) return { recipes, pinFixV: saved.pinFixV }
+  const out = recipes.map((r) =>
+    r && r.favPin === 'heart' && !r.favorite ? { ...r, favorite: true } : r
+  )
+  return { recipes: out, pinFixV: PIN_FIX_V }
+}
+
 function initialState() {
   const saved = load()
   if (saved) {
@@ -792,15 +809,17 @@ function initialState() {
     const qtyMig = migrateQtyOnly(politeMig.recipes, saved)
     const inboxMig = migrateInboxSorted(qtyMig.recipes, saved)
     const coverMig = migrateCoverThumb(inboxMig.recipes, saved)
+    const pinMig = migratePinLost(coverMig.recipes, saved)   // 🚑 두 종 사고로 빠진 핀 되살리기
     const diary = withSample(saved)
     return {
-      recipes: reconcileCooked(coverMig.recipes, diary),
+      recipes: reconcileCooked(pinMig.recipes, diary),
       seedV: mig.seedV,
       memoCleanV: memoMig.memoCleanV,
       politeV: politeMig.politeV,
       qtyOnlyV: qtyMig.qtyOnlyV,
       inboxV: inboxMig.inboxV,
       coverV: coverMig.coverV,
+      pinFixV: pinMig.pinFixV,
       removedSeedIds: saved.removedSeedIds || [],
       // 🗂 기본 폴더가 «늘어날 때» — 이미 깔린 폰에도 넣어 준다.
       //    ⛔⛔ 기본값(아래 `folders: [...]`)만 고치면 «새로 까는 사람»만 받는다.

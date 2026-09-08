@@ -89,7 +89,11 @@ console.log(`🔖 이름 = 「${FAV_NAME}」 (src/favName.js 에서 읽었다) �
   //      옛 판은 여기서 두 번 누르고 「해볼 것에서 빼기」를 찾다가 0개로 죽었다(run 2278).
   //   ⭐⭐ 검사를 «없애지 않고» 순환까지 재도록 넓혔다 — 이름은 여전히 코드에서 읽어 온다.
   const 두번째 = await p.locator('.fav-dot').first().getAttribute('aria-label')
-  칸('② 모자에 꽂힌 카드는 「다음 종에 꽂기」를 말한다', !!두번째 && 두번째.includes(`${PIN_NEXT_NAME}에 꽂기`), `«${두번째}»`)
+  // 🔀 종이 «하나»면(2026-09-08 사고로 두 종을 껐다) 꽂힌 카드는 곧바로 「빼기」를 말한다.
+  //    ⛔ 검사를 지우지 않는다 — 종 수에 맞는 «맞는 말»을 검사한다.
+  const 한종 = FAV_PINS.length === 1
+  칸(한종 ? '② 꽂힌 카드는 「빼기」를 말한다(종 하나)' : '② 모자에 꽂힌 카드는 「다음 종에 꽂기」를 말한다',
+    !!두번째 && 두번째.includes(한종 ? `${PIN_NEXT_NAME}에서 빼기` : `${PIN_NEXT_NAME}에 꽂기`), `«${두번째}»`)
 
   // ⛔⛔ **끝까지 도는 검사는 «다른 카드»로 한다.** 첫 카드를 계속 누르면 하트까지 가버려서
   //    「해볼 것」에 꽂힌 것이 0개가 되고 → ③ 칩이 안 서서 «애먼 칸»이 죽는다(실제로 죽였다).
@@ -97,7 +101,8 @@ console.log(`🔖 이름 = 「${FAV_NAME}」 (src/favName.js 에서 읽었다) �
   const 둘째 = p.locator('.fav-dot').nth(1)
   for (let i = 0; i < 2; i++) { await 둘째.click().catch(() => {}); await p.waitForTimeout(450) }
   const 마지막 = await 둘째.getAttribute('aria-label')
-  칸('②-2 마지막 종에서는 「빼기」를 말한다', !!마지막 && 마지막.includes(`${PIN_NEXT_NAME}에서 빼기`), `«${마지막}»`)
+  칸('②-2 마지막 종에서는 「빼기」를 말한다',
+    !!마지막 && 마지막.includes(한종 ? `${PIN_NEXT_NAME}에 꽂기` : `${PIN_NEXT_NAME}에서 빼기`), `«${마지막}»`)
 
   // 칩 — favCount>0 이라야 뜬다. 먼저 «있나»를 재고 그 다음 «이름»을 본다
   const 칩글 = await p.evaluate(() => [...document.querySelectorAll('.pill')].map((e) => e.innerText.trim()))

@@ -19,6 +19,18 @@
 	<!-- 수출 규정 문답 건너뛰기 — 우리는 https 표준 암호화만 쓴다(자체 암호화 없음) -->
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<!-- 🔐 2026-09-08 큰 틀 4 — 구글 로그인이 앱으로 «돌아오는 문»(URL 스킴 = GoogleService-Info.plist 의 REVERSED_CLIENT_ID · 부품 원문 setup-google.md) -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.741474124689-lon9f2np1aqjh1pgk5ldev8bofg11e6f</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleDisplayName</key>
         <string>한끼</string>
 	<key>CFBundleExecutable</key>

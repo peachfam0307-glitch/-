@@ -47,6 +47,7 @@ const 아이폰CSS = 아이폰 ? `
 body{height:2346px}
 .wrap{padding-top:150px}.hh{font-size:104px}.ss{font-size:42px;margin-top:24px}.rule{top:500px}
 .front{top:700px;width:760px;height:1800px;right:-30px}
+.front img{height:100%} /* 📮 [09-08 창업자] *"아이폰 아래가 많이 남네?"* — 그림에 높이 100% 가 없어 틀보다 «먼저» 끝나고 틀 바탕색이 남았다(안드로이드 1920 캔버스에선 그림이 더 길어 안 보이던 구멍) → cover 로 틀을 꽉 채운다 */
 .back{top:720px;width:430px;height:780px}
 .duo{top:840px!important}
 .steps{top:1820px;gap:30px}
@@ -154,7 +155,7 @@ const 장08 = () => `<style>${공통}
 .ss{margin-top:34px}.rule{top:340px}
 .duo{left:auto;right:64px;top:110px;width:300px} /* 08 은 헤드라인 옆 작은 자리라 «균일» 규칙에서 뺀다 — 496px 로 하니 카드를 덮었다(규칙 21) */
 ${짧은폰 ? '.duo{top:40px!important;width:200px!important}.rule{top:300px}' : ''}
-${아이폰 ? '.wrap{padding-top:140px}.hh{font-size:96px}.rule{top:400px}.duo{top:150px!important;width:320px!important}.card{top:520px;padding:72px 62px}.card p{font-size:46px;line-height:1.8}.card hr{margin:52px 0}.pill{bottom:330px;font-size:38px}.end{bottom:110px;font-size:54px}' : ''}
+${아이폰 ? '.wrap{padding-top:140px}.hh{font-size:96px}.rule{top:400px}.duo{top:150px!important;width:320px!important}.card{top:520px!important;left:40px!important;right:40px!important;padding:92px 56px!important}.card p{font-size:46px!important;line-height:1.95!important}.card hr{margin:70px 0!important}.pill{bottom:300px!important;font-size:40px!important;padding:24px 50px!important}.end{bottom:100px!important;font-size:58px!important}' : ''} /* ⛔ 이 줄은 아래 .card 기본 규칙보다 «앞»에 있어 !important 가 없으면 진다(첫 판이 그랬다) */ /* 09-08 창업자 "아래가 남네" — 08 은 카드 글을 키워 아래 알약과 붙인다 */
 .card{position:absolute;left:64px;right:64px;top:440px;z-index:3;background:#fffdf8;border-radius:36px;padding:60px 54px;box-shadow:0 20px 44px rgba(74,79,54,.12);text-align:left}
 .card p{font-family:'Gowun Dodum';color:${올리브};font-size:42px;line-height:1.72;letter-spacing:-0.01em}
 .card .go{color:#c2703a;font-weight:700}

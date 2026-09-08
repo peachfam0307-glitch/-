@@ -278,13 +278,29 @@ body{width:${W}px;height:${H}px;position:relative;overflow:hidden;
     linear-gradient(180deg,${크림} 0%,#f3ebf8 55%,${살구} 100%)}   /* ⛔살구빛(#f7e9d6)을 뺐다 — 창업자 *"그라데이션이 살구를 빼줘"* */
 .hole{position:absolute;left:${앱X}px;top:${앱Y}px;width:${앱W}px;height:${앱H}px;border-radius:44px;
   background:#fff;box-shadow:0 30px 66px rgba(60,35,10,.26)}
-/* 🐻 창업자 = *"한끼 로고를 핑크배경에 투명으로도 넣자 광고는해야지"*
-   ⭐ 자리 = **아래 한가운데** — 곰펭 컷은 좌우 끝, 자막은 그 위라 여기만 여덟 장면 내내 비어 있다.
-   ⭐ 배경 층에 둔다 — 전 장면에 같은 자리로 박히고 앞면 글자를 안 가린다.
-   ⛔ 너무 흐리게 두지 않는다 — 광고인데 안 읽히면 붙인 뜻이 없다. */
-.logo{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:250px;opacity:.92;
-  filter:drop-shadow(0 6px 14px rgba(93,52,16,.18))}
-</style><div class="hole"></div><img class="logo" src="${b64(join(ROOT, 'design/promo/logo/한끼로고-곰ㅎ-투명-2507.png'))}">`
+/* ⛔ 로고를 여기(모든 장면 배경)에 깔았다가 뺐다 — 창업자 *"아니아니ㅠ 마지막 페이지에 해달라는거였오"*
+      ＋ *"따로 페이지 하나 만들어서…"* → 로고는 **맨 끝 «끝장» 한 페이지**에만 든다(아래 끝장HTML). */
+</style><div class="hole"></div>`
+
+// 🐻🐻 **끝장(마지막 페이지)** — 앱 화면 없이 «로고 한 장»으로 닫는다.
+//    ⭐ 광고는 마지막에 이름을 남기는 것이라, 여기선 앱을 안 보여주고 로고·한 줄만 크게 둔다.
+const 끝장HTML = `<style>${폰트}
+*{margin:0;padding:0}
+body{width:${W}px;height:${H}px;position:relative;overflow:hidden;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:44px;
+  background:
+    radial-gradient(circle at 16px 16px, rgba(93,52,16,.055) 3px, transparent 4px) 0 0/64px 64px,
+    linear-gradient(180deg,${크림} 0%,#f3ebf8 55%,${살구} 100%)}
+img.mark{width:520px;filter:drop-shadow(0 14px 30px rgba(93,52,16,.2))}
+.line{font-family:'Jua';color:${갈};font-size:64px;letter-spacing:-.02em;text-align:center;line-height:1.3}
+.line b{color:${팥}}
+.store{font-family:'Jua';color:rgba(93,52,16,.72);font-size:40px}
+.cut{position:absolute;filter:drop-shadow(0 14px 22px rgba(60,35,10,.22))}
+</style>
+<img class="mark" src="${b64(join(ROOT, 'design/promo/logo/한끼로고-곰ㅎ-투명-2507.png'))}">
+<div class="line">이번 주 밥상,<br><b>가족이 같이 골라요</b></div>
+<div class="store">플레이스토어에서 「한끼」</div>
+<img class="cut" src="${스('gp_duotb')}" style="right:40px;bottom:40px;height:250px">`
 
 const 앞면 = (제목, 자막, 컷, 옵션 = {}) => `<style>${폰트}
 *{margin:0;padding:0}
@@ -304,7 +320,9 @@ body{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:tra
 /* 📝 창업자 = *"아래 설명문구가 너무 연하고 작아"* → **크게(52px) · 진하게(표장 갈색) · 굵게**
    ⛔ 흐린 회갈색(rgba .62)은 폰에서 자막으로 안 읽힌다. 강조만 진하게 두면 나머지가 배경이 된다. */
 .sub{position:absolute;left:60px;right:60px;top:${앱Y + 앱H + 34}px;text-align:center;
-  font-family:'GowunDodum';color:${갈};font-size:52px;font-weight:700;line-height:1.45;
+  /* 📮 창업자 = *"아래 글씨체가 좀 별론데.."* → 고운돋움(얇고 밋밋)에서 **제목과 같은 Jua** 로.
+     ⭐ 한 영상에 글씨체는 하나가 깔끔하고, Jua 는 획이 굵어 폰에서 자막으로 잘 읽힌다. */
+  font-family:'Jua';color:${갈};font-size:54px;line-height:1.4;letter-spacing:-.01em;
   text-shadow:0 2px 0 rgba(255,255,255,.6)}
 .sub b{color:${팥};font-weight:700}
 .cut{position:absolute;filter:drop-shadow(0 14px 22px rgba(60,35,10,.22))}
@@ -388,6 +406,11 @@ for (const s of 장면) {
   s.앞면 = join(OUT, `_앞_${s.이름}.png`)
   await pg.screenshot({ path: s.앞면, omitBackground: true })
 }
+// 🐻 끝장 한 장 — 앱 없이 로고만(창업자 *"따로 페이지 하나 만들어서"*)
+await pg.setContent(끝장HTML, { waitUntil: 'networkidle' })
+await pg.waitForTimeout(300)
+const 끝장판 = join(OUT, '_끝장.png')
+await pg.screenshot({ path: 끝장판 })
 await b2.close()
 
 // ── ③ 붙이기 — 바탕 위에 앱 영상, 그 위에 앞면 ───────────────────────────
@@ -410,6 +433,15 @@ for (const s of 장면) {
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-y', 조각], { stdio: 'inherit' })
   조각들.push(조각)
 }
+
+// 🐻 끝장을 «한 조각»으로 만들어 뒤에 붙인다 (앱 영상이 없으니 그림 한 장을 늘여 쓴다)
+const 끝길이 = 2.8
+const 끝조각 = join(OUT, '_조각_⑨끝장.mp4')
+execFileSync(FF, ['-hide_banner', '-loglevel', 'error', '-loop', '1', '-i', 끝장판,
+  '-t', String(끝길이), '-vf', 'fps=60,format=yuv420p,setsar=1',
+  '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-y', 끝조각], { stdio: 'inherit' })
+조각들.push(끝조각)
+장면.push({ 이름: '⑨끝장', 길이: 끝길이 })
 
 // 장면 사이는 부드럽게 — 앞 장이 위로 밀리고 다음 장이 아래에서 올라온다(소소 릴스와 같은 결)
 const TR = 0.35

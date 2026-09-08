@@ -36,8 +36,9 @@ export default function LabSheet({ onClose }) {
     // 📩 인스타 DM — 「가벼운 것」만 여기로. 폼을 대신하지 않는다(자세한 까닭은 version.js).
     //   ⚠️ 익명이 아니다 → desc 에 그대로 적는다. 모르고 보내게 두면 그건 속이는 것이다.
     INSTAGRAM_DM_URL && {
-      icon: 'instagram', badge: '인스타', title: '이런 레시피 올려주세요',
-      desc: '인스타 DM으로 편하게요 · 사진도 좋아요 (계정이 보여요)',
+      icon: 'instagram', badge: '인스타', title: '한끼에 이런 레시피 올려주세요',
+      // 📮 창업자 2026-09-08 = "계정이 보여요는 빼도 돼 유저들도 다 알아"
+      desc: '인스타 DM으로 편하게요 · 사진도 좋아요',
       url: INSTAGRAM_DM_URL,
     },
     FEEDBACK_URL && {
@@ -45,7 +46,7 @@ export default function LabSheet({ onClose }) {
       url: FEEDBACK_URL,
     },
     bugUrl && {
-      icon: 'alert', title: '안 되는 것 알려주기', desc: `어디서 어떻게 안 됐는지만요 · 지금 ${APP_VERSION}`,
+      icon: 'alert', title: '안 되는 것 알려주세요', desc: `어디서 어떻게 안 됐는지만요 · 지금 ${APP_VERSION}`,
       url: bugUrl,
     },
   ].filter(Boolean)

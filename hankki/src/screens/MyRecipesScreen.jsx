@@ -215,6 +215,9 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
   const [searchOpen, setSearchOpen] = useState(false)
   const [q, setQ] = useState('')
   const [edit, setEdit] = useState(false)
+  // 🔖 [2026-09-08] «방금 종을 바꾼 편» — 걸린 목록에서 그 자리에 남겨 둔다(위 `list`).
+  //   ⛔ 저장값이 아니다. 화면에만 산다.
+  const [방금바꾼, set방금바꾼] = useState(null)
   // 편집 모드 다중 선택 — 카드 탭으로 체크하고 아래 바에서 한 번에 삭제(하나씩 지우기 불편 해소)
   const [sel, setSel] = useState(() => new Set())
   const [delSelAsk, setDelSelAsk] = useState(false)
@@ -308,8 +311,13 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
   const list = query
     ? sorted.filter(hit)
     : folder === '전체' ? sorted
-      : folder === '__fav' ? sorted.filter((r) => isPinned(r, 'chef'))
-      : folder === '__heart' ? sorted.filter((r) => isPinned(r, 'heart'))
+      // 🚨🚨 **[2026-09-08 밤] 「눌렀더니 다 사라졌다」의 뿌리가 여기였다.**
+      //   📮 창업자 = *"다 지워지잖아!!!!!!!!! 그래서 내가 제보했잖아"*
+      //   🔎 재현(`_repro-핀사라짐-0908.mjs`) — 순환은 멀쩡히 돈다. 걸린 목록에서 «빠지는» 게 문제였다.
+      //   ⭐ 종을 바꾼 편은 **그 자리에 남긴다** — 없어진 게 아니라 «옮겨간» 것이니 그렇게 보여야 한다.
+      //   ⚠️ 화면값이라 탭을 떠났다 오면 원래 잣대대로 걸린다. 저장값은 안 건드린다.
+      : folder === '__fav' ? sorted.filter((r) => isPinned(r, 'chef') || r.id === 방금바꾼)
+      : folder === '__heart' ? sorted.filter((r) => isPinned(r, 'heart') || r.id === 방금바꾼)
       // 📌📌 [2026-09-08 창업자] *"해볼것 최애 같이 보이는 칩 만들어줘"*
       //   ⭐ 「이번 주에 뭐 해먹지」를 고를 땐 **꽂아둔 것 전부**를 한 화면에서 본다 —
       //      해볼 것(아직 안 해본 것)과 최애(또 하고 싶은 것)를 오가며 고르는 게 실제 쓰임새다.
@@ -963,7 +971,14 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                             return 다음 ? `${r.title} ${pinName(다음)}에 꽂기` : `${r.title} ${pinName(pinOf(r))}에서 빼기`
                           })()}
                           aria-pressed={!!r.favorite}
-                          onClick={(ev) => { ev.stopPropagation(); setFavPin(r.id, nextPin(r)) }}
+                          /* 🔁 [2026-09-08] 눌렀을 때 «무엇이 됐는지»를 말해준다 — 조용히 바뀌니 사라진 줄 알았다. */
+                          onClick={(ev) => {
+                            ev.stopPropagation()
+                            const 다음 = nextPin(r)
+                            setFavPin(r.id, 다음)
+                            set방금바꾼(r.id)
+                            nav.showToast?.(다음 ? `${pinName(다음)}에 넣었어요` : `${pinName(pinOf(r))}에서 뺐어요`)
+                          }}
                         >
                           {/* 🔖🔖 [2026-08-18 창업자 확정] 걸린 것 = **요리사모자 클립이 카드 밖으로 걸친다.**
                               📮 *"딱 레시피 안에 넣기보다 **바깥에 걸쳐서** 넣는게 더 예쁜거 같아 레꾸도 안해치고"*

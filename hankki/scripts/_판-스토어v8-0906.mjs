@@ -129,8 +129,8 @@ const 스티커치수 = { gp_gomhi: [593, 667], gp_gomtb: [581, 698], gp_gomft: 
 const 스티커폭 = (k) => { const [w, h] = 스티커치수[k] || [1, 1]; const H = /^gp_gom/.test(k) ? 400 : /^pjs_/.test(k) ? 360 : 380; return Math.round(H * w / h) }
 // 🍎 아이패드는 폰이 짧아 캐러셀 자리·크기 규칙을 그대로 따른다 · 아이폰은 폰이 «더 길어» 장별 덮어쓰기를 따로 받는다(아이폰폰)
 const 짧은폰 = 캐러셀 || 아이패드
-const 장 = ({ 머리: h, 부제, 파일, 곰, 포인트: pts, 자리 = 'top', 폰 = '', 캐러셀자리 = null, 아이폰폰 = '' }) => `<style>${공통}
-.front img{object-position:${짧은폰 && 캐러셀자리 ? 캐러셀자리 : 자리}} ${짧은폰 ? '' : 아이폰 ? 아이폰폰 : 폰}</style>
+const 장 = ({ 머리: h, 부제, 파일, 곰, 포인트: pts, 자리 = 'top', 폰 = '', 캐러셀자리 = null, 아이폰폰 = '', 아이패드폰 = '' }) => `<style>${공통}
+.front img{object-position:${짧은폰 && 캐러셀자리 ? 캐러셀자리 : 자리}} ${캐러셀 ? '' : 아이패드 ? 아이패드폰 : 아이폰 ? 아이폰폰 : 폰}</style>
 ${머리(h, 부제)}${샤랄라()}
 ${곰 ? `<img class="duo" style="width:${Math.round(스티커폭(곰) * (짧은폰 ? 0.8 : 1))}px;top:${/^gp_gom/.test(곰) ? 660 : 690}px" src="${스티커(곰)}">` : ''}
 <div class="front"><img src="${앱(파일)}"></div>
@@ -143,7 +143,9 @@ const 장05 = () => 장({ 머리: '불 앞에서도<br>편하게', 부제: '큰 
   // ⛔ 첫 판은 타이머 띠(이 장의 값어치)가 아래로 잘렸다(규칙 21) → 폰을 줄여 올리고 «아래»가 보이게 자른다
   // 📮 [09-06 01:11] *"타이머, 요리모드 잘 안보여"* → 폰을 더 넓게(700) · 덜 기울여 타이머 띠와 걸음 글이 크게 들어오게
   자리: '50% 100%', 폰: '.front{top:470px;right:-10px;width:700px;height:1480px;transform:rotate(-2deg)}',
-  아이폰폰: '.front{top:600px;right:-10px;width:740px;height:1860px;transform:rotate(-2deg)}' })
+  아이폰폰: '.front{top:600px;right:-10px;width:740px;height:1860px;transform:rotate(-2deg)}',
+  // 🍎 아이패드(3:4)는 키가 1440 이라 «타이머 띠＋이전·다음»이 아래로 잘렸다(규칙 21 · 09-08 검수판) → 폰을 올려 아래가 남게
+  아이패드폰: '.front{top:330px;height:1090px;transform:rotate(-2deg)}' })
 
 // 08 왜 만들었나 — v5 마지막 장 글 «그대로»(창업자 확정 문단) · 뼈대만 D 로
 const 장08 = () => `<style>${공통}
@@ -191,7 +193,8 @@ const 장들 = {
     포인트: [['🃏', '다시 뽑기', '마음에 드는 카드까지'], ['💬', '공유하기', '카톡으로 자랑']],
     // 📮 [09-06 01:11] *"콩국수도 레꾸자랑뽑기가 보이면 좋겠고"* → 카드 «아래»(다시 뽑기·공유하기 단추 줄)가 보이는 자리로 자른다
     자리: '50% 58%', 캐러셀자리: '50% 42%', 폰: '.front{top:520px;height:1440px;transform:rotate(-2.5deg)}',
-    아이폰폰: '.front{top:640px;height:1820px;transform:rotate(-2.5deg)}' }), // 캐러셀은 폰이 짧아 58% 면 카드 «위»가 잘린다(13:44 창업자) → 42%
+    아이폰폰: '.front{top:640px;height:1820px;transform:rotate(-2.5deg)}',
+    아이패드폰: '.front{top:330px;height:1090px;transform:rotate(-2.5deg)}' }), // 캐러셀은 폰이 짧아 58% 면 카드 «위»가 잘린다(13:44 창업자) → 42%
   'v8-08-왜만들었나': 장08,
 }
 

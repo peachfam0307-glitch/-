@@ -61,11 +61,20 @@ await page.evaluate(() => {
   cards.slice(1).forEach((c) => { const w = c.closest('div'); (w || c).style.visibility = 'hidden' })
 })
 
+// 📮 창업자 = *"칩도 시안이 안보여"* — 카드만 잘랐더니 두 줄 칩이 통째로 빠졌다.
+//   ⭐ 이제 **칩 줄 맨 위부터 첫 카드 아래까지** 자른다. 최애 칩이 서는지도 여기서 눈으로 본다.
 const 자리 = await page.evaluate(() => {
   const 단추 = document.querySelector('.fav-dot')
   if (!단추) return null
   const 칸 = 단추.parentElement.getBoundingClientRect()
-  return { x: Math.max(0,칸.left - 10), y: Math.max(0, 칸.top + window.scrollY - 22), width: Math.round(칸.width + 22), height: Math.round(칸.height + 30) }
+  const 칩줄 = [...document.querySelectorAll('.hscroll')].filter((e) => e.getBoundingClientRect().top < 칸.top)
+  const 위 = 칩줄.length ? Math.min(...칩줄.map((e) => e.getBoundingClientRect().top)) : 칸.top - 22
+  return {
+    x: 0,
+    y: Math.max(0, 위 + window.scrollY - 6),
+    width: 360,
+    height: Math.round(칸.bottom - 위 + 18),
+  }
 })
 if (!자리) throw new Error('⛔ 핀 단추(.fav-dot)를 못 찾았다 — 「0개」로 넘어가지 말 것')
 

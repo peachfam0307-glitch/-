@@ -269,13 +269,29 @@ console.log('🎥 녹화 · 장면', 장면.map((s) => `${s.이름}(${s.길이}s
 // 🌸 창업자 = *"색은 살구 그만쓰고 핑크계열이나 연보라?"* → **연핑크 → 연보라** 그러데이션으로 간다.
 //    ⭐ 글자는 표장 갈색(#5d3410) 그대로 둔다 — 그게 우리 브랜드 색이고, 연보라 위에서도 잘 읽힌다.
 //    ⭐ 표시(동그라미·말풍선)는 주황 대신 **자두빛**으로 — 핑크 바탕에서 주황은 탁해 보인다.
-const 크림 = '#fdf4f8', 살구 = '#e6ddf6', 갈 = '#5d3410', 팥 = '#b8477e', 흐림 = 'rgba(93,52,16,.62)'
+// 🎨🎨 **왜 촌스러웠나 — 창업자 *"하.. 왜 뭔가 촌스럽지.. 이유를 찾아봐줄래??"***
+//   실제 판을 열어 세어 보고 찾은 것 다섯. (전부 «장식이 모자라서»가 아니라 «많고 안 맞아서»였다)
+//   ⑴ **색이 계열째 부딪혔다** — 바탕은 찬 라일락인데 글자는 따뜻한 표장 갈색(#5d3410)이었다.
+//      게다가 앱 화면 속 파란 「모아보기」 단추까지 들어와 **웜 갈색·쿨 보라·파랑 셋**이 한 화면에 섰다.
+//      ✅ 글자를 바탕과 «같은 계열»의 진한 자두먹(#43263f)으로 옮긴다. 강조는 하나(#c2417e)만.
+//   ⑵ **이모지를 썼다**(👧🧔👩) — 우리 앱은 유니코드 이모지를 «금지»한다(CLAUDE.md).
+//      기기마다 그림이 달라 우리 그림체와 절대 안 맞는다. ✅ 글자만 남긴다.
+//   ⑶ **장식이 겹겹이** — 실선 링 ＋ 점선 링 ＋ 별 넷 ＋ 말풍선 ＋ 그림자 넷. ✅ 링 하나 ＋ 반짝임 셋로 줄인다.
+//   ⑷ **글자 크기가 넷**(84·74·54·40) ＋ 자막에 흰 그림자까지. ✅ 두 종(제목 82 · 자막 52)으로.
+//   ⑸ **자리가 장면마다 흔들렸다** — 제목이 한 줄/두 줄이라 아래로 자라고, 곰펭 컷이 장면마다
+//      왼아래·오른아래·오른위로 옮겨 다녔다. ✅ 제목·꼬리표·자막·컷 «자리를 못 박고» 아래서 잰다.
+//   📌 창업자 물음 *"짜임에 색+무늬를 넣고 글자색을 바꾸면 덜 촌스러울까"* →
+//      **글자색은 맞다(⑴). 무늬는 더 넣으면 반대로 간다** — 이미 물방울 무늬 ＋ 그러데이션 ＋ 그림자가
+//      겹쳐 있었다. 무늬는 «거의 안 보이게» 한 겹만 남긴다.
+const 크림 = '#fdf5f9', 살구 = '#e9e0f7', 먹 = '#43263f', 팥 = '#c2417e'
+const 갈 = 먹   // 옛 이름을 쓰는 자리가 남아 있어 같은 값으로 잇는다
 const 바탕HTML = `<style>${폰트}
 *{margin:0;padding:0}
 body{width:${W}px;height:${H}px;position:relative;overflow:hidden;
+  /* 🧵 무늬는 «거의 안 보이게» 한 겹만 — 아주 연한 사선. 물방울(진하기 .055)은 빼서 배경이 조용해졌다 */
   background:
-    radial-gradient(circle at 16px 16px, rgba(93,52,16,.055) 3px, transparent 4px) 0 0/64px 64px,
-    linear-gradient(180deg,${크림} 0%,#f3ebf8 55%,${살구} 100%)}   /* ⛔살구빛(#f7e9d6)을 뺐다 — 창업자 *"그라데이션이 살구를 빼줘"* */
+    repeating-linear-gradient(135deg, rgba(67,38,63,.028) 0 2px, transparent 2px 26px),
+    linear-gradient(180deg,${크림} 0%,#f4ecfa 55%,${살구} 100%)}
 .hole{position:absolute;left:${앱X}px;top:${앱Y}px;width:${앱W}px;height:${앱H}px;border-radius:44px;
   background:#fff;box-shadow:0 30px 66px rgba(60,35,10,.26)}
 /* ⛔ 로고를 여기(모든 장면 배경)에 깔았다가 뺐다 — 창업자 *"아니아니ㅠ 마지막 페이지에 해달라는거였오"*
@@ -289,8 +305,8 @@ const 끝장HTML = `<style>${폰트}
 body{width:${W}px;height:${H}px;position:relative;overflow:hidden;display:flex;
   flex-direction:column;align-items:center;justify-content:center;gap:44px;
   background:
-    radial-gradient(circle at 16px 16px, rgba(93,52,16,.055) 3px, transparent 4px) 0 0/64px 64px,
-    linear-gradient(180deg,${크림} 0%,#f3ebf8 55%,${살구} 100%)}
+    repeating-linear-gradient(135deg, rgba(67,38,63,.028) 0 2px, transparent 2px 26px),
+    linear-gradient(180deg,${크림} 0%,#f4ecfa 55%,${살구} 100%)}
 img.mark{width:520px;filter:drop-shadow(0 14px 30px rgba(93,52,16,.2))}
 .line{font-family:'Jua';color:${갈};font-size:64px;letter-spacing:-.02em;text-align:center;line-height:1.3}
 .line b{color:${팥}}
@@ -311,45 +327,54 @@ body{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:tra
 .frame{position:absolute;left:${앱X - 6}px;top:${앱Y - 6}px;width:${앱W + 12}px;height:${앱H + 12}px;
   border:6px solid rgba(93,52,16,.16);border-radius:50px;box-sizing:border-box;
   box-shadow:inset 0 0 0 8px ${크림}}
-.head{position:absolute;left:0;right:0;top:66px;text-align:center;font-family:'Jua';
-  color:${갈};font-size:${옵션.제목크기 || 84}px;line-height:1.18;letter-spacing:-.02em}
+/* 📐📐 창업자 = *"재목이 위치가 다달라.. 눈으로 다 재보고 검수해서"*
+   ⛔ 옛 판은 제목이 «위에서부터» 자라서 한 줄이냐 두 줄이냐에 따라 아래 여백이 달라졌다.
+   ✅ 이제 제목·꼬리표·자막 모두 **높이를 못 박은 칸 안에서 가운데**로 선다 —
+      글자가 길어져도 칸이 안 움직인다. 아래 검수 가르기가 장면마다 실제로 재서 확인한다. */
+.head{position:absolute;left:60px;right:60px;top:60px;height:176px;display:flex;
+  align-items:center;justify-content:center;text-align:center;font-family:'Jua';
+  color:${먹};font-size:82px;line-height:1.14;letter-spacing:-.02em}
 .head b{color:${팥}}
-.tag{position:absolute;left:50%;top:${앱Y - 96}px;transform:translateX(-50%);font-family:'Jua';
-  background:${갈};color:${크림};font-size:34px;padding:10px 34px;border-radius:999px;
-  box-shadow:0 10px 24px rgba(60,35,10,.22)}
+/* 🏷 꼬리표 — ⛔이모지를 뺐다(⑵). 자리는 늘 같은 곳, 없는 장면은 그냥 비워 둔다 */
+.tag{position:absolute;left:50%;top:${앱Y - 86}px;transform:translateX(-50%);font-family:'Jua';
+  background:${먹};color:${크림};font-size:33px;padding:9px 30px;border-radius:999px;letter-spacing:.01em}
 /* 📝 창업자 = *"아래 설명문구가 너무 연하고 작아"* → **크게(52px) · 진하게(표장 갈색) · 굵게**
    ⛔ 흐린 회갈색(rgba .62)은 폰에서 자막으로 안 읽힌다. 강조만 진하게 두면 나머지가 배경이 된다. */
-.sub{position:absolute;left:60px;right:60px;top:${앱Y + 앱H + 34}px;text-align:center;
+.sub{position:absolute;left:60px;right:60px;top:${앱Y + 앱H + 26}px;height:170px;display:flex;
+  align-items:center;justify-content:center;text-align:center;
   /* 📮 창업자 = *"아래 글씨체가 좀 별론데.."* → 고운돋움(얇고 밋밋)에서 **제목과 같은 Jua** 로.
      ⭐ 한 영상에 글씨체는 하나가 깔끔하고, Jua 는 획이 굵어 폰에서 자막으로 잘 읽힌다. */
-  font-family:'Jua';color:${갈};font-size:54px;line-height:1.4;letter-spacing:-.01em;
-  text-shadow:0 2px 0 rgba(255,255,255,.6)}
-.sub b{color:${팥};font-weight:700}
+  font-family:'Jua';color:${먹};font-size:52px;line-height:1.34;letter-spacing:-.01em}
+.sub b{color:${팥}}
 .cut{position:absolute;filter:drop-shadow(0 14px 22px rgba(60,35,10,.22))}
-/* 🔴 «여기를 누른다» 표시 — 두 겹 동그라미 ＋ 말풍선 */
-.ring{position:absolute;border:9px solid ${팥};border-radius:999px;box-sizing:border-box;
-  box-shadow:0 0 0 7px rgba(255,255,255,.8),0 12px 28px rgba(60,35,10,.3)}
-.ring2{position:absolute;border:5px dashed rgba(194,65,12,.5);border-radius:999px;box-sizing:border-box}
+/* 🔴 «여기를 누른다» 표시 — 링 하나 ＋ «퍼지는 물결»(진짜 누른 느낌) ＋ 반짝임 셋
+   📮 창업자 = *"효과도 톡이아니라 진짜 효과가 들어가야하지 않을까"*
+   ⭐ 그래서 말풍선 「톡」을 **없앴다**. 대신 손가락이 눌렀을 때처럼 **물결이 퍼져 나간다** —
+      앞면을 «여러 장» 그려서(아래 물결칸) 영상으로 돌리므로 «진짜 움직인다». */
+.ring{position:absolute;border:8px solid ${팥};border-radius:999px;box-sizing:border-box;
+  box-shadow:0 0 0 6px rgba(255,255,255,.85)}
+.wave{position:absolute;border-radius:999px;box-sizing:border-box;border:6px solid ${팥}}
 /* ✨ 창업자 = *"골랐어요에 클립들에 반짝반짝효과같은거 넣어주고"*
    → 꽂는 순간 «반짝임» 넷을 동그라미 둘레에 뿌린다(그림 한 장이라 크기·각도로 리듬을 준다) */
 .spark{position:absolute;width:var(--s);height:var(--s);transform:translate(-50%,-50%) rotate(var(--rot));
   background:${팥};opacity:.92;
   clip-path:polygon(50% 0%,58% 42%,100% 50%,58% 58%,50% 100%,42% 58%,0% 50%,42% 42%);
   filter:drop-shadow(0 0 10px rgba(184,71,126,.55))}
-.say{position:absolute;font-family:'Jua';color:${크림};background:${팥};
-  padding:10px 30px;border-radius:999px;font-size:46px;white-space:nowrap;
-  box-shadow:0 12px 26px rgba(60,35,10,.3)}
+
 </style>
 <div class="frame"></div>
-<div class="head">${제목}</div>
+<div class="head"><span>${제목}</span></div>
 ${옵션.꼬리표 ? `<div class="tag">${옵션.꼬리표}</div>` : ''}
-<div class="sub">${자막}</div>
+<!-- ⛔ flex 칸 안에 글자를 «그냥» 넣으면 <br> 이 안 먹는다(익명 flex 아이템으로 뭉친다) —
+     실측: 「가족이 모여 앉아먹고 싶은 걸…」 처럼 두 줄이 한 줄로 붙었다. span 으로 감싼다. -->
+<div class="sub"><span>${자막}</span></div>
 ${컷 || ''}`
 
 // 표시 자리 셈 — 잘라 확대한 장면은 «자른 칸» 기준으로 다시 잰다
-const 표시HTML = (표시) => {
+// 🌊 물결칸 t(0~1) — 0에서 링에 딱 붙어 있다가 커지며 사라진다. 앞면을 여러 장 그려 «움직이게» 한다.
+const 표시HTML = (표시, t = 0) => {
   if (!표시) return ''
-  const { 점, 확대, 말 } = 표시
+  const { 점, 확대 } = 표시
   const 칸 = 확대 ? 확대칸(점) : { cw: 영상W, ch: 앱크롭H, cx: 0, cy: 0 }
   const 배 = 앱W / 칸.cw
   const x = 앱X + (점.x - 칸.cx) * 배
@@ -358,22 +383,29 @@ const 표시HTML = (표시) => {
   const 여유 = 26
   const w = Math.max(96, Math.round(점.w * 배)) + 여유 * 2
   const h = Math.max(96, Math.round(점.h * 배)) + 여유 * 2
-  console.log('  🔎 표시', JSON.stringify({ 칸, x: Math.round(x), y: Math.round(y), w, h }))
-  const 상자 = (dx, cls) =>
+  const 상자 = (dx, cls, style = '') =>
     `<div class="${cls}" style="left:${Math.round(x - w / 2 - dx)}px;top:${Math.round(y - h / 2 - dx)}px;` +
-    `width:${w + dx * 2}px;height:${h + dx * 2}px"></div>`
-  // ✨ 반짝임 — 동그라미 둘레 네 곳(오른위·왼위·오른아래·왼아래)에 크기를 달리해 뿌린다
-  const 반짝 = 확대 ? [[0.72, -0.72, 46, 0], [-0.78, -0.5, 30, 25], [0.8, 0.62, 34, -15], [-0.66, 0.78, 24, 10]]
-    .map(([dx, dy, s, rot]) =>
-      `<div class="spark" style="left:${Math.round(x + dx * (w / 2 + 34))}px;top:${Math.round(y + dy * (h / 2 + 34))}px;` +
-      `--s:${s}px;--rot:${rot}deg"></div>`).join('') : ''
-  return 상자(0, 'ring') + 상자(22, 'ring2') + 반짝 +
-    `<div class="say" style="left:${Math.round(x)}px;top:${Math.round(y + h / 2 + 42)}px;transform:translateX(-50%)">${말}</div>`
+    `width:${Math.round(w + dx * 2)}px;height:${Math.round(h + dx * 2)}px;${style}"></div>`
+  // 🌊 물결 두 개 — 위상을 반 칸 어긋내 «계속 퍼지는» 것처럼 보이게
+  const 물결 = [t, (t + 0.5) % 1].map((u) =>
+    상자(10 + u * 130, 'wave', `opacity:${(0.55 * (1 - u)).toFixed(3)};border-width:${(7 - 4 * u).toFixed(1)}px`)).join('')
+  // ✨ 반짝임 셋 — 크기가 t 에 따라 커졌다 작아진다(깜빡임)
+  const 반짝 = 확대 ? [[0.78, -0.74, 44, 0, 0], [-0.8, -0.46, 30, 25, 0.33], [0.74, 0.7, 26, -15, 0.66]]
+    .map(([dx, dy, s, rot, ph]) => {
+      const u = (t + ph) % 1
+      const k = 0.45 + 0.55 * Math.sin(u * Math.PI)      // 0.45 → 1 → 0.45
+      return `<div class="spark" style="left:${Math.round(x + dx * (w / 2 + 34))}px;` +
+        `top:${Math.round(y + dy * (h / 2 + 34))}px;--s:${Math.round(s * k)}px;--rot:${rot}deg;` +
+        `opacity:${(0.35 + 0.6 * k).toFixed(2)}"></div>`
+    }).join('') : ''
+  return 물결 + 상자(0, 'ring') + 반짝
 }
 
-const 컷1 = `<img class="cut" src="${스('duos_03')}" style="left:26px;top:1660px;height:230px">`
-const 컷2 = `<img class="cut" src="${스('gp_duotb')}" style="right:26px;top:1650px;height:240px">`
-const 컷3 = `<img class="cut" src="${스('gp_gomft')}" style="right:34px;top:58px;height:180px">`
+// 🐻 곰펭 컷은 «한 자리·한 크기»로 고정 — 창업자 *"재목이 위치가 다달라"*
+//    ⛔ 옛 판은 장면마다 왼아래·오른아래·오른위로 옮겨 다녀서 화면이 들썩였다.
+const 컷1 = `<img class="cut" src="${스('duos_03')}" style="left:34px;bottom:26px;height:236px">`
+const 컷2 = `<img class="cut" src="${스('gp_duotb')}" style="left:34px;bottom:26px;height:236px">`
+const 컷3 = 컷1
 
 // 🔗 자막이 화면을 «읽는다» — 장면마다 그때 꽂은 카드 제목
 const 장면들 = Object.fromEntries(장면.filter((s) => s.표시?.요리).map((s) => [s.이름, s.표시.요리]))
@@ -384,13 +416,13 @@ const 앞면들 = {
   '①물음': 앞면('이번 주에 뭐 먹지?', '가족이 모여 앉아<br><b>먹고 싶은 걸 하나씩 꽂아요</b>', 컷1),
   // ⭐⭐ 자막의 요리 이름은 «장면에 적힌 실제 카드 제목»에서 온다 — 손으로 적지 않는다.
   //    지난 판이 「엄마 = 버섯전골」이라 해놓고 화면에선 제육볶음을 꽂았다(창업자 *"엄마는 미역국한다며"*).
-  '②아이': 앞면('아이가 골라요', `${장면들['②아이']} — <b>요리사 모자</b>를 톡`, 컷1, { 꼬리표: '👧 아이 차례' }),
-  '③아빠': 앞면('아빠가 골라요', `${장면들['③아빠']} — 누르면 <b>모자가 진해져요</b>`, 컷1, { 꼬리표: '🧔 아빠 차례' }),
-  '④엄마': 앞면('엄마가 골라요', `이번 주엔 <b>${장면들['④엄마']}</b>`, 컷1, { 꼬리표: '👩 엄마 차례' }),
+  '②아이': 앞면('아이가 골라요', `${장면들['②아이']}, <b>요리사 모자</b>를 톡`, 컷1, { 꼬리표: '아이 차례' }),
+  '③아빠': 앞면('아빠가 골라요', `${장면들['③아빠']}, 누르면 <b>모자가 진해져요</b>`, 컷1, { 꼬리표: '아빠 차례' }),
+  '④엄마': 앞면('엄마가 골라요', `이번 주엔 <b>${장면들['④엄마']}</b>`, 컷1, { 꼬리표: '엄마 차례' }),
   '⑤서랍': 앞면('고른 게 한 서랍에', '위 칩에 <b>‘해볼 것 3’</b> 이 저절로 서요', 컷3),
-  '⑥최애': 앞면('맛있었으면 한 번 더', '모자를 다시 누르면 <b>하트 = 최애</b>', 컷3, { 꼬리표: '♥ 한 번 더' }),
+  '⑥최애': 앞면('맛있었으면 한 번 더', '모자를 다시 누르면 <b>하트 = 최애</b>', 컷3, { 꼬리표: '한 번 더' }),
   '⑦다음주': 앞면('다음 주엔 최애만', '하트만 모아서 <b>또 해먹어요</b>', 컷2),
-  '⑧마무리': 앞면('한 주가 이렇게 짜여요', '<b>해볼 것</b> = 이번 주에 할 것<br><b>최애</b> = 다음에 또 할 것', 컷2, { 제목크기: 74 }),
+  '⑧마무리': 앞면('한 주가 이렇게 짜여요', '<b>해볼 것</b> = 이번 주에 할 것<br><b>최애</b> = 다음에 또 할 것', 컷2),
 }
 
 const b2 = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
@@ -399,12 +431,45 @@ await pg.setContent(바탕HTML, { waitUntil: 'networkidle' })
 await pg.waitForTimeout(250)
 const 바탕판 = join(OUT, '_바탕.png')
 await pg.screenshot({ path: 바탕판 })
+// 🌊 표시가 있는 장면은 «여러 장»(물결이 퍼지는 단계)을 그려서 영상처럼 돌린다 — 진짜 움직이는 효과
+const 물결장수 = 20, 물결fps = 20
+// 📐 검수 가르기 — 제목·꼬리표·자막 칸이 장면마다 «같은 자리»인가를 실제로 잰다
+const 잰자리 = []
 for (const s of 장면) {
-  // 같은 앞면에 그 장면의 «동그라미 표시»를 얹는다
-  await pg.setContent(앞면들[s.이름] + 표시HTML(s.표시), { waitUntil: 'networkidle' })
-  await pg.waitForTimeout(250)
-  s.앞면 = join(OUT, `_앞_${s.이름}.png`)
-  await pg.screenshot({ path: s.앞면, omitBackground: true })
+  const 장수 = s.표시 ? 물결장수 : 1
+  s.앞면들 = []
+  for (let i = 0; i < 장수; i++) {
+    await pg.setContent(앞면들[s.이름] + 표시HTML(s.표시, i / 장수), { waitUntil: 'networkidle' })
+    await pg.waitForTimeout(장수 === 1 ? 250 : 60)
+    if (i === 0) {
+      잰자리.push({
+        이름: s.이름,
+        자리: await pg.evaluate(() => {
+          const 재 = (sel) => { const e = document.querySelector(sel); if (!e) return null
+            const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.height)] }
+          return { 제목: 재('.head'), 꼬리표: 재('.tag'), 자막: 재('.sub'), 컷: 재('.cut') }
+        }),
+      })
+    }
+    const 판 = join(OUT, `_앞_${s.이름}_${String(i).padStart(2, '0')}.png`)
+    await pg.screenshot({ path: 판, omitBackground: true })
+    s.앞면들.push(판)
+  }
+  s.앞면 = s.앞면들[0]
+}
+// ⛔ 자리가 하나라도 어긋나면 «영상을 내지 않는다» — 창업자가 눈으로 잡던 것을 기계가 먼저 잡는다
+{
+  const 기준 = 잰자리[0].자리
+  const 어긋남 = []
+  for (const { 이름, 자리 } of 잰자리) {
+    for (const 칸 of ['제목', '꼬리표', '자막', '컷']) {
+      const a = 기준[칸], c = 자리[칸]
+      if (!a || !c) continue                       // 꼬리표는 없는 장면이 있다(자리는 늘 같은 곳)
+      if (a[0] !== c[0] || a[1] !== c[1]) 어긋남.push(`${이름} ${칸} ${JSON.stringify(c)} ≠ ${JSON.stringify(a)}`)
+    }
+  }
+  console.log('📐 자리 실측', JSON.stringify(잰자리[0].자리))
+  if (어긋남.length) throw new Error(`⛔ 칸 자리가 장면마다 다르다\n   ${어긋남.join('\n   ')}`)
 }
 // 🐻 끝장 한 장 — 앱 없이 로고만(창업자 *"따로 페이지 하나 만들어서"*)
 await pg.setContent(끝장HTML, { waitUntil: 'networkidle' })
@@ -420,7 +485,10 @@ for (const s of 장면) {
   execFileSync(FF, ['-hide_banner', '-loglevel', 'error',
     '-loop', '1', '-i', 바탕판,
     '-ss', String(s.시작), '-t', String(s.길이), '-i', join(OUT, webm),
-    '-loop', '1', '-i', s.앞면,
+    // 🌊 앞면이 여러 장이면 «그림 차례»로 넣어 돌린다 — 물결이 실제로 퍼진다
+    ...(s.앞면들.length > 1
+      ? ['-stream_loop', '-1', '-framerate', String(물결fps), '-i', join(OUT, `_앞_${s.이름}_%02d.png`)]
+      : ['-loop', '1', '-i', s.앞면]),
     '-filter_complex',
     // 🔍 고르는 장면은 «핀 언저리만» 잘라 키운다 — 창업자 *"그 부분을 클로즈업"*
     (() => {

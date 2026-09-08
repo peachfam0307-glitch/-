@@ -62,10 +62,7 @@ import { pantryScore } from '../pantryMatch'
 // 🗓🍳 「이번 주」 박스 — 제철 줄과 우리집레시피 줄이 «똑같이» 생겼다.
 //   ⛔ 마크업을 두 번 적지 않는다 — 그러면 한쪽만 고치는 사고가 난다(2026-08-11 신설).
 //   ⚠️ HomeScreen «밖»에 둔다. 안에 정의하면 렌더마다 새 컴포넌트가 되어 리마운트가 일어난다.
-// 📅 [창업자 2026-09-07 00:05] *"홈화면에 이번주제철 옆에 월요일 업뎃을 표시할까??"* · *"sns는 수요일 업뎃인거"* · *"월 배지를 옆에 달아도 좋고"*
-//    → 키커 옆 작은 동그라미 「월」·「수」. 🔢 실측 = 제철 19주·우리집 25주 `from` 전부 월요일 · SNS 20편 전부 수요일(weekly.js·basics.js).
-//    ⛔ 요일을 코드에서 «세지» 않는다 — 데이터가 그 요일에 열리게 우리가 맞춰 두는 것이라(check-weekly 가 월요일을 지킨다) 글자로 준다.
-function WeekBox({ w, 기본, open, 요일 }) {
+function WeekBox({ w, 기본, open }) {
   return (
     <div className="weekly-box">
       <div className="weekly-text">
@@ -79,7 +76,6 @@ function WeekBox({ w, 기본, open, 요일 }) {
           {/* ⛔ 여기 「이번 주 제철」이 «글자로 박혀» 있었다 — 제철이 아닌 주도 그렇게 떴다.
               (2026-09-28 「추석 남은 음식」이 실제로 그랬고, 52주 표 기준 17주가 제철이 아니다) */}
           <div className="weekly-kicker">{w.kicker || 기본}</div>
-          {요일 && <span className="weekly-day" aria-label={`${요일}요일마다 새로 와요`}>{요일}</span>}
         </div>
         <div className="weekly-title">{w.title}</div>
         <div className="t-sub weekly-why">{w.why}</div>
@@ -193,11 +189,7 @@ export default function HomeScreen() {
 
   // 🗓 이번 주 레시피 — 달력이 여는 줄. ⛔재고가 없으면 `null` 이라 **줄을 아예 안 그린다**
   //    (빈 「이번 주」 자리를 남기지 않는다 · `LAB_*_URL` 이 비면 그 칸을 안 그리는 것과 같은 방식).
-  // 🔢 [창업자 확정 2026-09-06] 홈 상자엔 **2편만** (*"제철은 다음주부터 2개씩"* · *"이번주 제철도 2개편으로 보기에 해줘"*)
-  //   🔢 실측 = 폰 한 줄 2칸 → 3편이면 아래 한 칸이 빈다(SNS·우리집이 2편인 것과 같은 이유 · weekly.js snsNow 주석).
-  //   ⭐ 여기(홈)에서만 자른다 — `weeklyNow` 자체를 자르면 장보기(ShopScreen 의 weeklyPicks)가 3편째 재료를 잃는다.
-  //   ⭐ 3편째는 «사라지지 않는다» — 레시피 탭에 날짜대로 그대로 열린다.
-  const weekly = useMemo(() => { const w = weeklyNow(recipes); return w && { ...w, items: w.items.slice(0, 2) } }, [recipes])
+  const weekly = useMemo(() => weeklyNow(recipes), [recipes])
   // 🍳 우리집레시피 — 창업자가 실제로 해먹는 것. 제철과 «별개» 줄이다(창업자 확정 2026-08-11, 안 ⒜).
   //    ⛔ 재고가 없으면 `null` 이라 박스를 아예 안 그린다(제철 줄과 같은 규칙).
   const homemade = useMemo(() => homemadeNow(recipes), [recipes])
@@ -246,14 +238,8 @@ export default function HomeScreen() {
   //    ⛔ 홈 한 줄(cloudRow)과 같은 잣대(클라우드보임·!로그인해뒀나) ＋ «잃을 게 있나» = 내 레시피 **또는** 내 일기 1편↑
   //       (창업자 2026-09-06 *"레시피나 일기가 사라진다고 해야하려나"* → *"그렇게 하자"* — 일기만 쓰는 사람도 폰 바꾸면 똑같이 잃는다).
   //    ⭐ 뜨는 날은 홈 한 줄을 «같이» 그리지 않는다 — 같은 말을 두 번 하면 그게 재촉이다.
-  // 🔐🔐 **[창업자 확정 2026-09-08 00:14] 「0편인 사람한테도 뜨게 하자」**
-  //   ⛔⛔ 그 전엔 «레시피 또는 일기 1편 이상»이라야 떴다 — 그래서 **0편인 사람에겐 아예 안 떴다.**
-  //      ⭐ 그런데 **0편이 제일 위험하다** — 잃을 게 없어 보이지만 «앞으로 쌓을 것»을 통째로 잃는다.
-  //   ⭐ 대상이 좁아졌다 = v12.73 부터 새로 깐 사람은 로그인하고 시작한다(CloudGate).
-  //      그러니 여기 걸리는 0편 비로그인은 **이미 쓰던 사람** 또는 **로그인이 안 돼 탈출구로 온 사람**뿐이다.
-  //   ⛔ 문구는 `LoginNudge` 가 0편 갈래를 «따로» 그린다 — 안 그러면 「내가 저장한 이 사라져요」로 깨진다.
   const [loginPop, setLoginPop] = useState(
-    () => 클라우드보임() && !로그인해뒀나()
+    () => 클라우드보임() && !로그인해뒀나() && (myRecipeCount(recipes) >= 1 || myDiaryCount(diary) >= 1)
       && needsLoginNudge() && !needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY)
   )
   const closeLoginPop = () => { markLoginNudgeSeen(); setLoginPop(false) }
@@ -626,8 +612,8 @@ export default function HomeScreen() {
             ⛔ `two` 는 «둘 다 있을 때만» 붙는다 — 하나뿐이면 지금 모양(박스 안이 좌우로) 그대로다. */}
         {(weekly || homemade) && (
           <div className={`week-pair${weekly && homemade ? ' two' : ''}`}>
-            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} 요일="월" />}
-            {homemade && <WeekBox w={homemade} 기본="우리집레시피" open={open} 요일="월" />}
+            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} />}
+            {homemade && <WeekBox w={homemade} 기본="우리집레시피" open={open} />}
           </div>
         )}
 
@@ -637,7 +623,7 @@ export default function HomeScreen() {
             ⭐ 위 두 상자와 «똑같은» `WeekBox` 를 쓴다 — 마크업을 두 번 적지 않는다(2026-08-11 규칙).
             ⭐ 상세 화면을 따로 만들지 않는다 — 레시피 탭 안에 그대로 있고 「영상」 칩으로 모아 본다.
             ⛔ 재고가 없으면 `sns` 가 null 이라 이 줄이 통째로 안 그려진다(빈 자리 금지). */}
-        {sns && <div className="week-pair"><WeekBox w={sns} 기본="SNS 요리" open={open} 요일="수" /></div>}
+        {sns && <div className="week-pair"><WeekBox w={sns} 기본="SNS 요리" open={open} /></div>}
 
         {/* 2. 자주 해먹는 요리 */}
         {often.length > 0 && (

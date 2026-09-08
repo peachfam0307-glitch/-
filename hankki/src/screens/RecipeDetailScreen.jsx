@@ -11,7 +11,6 @@ import Portal from '../components/Portal'
 import ConfirmSheet from '../components/ConfirmSheet'
 import FoodIcon, { guessFoodIcon } from '../components/FoodIcon'
 import { 만회값 } from '../retidy'
-import TidyWaiting from '../components/TidyWaiting'
 import DecorLayer from '../components/DecorLayer'
 import DecorEditor from '../components/DecorEditor'
 import KitchenGuideSheet from '../components/KitchenGuideSheet'
@@ -26,7 +25,7 @@ import { shouldAskReviewNow } from '../nudges'
 import ReviewAskSheet from '../components/ReviewAskSheet'
 import { SOURCES } from '../data/seed'
 // 🔁 AI 정리 실패 만회(아래 「만회한적」 절) — 잣대는 앱이 쓰는 그 모듈 그대로다(절대원칙 30).
-import { tidyRecipe, 실패꼬리 } from '../tidy'
+import { tidyRecipe } from '../tidy'
 import { picksForIngredients, productLink, productMall, curIcon, isHansalim } from '../data/curation'
 
 import { useWakeLock } from '../useWakeLock'
@@ -175,44 +174,6 @@ export default function RecipeDetailScreen({ id }) {
   // ⛔ **한 편에 한 번뿐** — 또 실패하면 표를 2 로 바꿔 다시 안 한다. 무한 재시도는 통을 태운다.
   // ⛔ 사진은 안 보낸다 — 저장을 안 하므로 손에 없다(글자만으로도 8/29 실측에서 재료 7개가 나왔다).
   // ⚠️ 훅은 «전부» 아래 `if (!r)` 보다 위에 있어야 한다(바로 아래 주석 참조).
-  // 🔁🔁🔁 **[창업자 확정 2026-09-08] 「그 자리에서 다시」 — 실패한 편을 «보는 자리»에서 다시 시킬 수 있다.**
-  //
-  // 📮 창업자 = *"**그 자리에서 다시 하게 해줘야지 나갔다가 들어오게 하면 너무 번거롭잖아**"*
-  //    ＋ 앞선 물음 = *"나갔다가 다시들어와야 할 수있는거야? **그걸 유저가 어떻게 알아?**"*
-  //
-  // ⛔⛔ **고치기 전의 «실패 모양»** — 아래 저절로 도는 만회가 실패하면 `tidyFail: 2` 로 굳고,
-  //    이 화면엔 **실패했다는 말이 한 글자도 없었다.** 다시 할 단추는 임시보관함에만 있는데
-  //    졸업(sorted)한 편은 보관함에 안 보인다 → **다시 할 길이 통째로 없었다.**
-  //    ＝ 「두 번 실패 = 그 편은 영영 AI 없이 산다」. OCR 열쇠는 이미 냈는데 값의 절반만 받은 채로.
-  //
-  // ⭐ **바꾼 것은 숫자가 아니라 «모양»이다**(절대원칙 34) —
-  //    「영영 못 한다」 → **「이번 것만 실패한다 · 단추는 남는다」**. 또 실패해도 단추가 안 사라진다(막다른 길 금지).
-  // ⛔ **저절로 도는 재시도는 «편당 한 번» 그대로 둔다** — 늘리면 안 보는 편에도 뉴런이 나간다(절대원칙 32).
-  //    여기서 더 쓰는 건 **유저가 «손으로 눌렀을 때»뿐**이라 비용이 편 수가 아니라 «사람 뜻»에 비례한다.
-  // ⭐ 누르는 동안 단추 자리가 「다듬는 중」으로 «남아 있는다» — 창업자 제보(*"화면이 사라지고 오래걸리니까
-  //    뒤로가기하거나 앱을 나가거나 할수있을 것 같아"*)가 여기서 나왔다. 화면을 나갔다 와도 표시는 `tidyFail` 에 남는다.
-  const [다시중, set다시중] = useState(false)
-  const [창닫음, set창닫음] = useState(false)   // 🧺 「끝날 때까지 뜨는 창」을 닫았나 — 닫아도 일은 계속된다
-  const 다시다듬기 = async () => {
-    const 원문 = String(r?.rawText || '')
-    if (다시중 || 원문.length < 40) return
-    set다시중(true); set창닫음(false)
-    nav.showToast('AI가 다듬는 중이에요 · 다 되면 레시피에 저절로 올라가요', 6000)
-    // 👁 사진이 손에 있으면 같이 보낸다(`tidy.js` 가 한 번 더 거른다) — 보관함 단추와 «같은 말»
-    const 사진 = typeof r.image === 'string' && r.image.startsWith('data:image/') ? r.image : ''
-    const ai = await tidyRecipe(원문, 사진)
-    set다시중(false)
-    if (!ai) {
-      // ⛔ 표를 2 로 «둔다» — 단추는 아래 조건이 1·2 둘 다 보여주므로 사라지지 않는다
-      updateRecipe(r.id, { tidyFail: 2 })
-      nav.showToast('AI 다듬기는 못 했어요 · 한 번 더 눌러 보세요' + 실패꼬리(), 6000)
-      return
-    }
-    const { 바꿀것 } = 만회값(r, 원문, ai)
-    updateRecipe(r.id, 바꿀것)
-    nav.showToast('AI가 레시피를 더 다듬었어요', 4000)
-  }
-
   const 만회한적 = useRef('')
   useEffect(() => {
     if (!r || r.tidyFail !== 1) return
@@ -860,27 +821,6 @@ export default function RecipeDetailScreen({ id }) {
             </button>
           </>
         )}
-
-        {/* 🔁 **AI 다듬기가 안 된 편 — 「그 자리에서 다시」 (창업자 확정 2026-09-08)**
-            ⭐ 자리 = **재료 «바로 위»**. 유저가 「덜 읽혔네」를 느끼는 곳이 바로 여기다.
-            ⛔ 「고장」이라고 쓰지 않는다 — 단추 하나로 되는 일이다(보관함 줄과 «같은 말»).
-            ⛔ 원문이 40자 미만이면 아예 안 보인다 — 다듬을 재료가 없어 눌러도 헛돈다(뉴런도 0). */}
-        {(r.tidyFail === 1 || r.tidyFail === 2) && String(r.rawText || '').length >= 40 && (
-          <button
-            className="press" onClick={다시다듬기} disabled={다시중}
-            style={{ width: '100%', marginTop: 14, padding: '12px 14px', borderRadius: 14, background: 'var(--cream)', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 }}
-          >
-            {/* ⛔ 이름은 `sparkle`(단수)다 — `sparkles` 로 쓰면 «조용히» 아무것도 안 그려진다 */}
-            <Icon name="sparkle" size={18} color="var(--brown)" stroke={1.9} />
-            <div style={{ flex: 1, minWidth: 0, fontSize: 14.5, lineHeight: 1.5 }}>
-              {다시중 ? 'AI가 다듬는 중이에요 · 20~60초 걸려요' : 'AI 다듬기가 안 됐어요 · 여기서 다시 해요'}
-            </div>
-            {!다시중 && <span style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--brown)', flex: '0 0 auto' }}>다시 하기</span>}
-          </button>
-        )}
-
-        {/* 🧺 AI 가 도는 «내내» 떠 있는 창 (창업자 2026-09-08 *"끝날때까지는 창을 띄워주던가 해야할 듯"*) */}
-        {다시중 && !창닫음 && <TidyWaiting onClose={() => set창닫음(true)} />}
 
         {r.ingredients?.length > 0 && (
           <>

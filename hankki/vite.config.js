@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import webp from './vite-webp.js'   // 🖼 빌드 때 src/assets PNG → WebP q85 (451MB→54MB 실측 · 2026-09-07)
 
 // Relative base so the app works whether served from a domain root
 // or a GitHub Pages sub-path (e.g. /-/).
@@ -22,7 +21,6 @@ export default defineConfig({
     },
   },
   plugins: [
-    webp(),
     react(),
     VitePWA({
       // 🔗🧪 «미리보기 판»에서는 서비스워커를 만들지 않는다 (2026-08-21)

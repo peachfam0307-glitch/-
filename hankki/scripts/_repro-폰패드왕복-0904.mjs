@@ -49,7 +49,7 @@ globalThis.localStorage = {
 // ── 가짜 파이어베이스 (기존 판들과 «같은 얼개») ────────────────────────────
 const 창고 = new Map()
 const 길 = (조각들) => 조각들.join('/')
-const F기본 = {
+const F = {
   doc: (_db, ...조각) => ({ _길: 길(조각), id: 조각[조각.length - 1] }),
   collection: (_db, ...조각) => ({ _길: 길(조각) }),
   async getDoc (자리) { const v = 창고.get(자리._길); return { exists: () => v !== undefined, data: () => v, ref: 자리 } },
@@ -71,9 +71,6 @@ const F기본 = {
   },
   serverTimestamp: () => new Date().toISOString(),
 }
-// 🕒 [2026-09-07] 바뀐 것만 읽기 부품 — 한 곳에서 얹는다
-const { 바뀐것만지원 } = await import('./_가짜파이어스토어-바뀐것만-0907.mjs')
-const F = 바뀐것만지원(F기본, { 창고 })
 const 사람 = { uid: 'fb-uid', providerData: [{ providerId: 'google.com', uid: '구글번호1' }] }
 
 const C = await import('../src/cloud.js')

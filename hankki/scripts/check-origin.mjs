@@ -60,9 +60,6 @@ for (const b of 편들) {
   if (!t) continue
   if (!백n.has(벗(t))) continue          // 백업에 없는 이름 = 내가 쓴 초안
   if (/origin: *'창업자'/.test(b)) continue
-  // 📺 원작자(sourceUrl)가 붙은 편은 남의 레시피다 — 창업자 편과 «이름이 같아도» 창업자 것이 아니다
-  //    (2026-09-06 정호영 「닭볶음탕」이 창업자 「닭볶음탕」과 이름이 같아 v12.68 배포 #2224 를 막았다)
-  if (/sourceUrl: *'/.test(b)) continue
   빠짐.push(t)
 }
 

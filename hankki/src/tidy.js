@@ -71,37 +71,6 @@ const 사진최대 = 2_800_000
  *      화면에 머무는 동안 `useRef` 로만 들고 있다가 여기로 넘긴다.
  * @returns {Promise<null | {title, ingredients, steps, memo}>}  못 하면 null (⛔던지지 않는다)
  */
-// 🧺 번호표 만들기 — 겹치지 않기만 하면 된다(남의 번호를 짚을 수 없게 길게).
-//   ⛔ 기기 식별자를 쓰지 않는다 — 그건 개인정보가 된다(워커도 누구인지 안 적는다).
-function 표번호() {
-  const 랜덤 = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
-  return (Date.now().toString(36) + 랜덤).slice(0, 40)
-}
-
-// 🧺🧺 선반을 물어본다 — 「그 번호 됐어요?」
-//   ⏱ 5초마다 · 최대 2분(24번). ⭐ 이 물음은 AI 를 «안» 부르므로 뉴런이 0 이다.
-//   ⛔ 2분을 넘기면 «포기가 아니라 놓아준다» — 워커는 계속 일하고 결과는 선반에 1시간 남는다.
-//      앱은 「다시 하기」 단추로 떨어지고, 다시 누르면 그 사이 선반에 놓인 답을 바로 받는다.
-//   ⛔ 폰이 자거나 인터넷이 끊겨도 «잃지 않는다» — 그게 옛 60초 벽과 다른 점이다.
-const 선반간격 = 5000
-const 선반횟수 = 24
-async function 선반기다리기(번호, headers) {
-  const 주소 = TIDY_URL + '?job=' + encodeURIComponent(번호)
-  for (let i = 0; i < 선반횟수; i++) {
-    await new Promise((r) => setTimeout(r, 선반간격))
-    let 답
-    try {
-      const resp = await fetch(주소, { method: 'GET', headers: { 'x-hankki-token': headers['x-hankki-token'] } })
-      if (!resp.ok) continue          // ⛔ 한 번 실패했다고 포기하지 않는다 — 다음 물음에 오면 된다
-      답 = await resp.json()
-    } catch { continue }              // 잠깐 끊긴 것 — 다음 물음에서 다시
-    if (!답 || 답.상태 === '하는중' || 답.상태 === '없음') continue
-    if (답.상태 === '됐음') return 답.몸
-    if (답.상태 === '실패') return 답.몸 || { error: 'ai_failed' }   // 실패도 «이유»를 들고 돌아간다
-  }
-  return null                         // 2분 안에 안 왔다 — 워커는 계속 일하고 있다
-}
-
 export async function tidyRecipe(text, 사진) {
   _마지막 = null
   _사진 = ''
@@ -181,12 +150,7 @@ export async function tidyRecipe(text, 사진) {
       body: JSON.stringify({
         text: t,
         ...(실을사진 ? { image: 실을사진 } : {}),
-        // ⏱ 맡기는 길에서는 «내가 기다릴 수 있는 시간»이 진짜로 늘어난다(선반을 2분 동안 물어본다).
-        //   ⛔ 이건 「숫자를 늘린 땜빵」이 아니다 — 앱이 실제로 그만큼 기다릴 수 있게 «모양»이 바뀐 것이라
-        //      워커에게 사실대로 알려주는 것뿐이다. 옛 길(맡기기 없음)은 그대로 60초를 준다.
-        budgetMs: Math.max(0, (선반간격 * 선반횟수) - (Date.now() - 보낸때)),
-        // 🧺 번호표 — 이걸 주면 워커가 «맡고» 번호를 돌려준다(옛 워커는 이 칸을 그냥 무시한다)
-        job: 번호,
+        budgetMs: Math.max(0, TIMEOUT_MS - (Date.now() - 보낸때)),
       }),
       signal: ac ? ac.signal : undefined,
     })
@@ -194,26 +158,11 @@ export async function tidyRecipe(text, 사진) {
     return { data: await resp.json() }
   }
 
-  // 🧺🧺🧺 **[2026-09-08 · 창업자 확정] 「기다리기」를 «맡기기»로 — 60초 벽을 없앤다.**
-  //
-  // 📮 창업자 폰 실물 01:17 = 「기본 정리예요(timeout)」 · *"이유가 너무오래기다려야해"*
-  // ⛔⛔ 옛 모양 = 60초 세다 끊는다. 워커는 그 뒤에 답을 «만들어» 놓는데 받을 사람이 없다
-  //    → **뉴런은 태우고 결과는 버린다.** 세탁소에 서서 기다리다 그냥 나오는 것과 같다.
-  // ✅ 새 모양 = 번호표를 주고(202) 워커가 뒤에서 끝까지 한다. 앱은 몇 초마다 「됐어요?」만 묻는다.
-  //    ⭐ 물어보는 건 AI 를 «안» 부르므로 **뉴런 0** 이다(워커 `?job=` 길).
-  // ⛔ 옛 워커와 섞여도 안전하다 — `job` 을 받아도 모르는 워커는 «예전처럼» 그냥 답을 준다.
-  //    그러면 아래 `맡았나` 가 거짓이 되어 옛 길로 흐른다. **앱을 먼저 내보내도 나빠지지 않는다.**
-  const 번호 = 표번호()
   let data = null
   try {
     let r
     try {
       r = await 한판()
-      // 🧺 워커가 「맡았다」고 하면 — 여기서부터는 «기다리는 게 아니라 물어보는» 것이다
-      if (r.data && r.data.맡음 && r.data.job) {
-        const 받은것 = await 선반기다리기(r.data.job, headers)
-        if (받은것) { r = { data: 받은것 } } else { _마지막 = { ok: false, why: '안옴' }; return null }
-      }
     } catch (e) {
       // 끊긴 것(AbortError)은 «시간»이 다한 것이라 다시 걸어도 또 끊긴다 — 그대로 포기
       if (e && e.name === 'AbortError') throw e
@@ -410,20 +359,6 @@ export function 짧은모델(m) {
 //    ⭐ 실패해도 조용히 사라진다(「실패는 유저에게 안 알린다」 원칙 그대로 · 결과는 이미 채워져 있다).
 // ⛔ 문구는 «여기 한 곳»에서만 고친다 — 두 문에 복붙하면 한쪽만 낡는다(v11.30 「열쇠 이름」과 같은 결).
 export const AI다듬는중 = ' · AI가 더 다듬는 중이에요(20~60초)'
-
-/**
- * 🔍🔍 **[2026-09-08 · 창업자 제보] 「AI 다듬기는 못 했어요」만 뜨고 «왜»가 어디에도 안 남았다.**
- *   📮 창업자 = *"그리고 이거 또안돼"* → 캡처엔 실패 줄뿐이라 **나도 원인을 못 짚었다.**
- *   ⛔ 유저에게 `timeout`·`http_429` 를 보이지 않는다(그대로 두면 「고장」으로 읽힌다) —
- *      **운영자 통로(`hankki:founder`)일 때만** 꼬리로 붙인다. `tidyTail` 과 같은 잣대다.
- *   ⭐ 이건 「고침」이 아니라 «볼 수 있게 하는 것»이다 — 원인을 모르면 다음 고침도 짐작이 된다.
- */
-export function 실패꼬리() {
-  if (!tidyFounder()) return ''
-  const v = _마지막
-  const 어디서 = v && v.model ? ` ${짧은모델(v.model)}${v.ms ? ' ' + (v.ms / 1000).toFixed(1) + '초' : ''}` : ''
-  return ` (${(v && v.why) || '안부름'}${어디서})`
-}
 
 export function tidyTail() {
   const v = _마지막

@@ -32,7 +32,7 @@ const PORT = srv.address().port
 const 씨앗 = ({ 편수 = 1, 일기 = 0, 로그인 = false, 봤음 = false } = {}) => `
   localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1'); localStorage.setItem('hankki:coach:home', '1')
   ${로그인 ? "localStorage.setItem('hankki:cloud:on', '1')" : ''}
-  ${봤음 ? `localStorage.setItem('${COACH.loginpop}', '1')` : ''}
+  ${봤음 ? "localStorage.setItem('hankki:coach:loginpop', '1')" : ''}
   localStorage.setItem('hankki:v1', JSON.stringify({
     recipes: ${JSON.stringify(Array.from({ length: 편수 }, (_, i) => ({ id: 'u' + i, title: '내가 쓴 레시피 ' + i, ingredients: [], steps: [] })))},
     folders: [], profile: { name: '한끼러버', bio: '' }, shops: [], wishlist: [],
@@ -89,9 +89,7 @@ const 팝업글 = (pg) => pg.evaluate(() => document.querySelector('.sheet-mask 
   // ⓑ 「나중에 하기」 → 표식 · 다시 켜도 안 뜬다
   await pg.evaluate(() => [...document.querySelectorAll('.sheet-mask .sheet button')].find((x) => x.innerText.trim() === '나중에 하기')?.click())
   await pg.waitForTimeout(400)
-  // ⛔⛔ 열쇠 이름을 «글자로» 박지 않는다 — 2026-09-08 에 이름을 갈자(loginpop→loginpop2) 이 판이 배포를 막았다.
-  //    `COACH` 를 부르면 이름이 바뀌어도 검사는 «같은 것»을 잰다.
-  const 표식 = await pg.evaluate((k) => localStorage.getItem(k), COACH.loginpop)
+  const 표식 = await pg.evaluate(() => localStorage.getItem('hankki:coach:loginpop'))
   칸(표식 === '1' && !(await 팝업글(pg)), 'ⓑ 「나중에 하기」 → 봤음 표식 · 닫힌다')
   await pg.reload({ waitUntil: 'domcontentloaded' })
   await pg.waitForFunction(() => (document.body?.innerText || '').trim().length > 30, null, { timeout: 30000 })
@@ -105,17 +103,10 @@ const 팝업글 = (pg) => pg.evaluate(() => document.querySelector('.sheet-mask 
   칸(!/사라져요/.test(await 팝업글(pg)), 'ⓒ 로그인해 둔 사람에겐 안 뜬다')
   await ctx.close()
 }
-// ⓓ **[창업자 확정 2026-09-08 · 잣대가 뒤집혔다] 0편인 사람에게도 «뜬다».**
-//   📮 창업자 = *"0편인 사람한테도 뜨게 하자"* ＋ *"앞으로 저장하는 것들을 잃게 된다고 알려줘야할 듯"*
-//   ⛔ 옛 잣대 = 「잃을 게 없으니 안 뜬다」. 그런데 **0편이 제일 위험하다** —
-//      지금 잃을 건 없지만 **앞으로 쌓을 것을 통째로** 잃는다. 그래서 문구도 「앞으로 저장할…」로 갈랐다.
-//   ⭐ 그래서 여기서 재는 것도 바뀐다 = 「뜨나」 ＋ **「0편 전용 문구가 나오나」**
-//      (0편 갈래가 없으면 「내가 저장한 «이» 사라져요」로 «깨진 문장»이 나온다 — 그걸 이 칸이 막는다)
+// ⓓ 갓 깐 사람(내 레시피 0 · 일기 0) → 안 뜬다
 {
   const { ctx, pg } = await 창(씨앗({ 편수: 0, 일기: 0 }))
-  const 글 = await 팝업글(pg)
-  칸(/사라져요/.test(글), 'ⓓ 0편인 사람에게도 뜬다(앞으로 쌓을 것을 잃는다)')
-  칸(/앞으로 저장할 레시피와 일기가/.test(글), 'ⓓ-b 0편 전용 문구가 나온다(「내가 저장한 이」가 아니다)')
+  칸(!/사라져요/.test(await 팝업글(pg)), 'ⓓ 내 레시피 0 · 일기 0 이면 안 뜬다(잃을 게 없다)')
   await ctx.close()
 }
 // ⓖ 일기만 쓴 사람 → 뜬다 · 첫 줄은 「일기 M편」만(레시피 0편을 부르지 않는다)

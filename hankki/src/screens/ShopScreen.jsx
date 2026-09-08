@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { COACH } from '../coach'
 import { useStore, newId } from '../store'
-import { pantryExpiryCount } from '../pantryExpiry'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import Icon from '../components/Icon'
@@ -79,8 +78,7 @@ const secBtnStyle = { fontSize: 16.5, fontWeight: 700, color: 'var(--brown)', ba
 
 export default function ShopScreen() {
   const store = useStore()
-  const { shops, shoppingList, pantry } = store
-  const expN = pantryExpiryCount(pantry)
+  const { shops, shoppingList } = store
   const nav = useNav()
   const [editShops, setEditShops] = useState(false)
   const [shopForm, setShopForm] = useState(null) // null | {} (new) | shop (edit)
@@ -125,10 +123,7 @@ export default function ShopScreen() {
         {/* 장보기가 주(첫인상), 냉장고는 옆 토글(부). 냉장고 기능은 유지하되 앞으로 안 내세운다. */}
         <div className="segment" style={{ marginTop: 4 }}>
           <button type="button" className={`seg ${view === 'shop' ? 'on' : ''}`} onClick={() => setView('shop')}>장보기</button>
-          {/* 🔴 「냉장고 ②」 — 임박·지난 재료 개수. 탭바 점과 같은 셈(`pantryExpiry.js`). 0 이면 숫자가 없다. (창업자 확정 2026-09-06) */}
-          <button type="button" className={`seg ${view === 'pantry' ? 'on' : ''}`} data-coach="pantry" onClick={() => setView('pantry')}>
-            냉장고{expN > 0 && <span className="seg-count" data-testid="pantry-exp-count">{expN}</span>}
-          </button>
+          <button type="button" className={`seg ${view === 'pantry' ? 'on' : ''}`} data-coach="pantry" onClick={() => setView('pantry')}>냉장고</button>
         </div>
 
         {view === 'pantry' && <PantryView />}
@@ -603,7 +598,7 @@ function Curation() {
   return (
     <>
       <div className="sec-head" style={{ marginTop: 6 }}>
-        <div className="h-section" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><img src={uiGomShop} alt="" draggable={false} style={{ width: 28, height: 28, objectFit: 'contain', flex: '0 0 auto' }} />주부의 장바구니{/* 📅 「토」 = 매주 토요일 3개씩 새로 열린다(weeklypick.js 갓열린것 · 창업자 2026-09-07 「주부의 장바구니 토요일도 같이 달아줘」) · 홈 「이번 주」 상자의 월·수 배지와 같은 모양 */}<span className="weekly-day" aria-label="토요일마다 새로 와요">토</span></div>
+        <div className="h-section" style={{ display: 'flex', alignItems: 'center', gap: 6 }}><img src={uiGomShop} alt="" draggable={false} style={{ width: 28, height: 28, objectFit: 'contain', flex: '0 0 auto' }} />주부의 장바구니</div>
         <button className="press" style={secBtnStyle} onClick={() => setOpen((v) => !v)}>{open ? '접기' : '펼치기'}</button>
       </div>
       {/* ⭐ 「계속 올라와요」를 여기로 올렸다 — 창업자 2026-08-03 *"주부의 장바구니옆에 계속 올라오다는

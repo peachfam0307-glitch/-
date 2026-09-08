@@ -37,7 +37,7 @@ globalThis.localStorage = {
 const 창고 = new Map()
 let 읽은수 = 0
 const 길 = (조각들) => 조각들.join('/')
-const F기본 = {
+const F = {
   doc: (_db, ...조각) => ({ _길: 길(조각), id: 조각[조각.length - 1] }),
   collection: (_db, ...조각) => ({ _길: 길(조각) }),
   async getDoc (자리) { 읽은수++; const v = 창고.get(자리._길); return { exists: () => v !== undefined, data: () => v, ref: 자리 } },
@@ -57,9 +57,6 @@ const F기본 = {
   },
   serverTimestamp: () => new Date().toISOString(),
 }
-// 🕒 [2026-09-07] 바뀐 것만 읽기(query/where/Timestamp/serverTimestamp 가 commit 때 서버 시계) — 한 곳에서 얹는다
-const { 바뀐것만지원 } = await import('./_가짜파이어스토어-바뀐것만-0907.mjs')
-const F = 바뀐것만지원(F기본, { 창고, 읽음: (n) => { 읽은수 += n } })   // 걸러 읽은 것만 센다(진짜와 같다)
 const 사람 = { uid: 'fb-uid', providerData: [{ providerId: 'google.com', uid: '구글번호1' }] }
 
 const C = await import('../src/cloud.js')
@@ -317,87 +314,6 @@ const 코드만 = 앱소스.split('\n').filter((줄) => !/^\s*(\/\/|\*|\/\*)/.te
     기록7[0] ? L.한줄로(기록7[0]) : '⛔한 줄도 안 남았다')
 
   C._가짜창고물리기({ F, db: {}, auth: { currentUser: 사람 }, A: {} })
-}
-
-// ── ⑱⑲⑳ 📉 [2026-09-07] 「바뀐 것만 읽기」가 cloud.js 에 «붙었다» — 계획 §9 ────────────
-//   ⭐ `syncPull.js` 의 「고친때 t」 설계는 앱이 고친때를 안 찍어(store.jsx = savedAt 만) 늘 0건이었다 →
-//      «클라우드 시계»(serverTimestamp) 를 바깥 칸 `st` 로 올리고 `where('st','>',마지막받은때)` 로 거른다.
-//   ⑱ 두 번째 받기 = 읽기 «meta 1 ＋ 바뀐 편 N» (통째로가 아니다) · 계기판도 같은 수
-//   ⑲ 부분 받기 뒤 «안 받은 편»의 지문이 안 지워진다 (지워지면 다음 올리기가 전부 다시 쓴다)
-//   ⑳ st 없는 옛 문서 = ⓐ meta 에 st 가 없으면(상대가 옛 판) «통째로» 받아 온다
-//                       ⓑ meta 엔 st 가 있는데 편에만 없으면 «부분 받기»엔 안 오고 수동 「가져오기」(통째로)로 온다
-{
-  창고.clear(); await L.지우기(); await M._창고물리기(가짜큰창고)
-  칸.delete('hankki:cloud:sent'); 칸.delete('hankki:cloud:pulledAt')
-  칸.set('hankki:cloud:on', '1'); 칸.set('hankki:did', '폰'); C.받았다표시()
-
-  // 패드가 «이 판 앱»으로 올린다 (st 가 찍힌다) — 편 셋
-  칸.set('hankki:did', '패드')
-  const 패드판 = { ...폰판, recipes: [1, 2, 3].map((n) => ({ id: 'p' + n, title: '패드 편 ' + n })) }
-  await C.올리기(패드판, { 기기: '패드' })
-  const 패드지문 = 칸.get('hankki:cloud:sent')   // 패드의 «자기 서랍» — 나중에 되돌려 둔다(판은 서랍이 하나뿐이다)
-  칸.delete('hankki:cloud:sent'); 칸.delete('hankki:cloud:pulledAt')   // 폰은 «처음»이다
-  칸.set('hankki:did', '폰')
-
-  // 첫 받기 = 통째로 (지문·받은 때가 없다)
-  읽은수 = 0
-  const 첫 = await C.저절로받기(백업만들기)
-  const 첫읽기 = 읽은수
-  잰다(첫?.했나 === true && !첫.판._부분인가 && 첫읽기 === 1 + 3,
-    '⑱-a 처음엔 «통째로» — 읽기 = meta 1 ＋ 편 3', `읽기 ${첫읽기}건 · 왜=${첫?.왜}`)
-  const 받은때 = Number(칸.get('hankki:cloud:pulledAt'))
-  // 가짜 서버 시계는 1,000,000 부터 1초씩 는다 — 폰 시계(1.7e12)와 자릿수가 다르니 어느 쪽을 적었는지 바로 갈린다
-  잰다(받은때 > 0 && 받은때 < 1e8,
-    '⑱-b 「마지막 받은 때」를 «클라우드 시계»로 적는다 (폰 시계가 아니다)', `pulledAt=${받은때}`)
-
-  // 패드가 한 편만 고친다 → 폰의 두 번째 받기는 «그 한 편만»
-  칸.set('hankki:did', '패드')
-  const 폰지문 = 칸.get('hankki:cloud:sent'); const 폰받은때 = 칸.get('hankki:cloud:pulledAt')
-  // ⚠️ 패드 지문을 되돌려 둔다 — 지문이 없으면 셋 다 다시 써져 st 가 셋 다 갱신된다(그럼 「한 편만」을 못 잰다 · 실측)
-  칸.set('hankki:cloud:sent', 패드지문)
-  const 패드판2 = { ...패드판, recipes: 패드판.recipes.map((r) => (r.id === 'p2' ? { ...r, title: '패드 편 2 (고침)' } : r)) }
-  await C.올리기(패드판2, { 기기: '패드' })                // 이번엔 p2 하나 ＋ meta 만 써진다
-  칸.set('hankki:cloud:sent', 폰지문); 칸.set('hankki:cloud:pulledAt', 폰받은때)
-  칸.set('hankki:did', '폰')
-
-  await M._창고물리기(가짜큰창고); await M.세기({ 읽기: 0 })
-  const 계전 = (await M.읽기()).읽기
-  읽은수 = 0
-  const 둘 = await C.저절로받기(async () => JSON.parse(JSON.stringify(첫.판)))
-  const 둘읽기 = 읽은수
-  const 계후 = (await M.읽기()).읽기
-  잰다(둘?.했나 === true && 둘.판._부분인가 !== true && 둘읽기 === 2,
-    '⑱ ⭐ 두 번째 받기 = 읽기 «meta 1 ＋ 바뀐 편 1» (통째로가 아니다)', `읽기 ${둘읽기}건 · 왜=${둘?.왜}`)
-  잰다(계후 - 계전 === 둘읽기, '  ⑱-c 계기판도 «같은 수»를 센다', `계기판 ${계후 - 계전} · 진짜 ${둘읽기}`)
-  const p2 = (둘?.판?.recipes || []).find((r) => r.id === 'p2')
-  잰다(p2?.title === '패드 편 2 (고침)' && (둘?.판?.recipes || []).length === 4,
-    '  ⑱-d 고친 편은 «왔고» 안 바뀐 편은 «그대로» 있다', `${p2?.title} · ${(둘?.판?.recipes || []).length}편`)
-
-  // ⑲ 부분 받기 뒤 지문
-  const 지문2 = JSON.parse(칸.get('hankki:cloud:sent') || '{}')
-  잰다(!!지문2['recipes:p1'] && !!지문2['recipes:p3'] && !!지문2['recipes:p2'],
-    '⑲ ⭐ 부분 받기 뒤 «안 받은 편»의 지문이 안 지워진다 (지워지면 다음 올리기가 전부 다시 쓴다)',
-    `p1 ${지문2['recipes:p1'] ? '있음' : '⛔없음'} · p3 ${지문2['recipes:p3'] ? '있음' : '⛔없음'}`)
-
-  // ⑳-ⓑ meta 엔 st 가 있는데 «편에만» st 가 없는 옛 문서 → 부분 받기엔 안 오고, 수동 통째로엔 온다
-  창고.set('users/구글번호1/recipes/old-1', { j: JSON.stringify({ id: 'old-1', title: '옛 판이 올린 편' }) })
-  const 셋 = await C.저절로받기(async () => JSON.parse(JSON.stringify(둘.판)))
-  const 통째 = await C.내려받기()
-  잰다(셋?.했나 === true && !(셋.판.recipes || []).some((r) => r.id === 'old-1') && (통째.recipes || []).some((r) => r.id === 'old-1'),
-    '⑳-ⓑ st 없는 옛 편 = 부분 받기엔 «안 오고» 수동 「가져오기」(통째로)엔 «온다»',
-    `자동 ${(셋?.판?.recipes || []).some((r) => r.id === 'old-1') ? '⛔왔다' : '안 옴'} · 수동 ${(통째.recipes || []).some((r) => r.id === 'old-1') ? '옴' : '⛔안 옴'}`)
-
-  // ⑳-ⓐ meta 에 st 가 없다(상대가 «옛 판» 앱으로 올렸다) → 통째로 받아 옛 편까지 온다
-  창고.set('users/구글번호1', { ...창고.get('users/구글번호1'), st: undefined, 기기: '패드' })
-  const 받은때전 = 칸.get('hankki:cloud:pulledAt')
-  읽은수 = 0
-  const 넷 = await C.저절로받기(async () => JSON.parse(JSON.stringify(둘.판)))
-  잰다(넷?.했나 === true && (넷.판.recipes || []).some((r) => r.id === 'old-1') && 읽은수 === 1 + 4,
-    '⑳-ⓐ ⭐ meta 에 st 가 없으면(상대가 옛 판) «통째로» 받아 옛 편까지 온다',
-    `old-1 ${(넷?.판?.recipes || []).some((r) => r.id === 'old-1') ? '왔다' : '⛔안 왔다'} · 읽기 ${읽은수}`)
-  잰다(칸.get('hankki:cloud:pulledAt') === 받은때전,
-    '  ⑳-c 서버가 때를 안 주면 «받은 때»를 «갱신하지 않는다» (엉뚱한 값을 적으면 그 뒤로 계속 어긋난다)',
-    `전 ${받은때전} → 후 ${칸.get('hankki:cloud:pulledAt')}`)
 }
 
 

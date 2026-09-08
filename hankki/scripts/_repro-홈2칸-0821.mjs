@@ -1,10 +1,5 @@
 // 📐 [반영됨 · 2026-08-21] 홈 주간 격자 = 폰 «2칸» · 패드·가로는 «3칸» 그대로
 //
-// 🔢 [2026-09-06 고침] 홈 「이번 주 제철」이 **2편만** 보이게 됐다(창업자 확정 · HomeScreen 의 slice(0,2)).
-//   그래서 «3편 줄»이 홈에 더는 없다 — 제철 줄·우리집 줄 «둘 다 2편»이다.
-//   ⓐ 폰 = 두 줄 다 한 줄에 2칸 · 카드 폭 같음   ⓑ 패드·가로 = 격자 «트랙»이 3개인지로 잰다(카드가 2장이라 한 줄 2장이 정상).
-//   ⛔ v12.68 배포 #2224 가 이 판 때문에 죽었다 — 판이 옛 홈(3편 줄)을 재고 있었다.
-//
 // 📮 창업자 확정 = 갈래 넷 중 *"ㄴ가고"* (2칸) ＋ *"일단 비워두고 추후에 넣자"*
 // 📮 진짜 이유 = *"이거키우는게 좋은게 **레꾸화면이 더 잘보이겠다**"*
 //
@@ -60,8 +55,7 @@ const 재기 = async (w, h) => {
       const top0 = cards[0].getBoundingClientRect().top
       const 한줄 = cards.filter((c) => Math.abs(c.getBoundingClientRect().top - top0) < 4).length
       const 표지 = cards[0].querySelector('div[style*="position"]')
-      const 트랙 = getComputedStyle(row).gridTemplateColumns.trim().split(/\s+/).length
-      return { 칸: cards.length, 한줄, 트랙, 폭: 표지 ? Math.round(표지.getBoundingClientRect().width) : 0 }
+      return { 칸: cards.length, 한줄, 폭: 표지 ? Math.round(표지.getBoundingClientRect().width) : 0 }
     }
     const rows = [...document.querySelectorAll('.weekly-row')]
     return {
@@ -81,10 +75,11 @@ console.log('\n📐 홈 주간 격자 — 폰 2칸 · 패드·가로 3칸\n')
 console.log('① 폰 세로 — 한 줄에 2칸 (⛔1칸으로 무너지면 실패)')
 for (const w of [320, 360, 390, 412]) {
   const r = await 재기(w, 844)
-  const [제철, 우리집] = r.줄               // 「이번 주 제철」 2편 · 「우리집레시피」 2편 (2026-09-06 부터 둘 다 2편)
-  chk(`  ${w}px · 제철 줄이 «2칸»이다 (1칸이면 카드가 화면을 통째로 먹는다)`, 제철?.한줄, 2)
-  chk(`  ${w}px · 우리집 줄도 2칸 = 두 상자 크기가 «같다»`, 우리집?.한줄, 2)
-  chk(`  ${w}px · 두 상자 카드 폭이 같다 (${제철?.폭} = ${우리집?.폭})`, 제철?.폭 === 우리집?.폭, 'true')
+  const 셋편 = r.줄.find((x) => x.칸 === 3)   // 「이번 주 특별한 한끼」 = 3편
+  const 두편 = r.줄.find((x) => x.칸 === 2)   // 「우리집레시피」 = 2편
+  chk(`  ${w}px · 3편 줄이 «2칸»이다 (1칸이면 카드가 화면을 통째로 먹는다)`, 셋편?.한줄, 2)
+  chk(`  ${w}px · 2편 줄도 2칸 = 두 상자 크기가 «같다»`, 두편?.한줄, 2)
+  chk(`  ${w}px · 두 상자 카드 폭이 같다 (${셋편?.폭} = ${두편?.폭})`, 셋편?.폭 === 두편?.폭, 'true')
   chk(`  ${w}px · 가로 넘침 0`, !r.가로넘침, 'true')
 }
 
@@ -92,8 +87,8 @@ for (const w of [320, 360, 390, 412]) {
 console.log('\n② 진짜로 커졌나 (390px 기준 · 옛 값 101px)')
 {
   const r = await 재기(390, 844)
-  const [제철] = r.줄
-  chk(`  카드 폭이 140px 이상이다 (옛 101px)`, (제철?.폭 || 0) >= 140, 'true')
+  const 셋편 = r.줄.find((x) => x.칸 === 3)
+  chk(`  카드 폭이 140px 이상이다 (옛 101px)`, (셋편?.폭 || 0) >= 140, 'true')
   chk(`  ⭐ 이름표가 «안 잘린다» (3칸 101px 에선 「아보카도 바나…」로 잘렸다)`, r.잘린이름, 0)
 }
 
@@ -102,9 +97,8 @@ console.log('\n② 진짜로 커졌나 (390px 기준 · 옛 값 101px)')
 console.log('\n③ ⛔패드·가로는 «3칸» 그대로 (창업자 제보로 못 박은 자리)')
 for (const [w, h, 이름] of [[820, 1180, '패드 세로'], [1194, 834, '패드 가로'], [900, 500, '폰 가로']]) {
   const r = await 재기(w, h)
-  const [제철] = r.줄
-  chk(`  ${이름} ${w}×${h} · 제철 줄 격자가 «3트랙»이다 (2편이라 한 줄 2장이 정상)`, 제철?.트랙, 3)
-  chk(`  ${이름} · 카드 2장이 한 줄에 있다`, 제철?.한줄, 2)
+  const 셋편 = r.줄.find((x) => x.칸 === 3)
+  chk(`  ${이름} ${w}×${h} · 3편 줄이 «3칸»이다`, 셋편?.한줄, 3)
   chk(`  ${이름} · 가로 넘침 0`, !r.가로넘침, 'true')
 }
 

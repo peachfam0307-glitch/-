@@ -26,8 +26,6 @@ import { isNewsUnread, markNewsSeen } from '../components/NewsPopup'
 import { whatsNew } from '../data/whatsnew'
 import { cropSquare, openExternal } from '../utils'
 import { takeOpenBackup, backupDone, takeOpenCloud, 클라우드보임, STORE_URL } from '../nudges'
-// 🏷 «표식»만 읽는다 — 파이어베이스(167KB)를 부르지 않는다(`cloud.js:108` 머리주석 · 홈도 같은 걸 쓴다)
-import { 로그인해뒀나 } from '../cloud'
 import { 잠긴장수, 백업풀기 } from '../diaryLock'
 import { 백업만들기 } from '../backupData'
 
@@ -578,15 +576,7 @@ export default function ProfileScreen() {
         >
           <Icon name="cloud" size={24} color="var(--brown)" stroke={2} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            {/* 🔐🔐 **[창업자 2026-09-08] *"설정에 로그인하러가기 하나 만들수있나??"*
-                ⛔⛔ 입구는 «이미 여기 있었다» — 이 카드를 누르면 시트 안에 ［Google 계정으로 로그인］이 있다.
-                   그런데 카드 «얼굴»에 「로그인」이라는 글자가 한 자도 없었다. 「클라우드 저장」은 백업 기능으로 읽힌다.
-                   → 로그인을 찾으러 설정에 들어온 사람이 **못 찾는다.** 창업자가 이 질문을 한 것 자체가 실측이다.
-                ⭐ 그래서 «새로 만들지 않고» 이름만 상태에 따라 가른다 — 두 입구가 생기면 반드시 어긋난다.
-                   · 로그인 «안» 했다 = 「로그인하러 가기」 (지금 필요한 행동)
-                   · 로그인 했다   = 「클라우드 저장」   (이제 이건 저장 관리 자리다)
-                ⛔ 표식(`로그인해뒀나`)은 «진짜 로그인 판정»이 아니다 — 이름표를 고르는 데만 쓴다(cloud.js:111). */}
-            <div style={{ fontSize: 15.5, fontWeight: 800 }}>{로그인해뒀나() ? '클라우드 저장' : '로그인하러 가기'}</div>
+            <div style={{ fontSize: 15.5, fontWeight: 800 }}>클라우드 저장</div>
             {/* ⛔ 「매어 두면」 금지 (창업자 2026-08-21) · ⭐ 첫 화면·홈 한 줄과 «같은 말»로 */}
             <div className="t-sub" style={{ fontSize: 11.5, marginTop: 2 }}>로그인하면 새 폰에서도 이어서 써요</div>
           </div>

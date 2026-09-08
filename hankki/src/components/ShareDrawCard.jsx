@@ -1,8 +1,7 @@
 import { isSeason, isPeakSeason, inCardWindow, seasonsNow } from '../season'
 import { SEASON_CUTS } from '../data/cardSeasons'
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
-import { toJpeg, toCanvas } from 'html-to-image'
-import { 표지굽기 } from '../coverEncode.js'   // 🎴📦 표지 = WebP q0.8(되면) · 아니면 JPEG q0.86 (2026-09-07)
+import { toJpeg } from 'html-to-image'
 import { fontCSS, fontOptFrom } from '../fontEmbed'
 import Icon from './Icon'
 import { useModalBack } from '../useBackHandler'
@@ -1380,13 +1379,10 @@ export default function ShareDrawCard({ recipe, onClose, onSaveCover, onShared }
       // ⛔ `cacheBust` 를 껐다 — 켜면 카드 안 그림을 «전부 다시» 내려받는다. 우리 그림은 같은 출처라 안전하다.
       // 📏 아래 빈 자리를 잘라낸 높이로 찍는다(위 주석) — 0 이면 원래 높이 그대로.
       const h = 찬높이(coverRef.current)
-      const opt = { pixelRatio: 1.5, backgroundColor: '#ffffff', ...(h ? { height: h } : null) }
+      const opt = { pixelRatio: 1.5, quality: 0.86, backgroundColor: '#ffffff', ...(h ? { height: h } : null) }
       // 폰트 임베드 단계에서 외부 stylesheet fetch가 막히면(드묾) skipFonts로 폴백 — 표지 저장이 끊기지 않게.
-      // 📦 [2026-09-07] 캔버스로 받아 «작게» 굽는다 — WebP q0.8(≈1/3 · 실측) · 사파리처럼 못 구우면 JPEG q0.86 그대로.
-      //    ⛔ 품질값은 coverEncode.js 한 곳에 있다 — 여기서 숫자를 적지 않는다.
-      let canvas
-      try { canvas = await toCanvas(coverRef.current, opt) } catch { canvas = await toCanvas(coverRef.current, { ...opt, skipFonts: true }) }
-      const { url } = 표지굽기(canvas)
+      let url
+      try { url = await toJpeg(coverRef.current, opt) } catch { url = await toJpeg(coverRef.current, { ...opt, skipFonts: true }) }
       await onSaveCover?.(url)
       onClose?.()
     } catch (e) { /* noop */ }

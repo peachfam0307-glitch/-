@@ -26,7 +26,7 @@ const 창고 = new Map() // 길 → 값
 let 커밋수 = 0
 
 const 길 = (조각들) => 조각들.join('/')
-const F기본 = {
+const F = {
   doc: (_db, ...조각) => ({ _길: 길(조각), id: 조각[조각.length - 1] }),
   collection: (_db, ...조각) => ({ _길: 길(조각) }),
   async getDoc(자리) {
@@ -56,9 +56,6 @@ const F기본 = {
     }
   },
 }
-// 🕒 [2026-09-07] 바뀐 것만 읽기 부품 — 한 곳에서 얹는다
-const { 바뀐것만지원 } = await import('./_가짜파이어스토어-바뀐것만-0907.mjs')
-const F = 바뀐것만지원(F기본, { 창고 })
 
 const 사람 = {
   uid: 'psE7J7FirebaseUidXXXX',                                   // ⛔ 이건 쓰면 안 되는 번호

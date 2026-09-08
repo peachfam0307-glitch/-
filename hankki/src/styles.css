@@ -642,23 +642,6 @@ img {
   letter-spacing: -0.02em;
   transition: transform 0.08s ease;
 }
-/* 🔴 탭바 점 — 장보기 카트 오른쪽 위. 색은 `--gift`(소식 「새로」 알약과 같은 «알림» 색 · 새 색 안 만든다).
-   아이콘을 span 으로 감싼 건 점의 기준점을 «아이콘»에 두려고(탭 전체 기준이면 폭 따라 점이 떠돈다). (창업자 확정 2026-09-06) */
-.nav-icon-wrap { position: relative; display: inline-flex; line-height: 0; }
-.nav-dot {
-  /* 🔢 9px → 12px (창업자 2026-09-06 「저정도도 눈에 잘 띌까?」 → 비교판 4개 중 「2번」= 12px 주황) */
-  position: absolute; top: -5px; right: -7px;
-  width: 12px; height: 12px; border-radius: 999px;
-  background: var(--gift);
-  border: 2px solid var(--surface);
-}
-/* 「냉장고 ②」 — 세그먼트 탭 이름 옆 숫자 알약. 켜진 탭(갈색 바탕)에서도 보이게 같은 `--gift`. */
-.seg-count {
-  display: inline-block; min-width: 18px; height: 18px; line-height: 18px;
-  margin-left: 5px; padding: 0 6px; border-radius: 999px;
-  background: var(--gift); color: #fff;
-  font-size: 13px; font-weight: 900; text-align: center; vertical-align: 2px;
-}
 /* '가져오기' 강조 — 채운 포인트색 원 안에 흰 +. 앱의 핵심 동작이라 눈에 띄게. */
 .nav-item-import {
   gap: 4px;
@@ -2569,9 +2552,7 @@ img {
 .cook-navbtn:active { transform: scale(0.97); }
 
 /* 냉장고 재료함 — 유통기한 칩 */
-/* 🔤 nowrap — 안내 상자 글 속에 «보기»로 든 D-3 칩이 줄 끝에서 「D-」/「3」으로 갈라졌다(창업자 2026-09-06 *"d-3줄바꿈이 이상하네"*).
-   칩은 한 덩어리다 — 재료 줄의 칩은 flex 라 원래 안 갈라지지만 글 속 칩엔 이게 있어야 한다. */
-.exp-chip { flex: 0 0 auto; display: inline-block; white-space: nowrap; font-size: 15px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+.exp-chip { flex: 0 0 auto; font-size: 15px; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
 .exp-chip.exp-over { background: #f4e0d8; color: #b5502f; }
 .exp-chip.exp-soon { background: #f6e6d6; color: #c2703f; }
 .exp-chip.exp-mid { background: #eef0e6; color: #869657; }
@@ -4140,8 +4121,6 @@ html, body { overscroll-behavior: none; }
   background: var(--surface);
 }
 .weekly-kicker { font-size: 15px; font-weight: 800; color: var(--brown); letter-spacing: 0.02em; }
-/* 📅 요일 배지 — 「월」「수」 = 그 요일마다 새로 온다 (창업자 2026-09-07 「월 배지를 옆에 달아도 좋고」) */
-.weekly-day { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; background: var(--blue, #5b7ea8); color: #fff; font-size: 14.5px; font-weight: 800; line-height: 1; flex: 0 0 auto; margin-left: 2px; }  /* 26px — 창업자 「배지 조금 더 크게 요일이 잘 안보여」(20px 이었다) */
 .weekly-title { font-size: 19px; font-weight: 800; margin-top: 5px; }
 .weekly-why { font-size: 15.5px; margin-top: 3px; line-height: 1.5; }
 .weekly-box > .weekly-row { margin-top: 11px; }

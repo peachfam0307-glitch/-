@@ -895,13 +895,17 @@ function reducer(state, action) {
         ),
       }
     }
-    // 🔖 종을 고른다 — 고르면 «꽂힌다»(안 꽂힌 것을 고를 수도 있어야 해서).
+    // 🔖 종을 고른다 — 고르면 «꽂힌다». `pin` 이 `null` 이면 **뺀다**(종은 남겨 둔다).
     //   📮 창업자 2026-09-08 = *"요리사모자는 해볼것, 하트는 최애 두 종으로 가자"*
+    //   ⭐ 「어느 종으로 갈 차례인가」는 여기서 정하지 않는다 — `favPin.js` 의 `nextPin()` 한 곳이 정한다.
+    //      ⛔ 순서를 화면과 저장소 두 곳에 적으면 하나만 고쳤을 때 갈린다(favName·favPin 을 한 곳에 둔 이유와 같다).
     case 'setFavPin': {
       return {
         ...state,
         recipes: state.recipes.map((r) =>
-          r.id === action.id ? { ...r, favorite: true, favPin: action.pin } : r
+          r.id === action.id
+            ? (action.pin ? { ...r, favorite: true, favPin: action.pin } : { ...r, favorite: false })
+            : r
         ),
       }
     }

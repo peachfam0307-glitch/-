@@ -83,7 +83,7 @@ const CURATION_ALL = [
   {
     cat: '된장', group: '양념', emoji: '🥣', icon: 'cu_doenjang',
     items: [
-      { name: '전통된장', brand: '죽장연', benefit: '국산콩과 천일염만으로 담가 깊고 진한 맛이 나요. 맛이 조금 진한 편이에요', q: '죽장연 전통된장', mall: 'coupang', url: 'https://link.coupang.com/a/gR0iYfaF3I' },
+      { name: '전통된장', brand: '죽장연', benefit: '국산콩과 천일염만으로 담가 깊고 진한 맛이 나요. 맛이 조금 진한 편이에요', q: '죽장연 전통된장', mall: 'coupang', url: 'https://link.coupang.com/a/gRZ8DZ10x2' },
       // 🍲 [창업자 확정 2026-08-18] "된장찌개 레시피. 맥이랑 백합붙여." · "백합도 붙여 둘다써 나는"
       //   ⛔ **죽장연은 안 붙인다** ("죽장연 빼고 백합이랑 맥만").
       //   🔢 실측 = 재료줄에 「된장…」이 있는 편은 **된장찌개 1편**뿐이라 「도배」 경고에 안 걸린다.
@@ -495,7 +495,7 @@ const CURATION_ALL = [
   {
     cat: '버섯·채소', group: '채소', emoji: '🍄', icon: 'cu_mushroom',
     items: [
-      { name: '국내산 무농약 목이버섯', matches: ['목이버섯'], benefit: '저희 딸이 목이버섯을 정말 좋아해요. 생목이는 변질이 빨라서 매번 사기도 그렇고… 국산으로 찾다가 이 제품을 계속 구입하고 있어요. 낱개라 조금씩 쓰기 편하고 소비기한도 길고요. 추천합니다', q: '국내산 무농약인증 건목이버섯', mall: 'coupang', from: '2027-03-06', url: 'https://link.coupang.com/a/gRZ8DZ10x2' },
+      { name: '국내산 무농약 목이버섯', matches: ['목이버섯'], benefit: '저희 딸이 목이버섯을 정말 좋아해요. 생목이는 변질이 빨라서 매번 사기도 그렇고… 국산으로 찾다가 이 제품을 계속 구입하고 있어요. 낱개라 조금씩 쓰기 편하고 소비기한도 길고요. 추천합니다', q: '국내산 무농약인증 건목이버섯', mall: 'coupang', from: '2027-03-06', url: 'https://link.coupang.com/a/gR0iYfaF3I' },
       { name: '건조 흰목이버섯', brand: '하진이네버섯뜰에', matches: ['흰목이버섯'], benefit: '하진이네 건조 흰목이버섯, 물에 불렸을 때 너무 깨끗하고 식감도 좋아요. 아쉬운 점은 송이로 들어있어서 한 번에 먹기엔 양이 좀 많아요. 목이버섯 소비가 많은 집이라면 하진이네 추천합니다', q: '하진이네버섯뜰에 건조 흰목이버섯 80g', mall: 'coupang', from: '2027-03-06', url: 'https://link.coupang.com/a/gR1syklmsS' },
       { name: '국내산 베이비 브로콜리', icon: 'cu_broccoli', matches: ['베이비브로콜리'], benefit: '베이비브로콜리는 줄기가 부드럽고 맛있어요. 꼭 한번 드셔보세요', q: '국내산 베이비 브로콜리', mall: 'coupang', from: '2026-09-05' },
     ],

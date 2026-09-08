@@ -4,6 +4,7 @@ import { useStore, 서랍한도, 서랍다시재기 } from '../store'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import { APP_VERSION, APP_TAGLINE, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL } from '../version'
+import { 통계꺼짐, 통계끄기설정 } from '../stats'
 import Icon from '../components/Icon'
 import KeyBadge from '../components/KeyBadge'
 import TabTips from '../components/TabTips'
@@ -53,6 +54,9 @@ export default function ProfileScreen() {
   // 홈의 백업 안내로 들어왔으면 도착하자마자 백업 시트를 연다
   // (탭 이동은 인자를 못 넘겨서 nudges.js 쪽지로 받는다. 읽는 순간 지워져 한 번만 열린다.)
   const [backup, setBackup] = useState(() => takeOpenBackup())
+  // 📊 [2026-09-08] 「이용 통계 보내기」 — 방침(privacy.html)에 「설정 → 이용 통계 보내기」로
+  //   끌 수 있다고 «적었다». ⛔그러니 이 스위치가 진짜로 있어야 한다(없으면 방침이 거짓말이다).
+  const [통계보냄, set통계보냄] = useState(() => !통계꺼짐())
   const [avatarSheet, setAvatarSheet] = useState(false)
   const [editSheet, setEditSheet] = useState(false)
   const [confirmAsk, setConfirmAsk] = useState(null) // { title, message, confirmLabel, danger, onConfirm }
@@ -398,6 +402,11 @@ export default function ProfileScreen() {
     //      이 줄은 «어디서 지우는지 알려주는 길»이고, 그게 Play 가 말하는 「인앱 경로」다.
     //   ⛔ 로그인 안 한 사람에게도 보인다 — 기기 안 데이터를 지우는 법도 그 페이지에 있다.
     { icon: 'trash', label: '계정 · 데이터 삭제', 밖: true, onClick: () => { const a = document.createElement('a'); a.href = (import.meta.env.BASE_URL || './') + 'delete-account.html'; a.target = '_blank'; a.rel = 'noopener'; a.click() } },
+    // 📊 [2026-09-08] 끄면 «그 자리에서» 멎는다 — 앱을 다시 켤 필요 없다(stats.js ga-disable).
+    //   ⛔ 이름을 바꾸지 말 것 — 방침이 「설정 → 이용 통계 보내기」라고 «글자 그대로» 안내한다.
+    { icon: 'settings', label: '이용 통계 보내기', badge: 통계보냄 ? '켜짐' : '꺼짐',
+      desc: '어떤 화면이 얼마나 쓰이는지만 보내요. 레시피·일기 내용은 보내지 않아요',
+      onClick: () => { const 켤까 = !통계보냄; 통계끄기설정(!켤까); set통계보냄(켤까) } },
     { icon: 'settings', label: '개인정보처리방침', 밖: true, onClick: () => { const a = document.createElement('a'); a.href = (import.meta.env.BASE_URL || './') + 'privacy.html'; a.target = '_blank'; a.rel = 'noopener'; a.click() } },
     { icon: 'book', label: '오픈소스 라이선스', 밖: true, onClick: () => { const a = document.createElement('a'); a.href = (import.meta.env.BASE_URL || './') + 'licenses.html'; a.target = '_blank'; a.rel = 'noopener'; a.click() } },
   ]

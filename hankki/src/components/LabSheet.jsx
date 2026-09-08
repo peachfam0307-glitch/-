@@ -2,7 +2,7 @@ import Portal from './Portal'
 import Icon from './Icon'
 import { useModalBack } from '../useBackHandler'
 import { openExternal } from '../utils'
-import { APP_VERSION, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL } from '../version'
+import { APP_VERSION, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL, INSTAGRAM_DM_URL } from '../version'
 import { SURVEY, FIXED } from '../data/lab'
 // 🔍 돋보기 든 펭펭 — 연구소 자리에 딱 맞는 우리 컷(창업자 제공 시트).
 //    소스 333×462 → 표시 62px = 7배 축소라 선명하다.
@@ -32,6 +32,13 @@ export default function LabSheet({ onClose }) {
     LAB_SURVEY_URL && {
       icon: 'chat', badge: '설문', title: SURVEY.title, desc: SURVEY.desc,
       chips: SURVEY.items, url: LAB_SURVEY_URL,
+    },
+    // 📩 인스타 DM — 「가벼운 것」만 여기로. 폼을 대신하지 않는다(자세한 까닭은 version.js).
+    //   ⚠️ 익명이 아니다 → desc 에 그대로 적는다. 모르고 보내게 두면 그건 속이는 것이다.
+    INSTAGRAM_DM_URL && {
+      icon: 'instagram', badge: '인스타', title: '이런 레시피 올려주세요',
+      desc: '인스타 DM으로 편하게요 · 사진도 좋아요 (계정이 보여요)',
+      url: INSTAGRAM_DM_URL,
     },
     FEEDBACK_URL && {
       icon: 'edit', badge: '익명', title: '의견 남기기', desc: '좋았던 것도, 아쉬운 것도 한 줄이면 돼요.',

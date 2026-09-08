@@ -47,6 +47,8 @@ import gomHeader from '../assets/gom-header.png' // 뉴 물결 꼬르곰(인사)
 import pengNyam from '../assets/ui/wave/peng_nyam1.png' // 🐧 펭펭(한 술) — 한끼 일기 상단
 // 🔖 이름은 «한 곳»에서만 온다(`src/favName.js`)
 import { FAV_NAME, FAV_ADD, FAV_REMOVE } from '../favName'
+// 🔖 핀의 «종»도 한 곳에서만 온다(`src/favPin.js` · 2026-09-08 두 종 확정)
+import { isPinned, pinName } from '../favPin'
 // 🖼 일기 사진이 「큰 창고」에 있으면 쪽지(`idb://…`)다 — 달력·앨범도 꺼내서 그려야 한다
 import StoredImg from '../photoView'
 
@@ -261,7 +263,13 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
 
   const sorted = useMemo(() => recipes.filter((r) => r.status === 'sorted').sort((a, b) => b.savedAt - a.savedAt), [recipes])
   // 스마트 폴더 — ★즐겨찾기 / 🍳자주 해먹는. 실제 폴더와 안 겹치게 '__' 접두 키를 쓴다.
-  const favCount = sorted.filter((r) => r.favorite).length
+  // 🔖🔖 [2026-09-08 창업자 확정] 핀이 **두 종**이다 — 요리사모자＝해볼 것 · 하트＝최애.
+  //   ⭐ 세는 잣대는 `favPin.js` «한 곳»에서 온다(`isPinned`) — 여기서 `r.favPin === 'heart'` 로 직접 적으면
+  //      옛 레시피(값 없음＝모자)를 어떻게 볼지가 화면마다 갈린다.
+  //   ⏳ 하트 그림은 아직 없다(창업자가 클립 컷을 뽑는 중) → 꽂힌 게 0개라 **최애 칩은 아직 안 선다.**
+  //      ⛔ 반쪽짜리 UI 를 내보내지 않는다 — 그림이 오면 그때 칩이 저절로 뜬다.
+  const favCount = sorted.filter((r) => isPinned(r, 'chef')).length
+  const heartCount = sorted.filter((r) => isPinned(r, 'heart')).length
   const oftenCount = sorted.filter((r) => (r.cooked || 0) > 0).length
   // 📺 [창업자 확정 2026-09-03] 「영상」 칩 — 유튜브 영상이 붙은 레시피만 모아 본다.
   //   📮 창업자 = *"홈 화면에 SNS레시피 해서 추가하면 되니까"* → *"탭을 따로 만들필요가 있을까??"* → **"칩으로 하자"**
@@ -294,13 +302,14 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
   const list = query
     ? sorted.filter(hit)
     : folder === '전체' ? sorted
-      : folder === '__fav' ? sorted.filter((r) => r.favorite)
+      : folder === '__fav' ? sorted.filter((r) => isPinned(r, 'chef'))
+      : folder === '__heart' ? sorted.filter((r) => isPinned(r, 'heart'))
       : folder === '__often' ? sorted.filter((r) => (r.cooked || 0) > 0).sort((a, b) => (b.cooked || 0) - (a.cooked || 0))
       : folder === '__sns' ? sorted.filter(SNS인가)
       : sorted.filter((r) => (r.folder || r.category) === folder)
   const countIn = (name) => sorted.filter((r) => (r.folder || r.category) === name).length
   // ⛔ 새 칩 열쇠()를 여기 «안» 넣으면 「폴더 삭제」 단추가 뜬다 — 폴더가 아닌데 폴더로 읽힌다
-  const isUserFolder = folder !== '전체' && folder !== '__fav' && folder !== '__often' && folder !== '__sns' && !DEFAULT_FOLDERS.has(folder)
+  const isUserFolder = folder !== '전체' && folder !== '__fav' && folder !== '__heart' && folder !== '__often' && folder !== '__sns' && !DEFAULT_FOLDERS.has(folder)
 
   // 요리 기록(내가 만든 요리 아카이브) — 앨범 + 캘린더
   // 📔📔 **요리 기록과 다이어리를 가른다** — 둘 다 `diary` 배열에 살고 `kind` 로만 구분된다.
@@ -368,7 +377,7 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
       .sort((a, b) => +new Date(b.at) - +new Date(a.at))
       .slice(0, 4)
   }, [entries, monthKey])
-  // 최애 요리 — 제일 많이 만든 메뉴
+  // 「제일 많이」 — 제일 많이 만든 메뉴 (⛔ 「최애」라고 부르지 말 것 — 그건 «하트 핀»의 이름이다 · 2026-09-08)
   const topDish = useMemo(() => {
     const c = {}
     for (const e of entries) c[e.title] = (c[e.title] || 0) + 1
@@ -642,7 +651,14 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
               {topDish && (
                 <>
                   <span style={{ color: 'var(--sand)' }}>·</span>
-                  <span>최애 <b style={{ color: 'var(--brown)' }}>{topDish}</b></span>
+                  {/* ⛔⛔ [2026-09-08] 여기 「최애」였다 — **핀 이름과 부딪혔다.**
+                      📮 창업자가 핀 두 종을 *"요리사모자는 해볼것, **하트는 최애**"* 로 정하면서
+                         같은 화면에 「최애」가 **두 뜻**이 됐다: 이 줄은 «앱이 센 것»(제일 많이 만든 메뉴)이고
+                         핀은 «유저가 손으로 꽂은 것»이다. 정반대인데 말이 같다.
+                      ⭐ 이 줄을 바꾼다 — 「제일 많이」가 **이 줄이 실제로 하는 말**이다
+                         (바로 위 주석도 원래 *"최애 요리 — 제일 많이 만든 메뉴"* 라고 적혀 있었다).
+                      ⛓ CLAUDE.md 「같은 기능은 탭이 달라도 같은 이름」의 뒷면 = **다른 것은 다른 이름**. */}
+                  <span>제일 많이 <b style={{ color: 'var(--brown)' }}>{topDish}</b></span>
                 </>
               )}
               {/* 🥘 갈래별 — 「이번 달에 뭘 해먹었나」. 위 줄과 성격이 달라(횟수 vs 종류) 줄을 나눈다.
@@ -802,8 +818,11 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                 {FAV_NAME} {favCount}
               </button>
             )}
-            {oftenCount > 0 && (
-              <button className={`pill press ${folder === '__often' ? 'active' : ''}`} onClick={() => setFolder('__often')}>자주 {oftenCount}</button>
+            {heartCount > 0 && (
+              <button className={`pill press ${folder === '__heart' ? 'active' : ''}`} onClick={() => setFolder('__heart')}>
+                <Icon name="heart" size={13} style={{ fill: 'currentColor' }} />
+                {pinName('heart')} {heartCount}
+              </button>
             )}
             {SNS수 > 0 && (
               <button className={`pill press ${folder === '__sns' ? 'active' : ''}`} onClick={() => setFolder('__sns')}>
@@ -811,6 +830,21 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                 SNS {SNS수}
               </button>
             )}
+            {oftenCount > 0 && (
+              <button className={`pill press ${folder === '__often' ? 'active' : ''}`} onClick={() => setFolder('__often')}>자주 {oftenCount}</button>
+            )}
+          </div>
+          {/* 📂📂 [2026-09-08 창업자 확정] **칩 줄을 «두 줄»로 가른다.**
+              📮 *"종류서랍은(필터줄) 2줄로 가도 좋을 것 같아"*
+              📮 *"윗줄은 해볼것, 최애, SNS 자주만든것/ 아래는 한식 양식 등등.."*
+              ⭐⭐ 창업자가 가른 자리가 정확하다 — **성격이 다른 둘이 한 줄에 섞여 있었다.**
+                 · 윗줄 = **앱이 저절로 아는 것**(꽂았나 · 만들었나 · 링크가 있나)
+                 · 아랫줄 = **유저가 만든 서랍**(한식·양식·내가 만든 폴더)
+                 한 줄이던 때는 폴더가 늘수록 「해볼 것」이 오른쪽으로 밀려 **안 보이게** 됐다.
+              ⛔ 한 줄에 접어 넣지(wrap) 않는다 — 폴더가 몇 개냐에 따라 줄 수가 들쭉날쭉해져
+                 아래 목록이 위아래로 튄다. 각 줄은 «그 줄 안에서» 옆으로 넘긴다(`.hscroll`).
+              ⭐ 「전체」는 윗줄에 둔다 — 어느 줄을 보든 돌아올 자리라 제일 왼쪽 첫 칸이 맞다. */}
+          <div className="hscroll" style={{ marginBottom: 8, display: query ? 'none' : undefined }}>
             {folders.map((c) => (
               <button key={c} className={`pill press ${folder === c ? 'active' : ''}`} onClick={() => setFolder(c)}>{c} {countIn(c)}</button>
             ))}

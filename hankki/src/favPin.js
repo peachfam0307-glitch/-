@@ -16,7 +16,7 @@
 //
 // ⭐ 이름을 여기 두는 이유는 `favName.js` 와 같다 — 이 자리는 벌써 두 번 이름이 바뀌었다
 //   (즐겨찾기 → 책갈피 → 해볼 것). 한 곳만 고치면 말이 갈라진다.
-import { FAV_NAME } from './favName'
+import { FAV_NAME } from './favName.js'  // ⭐ 확장자를 붙인다 — 게이트(node)가 이 파일을 그대로 읽어 종 이름을 가져간다
 
 /** 기본 종 — `favPin` 이 없는 옛 레시피는 «전부» 이것이다. ⛔ 값을 바꾸지 말 것(옛 폰이 갈린다). */
 export const PIN_DEFAULT = 'chef'

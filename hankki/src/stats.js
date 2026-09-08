@@ -50,6 +50,13 @@ export function 통계끄기설정(끌까) {
 //    ⛔ 이건 시험판 탓이 아니다 — **인터넷이 나쁜 유저 폰에서 똑같이 난다.**
 //    ⭐ 그래서 gtag 를 «내가» 넣는다 — 실패를 `onerror` 로 잡을 수 있고(조용히 넘어간다),
 //       firebase/app(30KB)도 안 받는다. 콘솔에는 똑같이 쌓인다(같은 GA4 속성이다).
+/** 🙋‍♀️ 이 기기가 «우리 것»인가 — 운영자 열쇠가 있으면 그렇다.
+ *  ⛔ 못 읽으면 `false`(＝보통 유저) 로 본다. 유저를 «우리»로 잘못 빼면 숫자가 줄어드는데,
+ *     그건 「모르는 사이에 유저가 사라지는」 실패라 더 나쁘다. 우리 것을 못 빼는 쪽이 낫다. */
+function 운영자기기() {
+  try { return !!localStorage.getItem('hankki:founder') } catch { return false }
+}
+
 let 붙였나 = false
 
 /** 🚀 앱이 뜬 «뒤에» 부른다. 두 번 불러도 한 번만 붙는다. */
@@ -70,7 +77,26 @@ export function 통계시작() {
       // 🙈 `send_page_view` 는 그대로 둔다 — 화면 이름만 간다(유저가 쓴 글자는 안 담긴다).
       // ⛔ `send_page_view: false` — gtag 가 «스스로» 한 번 보내면 그건 주소가 전부 같은 「/」 라
       //    화면이 통째로 한 덩어리로 뭉친다. 화면 기록은 우리가 «이름을 실어» 보낸다(아래 `보내기`).
-      gtag('config', MEASUREMENT_ID, { anonymize_ip: true, send_page_view: false })
+      gtag('config', MEASUREMENT_ID, {
+        anonymize_ip: true,
+        send_page_view: false,
+        // 🙋‍♀️🙋‍♀️ **우리 기기는 「내부」로 표시해 보낸다** (창업자 확정 2026-09-09)
+        //   📮 창업자 = *"내가여러번들어가면 여러명처럼 보이는건가?"* → *"좋아"*(＝나를 빼고 보자)
+        //
+        //   ⛔⛔ **구글이 안내하는 IP 방식은 우리한테 «안 먹는다»** —
+        //      창업자 폰은 모바일 데이터(KT)라 IP 가 계속 바뀌고, 집 와이파이도 대개 유동 IP 다.
+        //      며칠 뒤엔 딴 IP 가 되어 조용히 안 걸러진다. **조용히 실패하는 장치는 없는 장치다.**
+        //
+        //   ⭐ **그래서 「그 기기가 누구인가」로 가른다 — 새로 만들지 않았다.**
+        //      운영자 열쇠 `hankki:founder` 가 «이미» 있다(`ocr.js:75` · `nudges.js:226`).
+        //      창업자 폰은 `?founder=<열쇠>` 로 한 번 열어 둔 상태라 AI 무제한이 그걸로 돈다.
+        //      IP 와 무관하게 확실하고, 기기를 옮겨도 열쇠만 넣으면 따라온다.
+        //
+        //   📌 `traffic_type: 'internal'` 은 GA4 가 정한 «그 이름»이다 — ⛔바꾸지 말 것.
+        //      콘솔의 「내부 트래픽 제외」 필터가 이 값을 보고 거른다(필터를 켜야 실제로 빠진다).
+        //   ⚠️ 이미 쌓인 것은 안 지워진다 — 필터는 «앞으로» 것만 거른다(창업자에게 알렸다).
+        ...(운영자기기() ? { traffic_type: 'internal' } : {}),
+      })
       const s = document.createElement('script')
       s.async = true
       s.src = `https://www.googletagmanager.com/gtag/js?id=${MEASUREMENT_ID}`

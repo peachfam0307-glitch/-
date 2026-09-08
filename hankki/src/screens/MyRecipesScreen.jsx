@@ -948,6 +948,23 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                               <Icon name={SNS표(r).icon} size={gridSize === 'big' ? 17 : 14} />
                             </span>
                           )}
+                          {/* 🏷🏷 **「샘플」 딱지** (창업자 2026-09-09 *"꽃게탕에 샘플딱지붙여줘 크게"*)
+                              ⭐ 왜 필요한가 = 기본 레시피 중 **꾸며진 건 둘뿐**(콩국수·꽃게탕)이라
+                                 유저가 「내가 꾸민 것도 아닌데 왜 예쁘지」 하고 헷갈린다. 「보여드리는 샘플」이라 적으면 풀린다.
+                                 📮 창업자 2026-08-13 = *"샘플이라고(삭제가능) 명시하고"* — 일기엔 붙었는데 **레시피엔 없었다.**
+                              ⭐ 일기 딱지와 «같은 결»로 간다 — 진한 잉크 pill ＋ 흰 글자(`DiaryScreen`).
+                                 ⛔ 크림 바탕은 안 쓴다 — 화면 바탕과 거의 같아 «칠한 티»가 안 난다(2026-08-12 실패).
+                                 ⛔ 포인트색(파랑)도 안 쓴다 — 파랑은 「누르는 것」이라 단추로 읽힌다. 이건 이름표다.
+                              ⭐ 자리 = **왼쪽 아래**. ⛔오른쪽 위에 뒀더니 «클립에 가려 잘렸다»(2026-09-09 눈으로 확인).
+                                 왼쪽 위는 SNS 표가 쓰고, 오른쪽 위·아래는 클립이 카드 밖으로 걸친다 → 남는 자리는 여기다. */}
+                          {r.sample && (
+                            <span style={{
+                              position: 'absolute', left: 5, bottom: 5, pointerEvents: 'none',
+                              fontSize: gridSize === 'big' ? 14 : 12, fontWeight: 800, letterSpacing: '.02em',
+                              padding: gridSize === 'big' ? '4px 10px' : '3px 8px', borderRadius: 999,
+                              background: '#3f382e', color: '#fff',
+                            }}>샘플</span>
+                          )}
                         </div>
                         <div className="name" style={gridSize === 'small' ? { fontSize: 15, marginTop: 5 } : undefined}>{r.title}</div>
                         {gridSize === 'big' && <div className="date">{dateLabel(r.savedAt)}</div>}

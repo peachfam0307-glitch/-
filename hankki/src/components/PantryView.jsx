@@ -12,7 +12,7 @@ import CropSheet from './CropSheet'
 import Portal from './Portal'
 import { useLayerBack } from '../useBackHandler'
 import { guessEmoji } from '../emoji'
-import { pantryScore, countPantryHits } from '../pantryMatch'
+import { pantryScore, countPantryHits, pantryUrgent } from '../pantryMatch'
 import { 열쇠받기, EARN, KEY_NAME, KEY_UNIT } from '../ocr'
 // 🔑 열쇠 그림 — `KeyBadge`(가져오기·설정)가 쓰는 «바로 그 파일»이다.
 //    ⭐ 새로 만들지 않는다: 같은 것이 앱 안에서 두 모양이면 유저가 다른 것으로 읽는다.
@@ -145,9 +145,11 @@ export default function PantryView() {
   //         (v9.99 에 새 이름 `.hscroll` 을 지었다가 «같은 이름의 기존 클래스»와 부딪혀
   //          칩이 라벨을 12px 덮은 적이 있다 → 이름을 새로 짓기 전에 grep 부터.)
   //      ⚠️ 상한은 남긴다 — 레시피가 100편이면 카드도 100장이라 그리는 값이 아깝다.
+  // 🚨 임박도를 점수에 싣는다 — 「오늘내일 상하는 것」을 먼저 쓰게 (창업자 2026-09-08 제보)
+  const 남은날 = (p) => daysLeft(p?.expiry)
   const 추천상한 = 12
   const matches = recipes
-    .map((r) => ({ r, n: countPantryHits(r, pantry), score: pantryScore(r, pantry) }))
+    .map((r) => ({ r, n: countPantryHits(r, pantry), score: pantryScore(r, pantry, 남은날), 급함: pantryUrgent(r, pantry, 남은날) }))
     .filter((m) => m.n > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 추천상한)
@@ -170,11 +172,13 @@ export default function PantryView() {
              41% 면 세 번째가 ~36px 걸쳐서 **글자 없이도 「더 있다」가 전해진다.**
              ⭐ 좁혀도 제목은 안 잘린다 — `.grid-card .name` 에 `nowrap` 이 없어 두 줄로 접힌다. */}
       <div className="hscroll inset" style={{ marginBottom: 4 }}>
-        {matches.map(({ r, n }) => (
+        {matches.map(({ r, n, 급함 }) => (
           <button key={r.id} className="grid-card press" style={{ flex: '0 0 41%', textAlign: 'left' }} onClick={() => nav.push({ name: 'detail', id: r.id })}>
             <Thumb recipe={r} ratio="1/1" radius={16} showDecor />
             <div className="name">{r.title}</div>
-            <div className="date">가진 재료 {n}개</div>
+            {/* 🚨 왜 이게 떴는지 «한 줄 안에서» 보이게 — ⛔줄을 새로 늘리지 않는다
+                (2026-08-12 창업자 *"재료 하나만 담아도 큰 이미지가 생겨서 재료가 안보였어"*) */}
+            <div className="date">{급함?.length ? `${expiryChip(급함[0].남은날).text} ${급함[0].이름} · 재료 ${n}개` : `가진 재료 ${n}개`}</div>
           </button>
         ))}
       </div>

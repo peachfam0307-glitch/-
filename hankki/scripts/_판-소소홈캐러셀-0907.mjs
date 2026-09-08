@@ -75,13 +75,13 @@ const 동글 = ({ x, y, w, h, 잘라 = 0, 그림폭 = 1080 }) => {
 }
 
 // ── B 조각 콜라주 ───────────────────────────────────────────
-const B = ({ no, 머리, 부제, 조각들, 스티커, 스자리, 꼬리 = '한끼 · 장보기 탭', 제목y = 470, 태그 = `소소한 기능 ① · ${no}` }) => `<style>${기본}
+const B = ({ no, 머리, 부제, 조각들, 스티커, 스자리, 꼬리 = '한끼 · 장보기 탭', 제목y = 470, 태그 = `소소한 기능 ① · ${no}`, 태그자리 = '' }) => `<style>${기본}
 body{background:#243044;background-image:radial-gradient(rgba(255,243,220,.13) 1.6px,transparent 1.9px);background-size:28px 28px}
 .mid{position:absolute;left:0;right:0;top:${제목y}px;z-index:8;text-align:center}
 .hh{font-size:112px;line-height:1.12;text-shadow:0 0 24px #243044,0 0 24px #243044,0 0 40px #243044}
 .ss{font-size:34px;color:${흐림};margin-top:24px;text-shadow:0 0 16px #243044,0 0 16px #243044}
 .big{position:absolute;right:60px;top:56px;z-index:9;font-family:'Jua';font-size:150px;color:${파랑};opacity:.18;line-height:1}</style>
-<div class="tag">${태그}</div>
+<div class="tag" style="${태그자리}">${태그}</div>
 ${조각들}
 <div class="mid"><div class="hh">${머리}</div><div class="ss">${부제}</div></div>
 <img class="sp" src="${스(스티커)}" style="${스자리};z-index:9">
@@ -126,7 +126,7 @@ const 장들 = {
     나(620, '음… 이건 오늘 말고', '오후 6:13') +
     펭(730, 말('「다른 추천」 누르면 다음 것') + 조각({ 파일: '02-홈-다른추천', y: 1030, h: 340, x: 40, w: 1090, 배율: 0.58, flow: true }), 'pjs_05', false) }),
 
-  '소소2-03-제철': () => B({ no: 3, 태그: 태그2(3), 머리: '월요일마다<br>새 레시피', 부제: '이번 주 제철 · 우리집레시피 = 월<br>SNS 요리 = 수 · 배지가 요일을 말해줘요', 스티커: 'pjs_08', 스자리: 'left:30px;top:1070px;width:200px;transform:rotate(-5deg)', 꼬리: '한끼 · 홈 → 이번 주', 제목y: 496, 조각들:
+  '소소2-03-제철': () => B({ no: 3, 태그: 태그2(3), 태그자리: 'left:auto;right:60px', 머리: '월요일마다<br>새 레시피', 부제: '이번 주 제철 · 우리집레시피 = 월<br>SNS 요리 = 수 · 배지가 요일을 말해줘요', 스티커: 'pjs_08', 스자리: 'left:30px;top:1070px;width:200px;transform:rotate(-5deg)', 꼬리: '한끼 · 홈 → 이번 주', 제목y: 496, 조각들:
     조각({ 파일: '03-홈-제철우리집', y: 40, h: 330, x: 40, w: 1090, 배율: 0.6, 회전: -5, left: 30, top: 92 }) + 테이프(100, 72) +
     조각({ 파일: '03-홈-제철우리집', y: 1100, h: 330, x: 40, w: 1090, 배율: 0.6, 회전: 4, left: 400, top: 300 }) + 테이프(940, 290, 8) +
     조각({ 파일: '03-홈-제철우리집', y: 440, h: 560, x: 60, w: 1060, 배율: 0.62, 회전: -3, left: 330, top: 902 }) + 테이프(780, 892, 6) }),

@@ -48,7 +48,10 @@ import pengNyam from '../assets/ui/wave/peng_nyam1.png' // 🐧 펭펭(한 술) 
 // 🔖 이름은 «한 곳»에서만 온다(`src/favName.js`)
 import { FAV_NAME, FAV_ADD, FAV_REMOVE } from '../favName'
 // 🔖 핀의 «종»도 한 곳에서만 온다(`src/favPin.js` · 2026-09-08 두 종 확정)
-import { isPinned, pinName } from '../favPin'
+import { isPinned, pinName, pinOf, nextPin, FAV_PINS } from '../favPin'
+// 🔖 하트 핀(최애) — 창업자가 2026-09-08 에 «클립 골격으로» 새로 뽑아 준 컷(`cp02`)
+//    ⭐ 지금 요리사모자와 «같은 문법»이다(위 장식 ＋ 아래 클립 다리) → 두 종이 한 세트로 읽힌다
+import idxHeart from '../assets/ui/idx_heart.png'
 // 🖼 일기 사진이 「큰 창고」에 있으면 쪽지(`idb://…`)다 — 달력·앨범도 꺼내서 그려야 한다
 import StoredImg from '../photoView'
 
@@ -194,7 +197,7 @@ function CookCalendar({ entries, diaryDays, selected, onSelect, onOpenDay, iconF
 //    *"맨 아래 바에 한끼일기도 넣자. 일기쓰려면 레시피에서 한끼일기 또 들어가야 하니까"*)
 //    ⚠️ App 이 key 를 달리 줘서 «다시 마운트»되게 한다 — 안 그러면 초기값이 안 먹는다.
 export default function MyRecipesScreen({ initView = 'grid' }) {
-  const { recipes, folders, addFolder, removeFolder, removeRecipe, diary, removeDiary, toggleFavorite } = useStore()
+  const { recipes, folders, addFolder, removeFolder, removeRecipe, diary, removeDiary, setFavPin } = useStore()
   const nav = useNav()
   const [view, setView] = useState(initView) // grid | log | folders
   const [coach, setCoach] = useState(() => needsCoach(MYRECIPES_COACH_KEY))
@@ -270,6 +273,9 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
   //      ⛔ 반쪽짜리 UI 를 내보내지 않는다 — 그림이 오면 그때 칩이 저절로 뜬다.
   const favCount = sorted.filter((r) => isPinned(r, 'chef')).length
   const heartCount = sorted.filter((r) => isPinned(r, 'heart')).length
+  // 📌 「해볼 것 ＋ 최애」를 한 번에 보는 칩의 개수 — 종을 더해서 세지 않고 «꽂혔나»로 센다
+  //    ⛔ favCount + heartCount 로 세면 종이 셋이 되는 날 조용히 틀린다.
+  const pinnedCount = sorted.filter((r) => FAV_PINS.some((종) => isPinned(r, 종.key))).length
   const oftenCount = sorted.filter((r) => (r.cooked || 0) > 0).length
   // 📺 [창업자 확정 2026-09-03] 「영상」 칩 — 유튜브 영상이 붙은 레시피만 모아 본다.
   //   📮 창업자 = *"홈 화면에 SNS레시피 해서 추가하면 되니까"* → *"탭을 따로 만들필요가 있을까??"* → **"칩으로 하자"**
@@ -304,12 +310,17 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
     : folder === '전체' ? sorted
       : folder === '__fav' ? sorted.filter((r) => isPinned(r, 'chef'))
       : folder === '__heart' ? sorted.filter((r) => isPinned(r, 'heart'))
+      // 📌📌 [2026-09-08 창업자] *"해볼것 최애 같이 보이는 칩 만들어줘"*
+      //   ⭐ 「이번 주에 뭐 해먹지」를 고를 땐 **꽂아둔 것 전부**를 한 화면에서 본다 —
+      //      해볼 것(아직 안 해본 것)과 최애(또 하고 싶은 것)를 오가며 고르는 게 실제 쓰임새다.
+      //   ⭐ 잣대는 «한 곳»에서 온다(`isPinned`) — 종이 늘어도 이 줄은 안 고친다.
+      : folder === '__pinned' ? sorted.filter((r) => FAV_PINS.some((종) => isPinned(r, 종.key)))
       : folder === '__often' ? sorted.filter((r) => (r.cooked || 0) > 0).sort((a, b) => (b.cooked || 0) - (a.cooked || 0))
       : folder === '__sns' ? sorted.filter(SNS인가)
       : sorted.filter((r) => (r.folder || r.category) === folder)
   const countIn = (name) => sorted.filter((r) => (r.folder || r.category) === name).length
   // ⛔ 새 칩 열쇠()를 여기 «안» 넣으면 「폴더 삭제」 단추가 뜬다 — 폴더가 아닌데 폴더로 읽힌다
-  const isUserFolder = folder !== '전체' && folder !== '__fav' && folder !== '__heart' && folder !== '__often' && folder !== '__sns' && !DEFAULT_FOLDERS.has(folder)
+  const isUserFolder = folder !== '전체' && folder !== '__fav' && folder !== '__heart' && folder !== '__pinned' && folder !== '__often' && folder !== '__sns' && !DEFAULT_FOLDERS.has(folder)
 
   // 요리 기록(내가 만든 요리 아카이브) — 앨범 + 캘린더
   // 📔📔 **요리 기록과 다이어리를 가른다** — 둘 다 `diary` 배열에 살고 `kind` 로만 구분된다.
@@ -824,6 +835,16 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                 {pinName('heart')} {heartCount}
               </button>
             )}
+            {/* 📌📌 [2026-09-08 창업자] *"해볼것 최애 같이 보이는 칩 만들어줘"*
+                ⭐ 두 종이 «다 꽂혀 있을 때만» 뜬다 — 하나뿐이면 그 칩과 «같은 목록»이라 칩만 늘어난다.
+                ⭐ 모자와 하트를 나란히 그린다 — 글자를 안 읽어도 「둘을 합친 것」이 그림으로 읽힌다. */}
+            {favCount > 0 && heartCount > 0 && (
+              <button className={`pill press ${folder === '__pinned' ? 'active' : ''}`} onClick={() => setFolder('__pinned')}>
+                <img src={idxChef} alt="" className="pill-chef" />
+                <Icon name="heart" size={13} style={{ fill: 'currentColor', marginLeft: -3 }} />
+                모두 {pinnedCount}
+              </button>
+            )}
             {SNS수 > 0 && (
               <button className={`pill press ${folder === '__sns' ? 'active' : ''}`} onClick={() => setFolder('__sns')}>
                 <Icon name="play" size={13} />
@@ -935,9 +956,14 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                       {!edit && (
                         <button
                           className={`fav-dot press${r.favorite ? ' on' : ''}`}
-                          aria-label={r.favorite ? `${r.title} ${FAV_REMOVE}` : `${r.title} ${FAV_ADD}`}
+                          /* 🔁 [2026-09-08] 읽어주는 이름표도 «다음에 무엇이 되는지»를 말한다 —
+                                눈으로 못 보는 사람에게 순환은 «말해주지 않으면» 알 수 없다. */
+                          aria-label={(() => {
+                            const 다음 = nextPin(r)
+                            return 다음 ? `${r.title} ${pinName(다음)}에 꽂기` : `${r.title} ${pinName(pinOf(r))}에서 빼기`
+                          })()}
                           aria-pressed={!!r.favorite}
-                          onClick={(ev) => { ev.stopPropagation(); toggleFavorite(r.id) }}
+                          onClick={(ev) => { ev.stopPropagation(); setFavPin(r.id, nextPin(r)) }}
                         >
                           {/* 🔖🔖 [2026-08-18 창업자 확정] 걸린 것 = **요리사모자 클립이 카드 밖으로 걸친다.**
                               📮 *"딱 레시피 안에 넣기보다 **바깥에 걸쳐서** 넣는게 더 예쁜거 같아 레꾸도 안해치고"*
@@ -951,9 +977,12 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                               ⏳ **안 걸린 칸은 «아직 지금 그대로»**(연한 책갈피). 창업자 확정은 「텅 비우기」인데
                                  텅 비우면 **누를 자리가 사라져** 거는 방법을 길게 누르기로 옮겨야 한다 → 다음 단계. */}
                           <img
-                            src={r.favorite ? idxChef : idxChefFaint}
+                            /* 🔖 [2026-09-08] 그림이 «종»을 따라간다 — 비어 있음은 그대로 «연한 모자»다.
+                                  📮 창업자 = *"지금처럼 그림자 있어서 누르면 딱인데..."*
+                                  ⛔ 하트의 연한 판은 안 만든다 — 「비어 있음」은 한 가지면 된다. */
+                            src={!r.favorite ? idxChefFaint : pinOf(r) === 'heart' ? idxHeart : idxChef}
                             alt=""
-                            className="idx-clip"
+                            className={`idx-clip${r.favorite && pinOf(r) === 'heart' ? ' heart' : ''}`}
                           />
                         </button>
                       )}

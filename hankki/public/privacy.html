@@ -34,6 +34,17 @@
   b { color: var(--ink); }
   a { color: var(--brown); }
   footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+  /* 🔀 「이용 통계 보내기」 스위치 — 이 페이지가 «끄는 자리»다 (2026-09-08)
+     ⛔ 장식이 아니다. 방침이 「여기서 끌 수 있다」고 약속하므로 진짜로 동작해야 한다. */
+  .optout { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin: 14px 0 6px; }
+  .optout .row { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .optout .name { font-size: 15px; font-weight: 700; color: var(--ink); }
+  .optout .state { font-size: 13px; color: var(--faint); margin-top: 2px; }
+  .optout button {
+    flex: none; border: 1px solid var(--brown); background: transparent; color: var(--brown);
+    font: inherit; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 999px; cursor: pointer;
+  }
+  .optout button:active { opacity: .6; }
 </style>
 </head>
 <body>
@@ -64,7 +75,23 @@
     <li><b>화면 이동·기능 사용 기록</b> — 어떤 화면이 얼마나 쓰이는지, 어디서 앱을 닫는지</li>
     <li><b>기기 정보</b> — 기종·운영체제 종류·화면 크기·대략적인 지역(국가 수준)</li>
   </ul>
-  <p><b>이 통계에는 사용자가 쓴 레시피·일기·사진의 내용이 담기지 않습니다.</b> 앱을 고치는 데만 씁니다. <b>앱 설정 → 이용 통계 보내기</b> 를 꺼서 언제든 중단하실 수 있습니다.</p>
+  <p><b>이 통계에는 사용자가 쓴 레시피·일기·사진의 내용이 담기지 않습니다.</b> 앱을 고치는 데만 씁니다. 아래 <b>이용 통계 보내기</b> 스위치로 언제든 중단하실 수 있습니다.</p>
+
+  <!-- 🔀🔀 **끄는 자리 — 여기 «하나»뿐이다** (2026-09-08)
+       📮 창업자 = *"우리도 깊이 묻어놓자"* · *"설정에서 딱 안보이게"* · *"개인정보처리방침안에 넣거나"*
+       ⛔ 없애지는 못한다 — Google Analytics 약관 7조(거부 수단을 우회하지 말 것) ＋
+          Play 「사용자 데이터」 정책(필수가 아닌 데이터는 켜고 끌 수 있어야 한다).
+       ⭐ 이 페이지는 앱과 «같은 주소»라 저장소를 함께 쓴다 — 여기서 끄면 앱이 바로 멎는다
+          (앱 쪽은 `src/stats.js` 가 storage 신호를 듣는다). 열쇠 이름을 바꾸면 둘 다 고쳐야 한다. -->
+  <div class="optout">
+    <div class="row">
+      <div>
+        <div class="name">이용 통계 보내기</div>
+        <div class="state" id="통계상태">확인 중…</div>
+      </div>
+      <button type="button" id="통계단추">끄기</button>
+    </div>
+  </div>
 
   <p><b>나. 구글 계정으로 로그인한 경우에 한해</b> 아래를 수집합니다.</p>
   <ul>
@@ -158,7 +185,7 @@
     <li><b>보유 기간</b> — 최대 <b>2개월</b> (Google Analytics 의 사용자·이벤트 데이터 보존 설정을 가장 짧은 값으로 두었습니다)</li>
   </ul>
 
-  <p><b>거부하고 싶다면</b> — <b>로그인을 하지 않으시면</b> 계정 정보가 전송되지 않고, <b>글자 인식 기능을 사용하지 않으시면</b> 사진이 전송되지 않습니다. <b>이용 통계</b>는 앱 <b>설정 → 이용 통계 보내기</b> 를 꺼서 언제든 중단하실 수 있습니다. 어느 경우든 앱은 그대로 사용하실 수 있습니다.</p>
+  <p><b>거부하고 싶다면</b> — <b>로그인을 하지 않으시면</b> 계정 정보가 전송되지 않고, <b>글자 인식 기능을 사용하지 않으시면</b> 사진이 전송되지 않습니다. <b>이용 통계</b>는 이 페이지 <a href="#통계상태">위쪽의 <b>이용 통계 보내기</b> 스위치</a>로 언제든 중단하실 수 있습니다. 어느 경우든 앱은 그대로 사용하실 수 있습니다.</p>
 
   <h2>9. 아동의 개인정보</h2>
   <p>한끼는 이름·연락처 등을 직접 입력받지 않으며, 만 14세 미만 아동을 대상으로 하지 않습니다. 로그인은 선택 기능이며, 만 14세 미만 아동은 법정대리인의 동의 없이 로그인 기능을 이용하지 않도록 안내드립니다.</p>
@@ -189,5 +216,33 @@
 
   <footer>© 2026 한끼(HANKKI). 이 방침은 한끼 앱의 실제 동작에 근거하여 작성되었습니다.</footer>
 </div>
+<script>
+  // 🔀 이용 통계 끄기 — 앱과 «같은 열쇠»를 쓴다 (src/stats.js 의 `hankki:stats:off`)
+  //   ⛔ 저장소를 못 쓰는 브라우저에서도 페이지가 깨지면 안 된다 — 그럴 땐 단추를 감춘다.
+  (function () {
+    var 열쇠 = 'hankki:stats:off'
+    var 상태 = document.getElementById('통계상태')
+    var 단추 = document.getElementById('통계단추')
+    if (!상태 || !단추) return
+    function 꺼졌나() { try { return localStorage.getItem(열쇠) === '1' } catch (e) { return null } }
+    function 그리기() {
+      var 끔 = 꺼졌나()
+      if (끔 === null) {   // 저장소를 못 쓴다 — 없는 단추를 보여주지 않는다(눌러도 아무 일이 안 나므로)
+        상태.textContent = '이 브라우저에서는 설정을 저장할 수 없습니다.'
+        단추.style.display = 'none'
+        return
+      }
+      상태.textContent = 끔
+        ? '지금 꺼져 있습니다 — 이용 통계를 보내지 않습니다.'
+        : '지금 켜져 있습니다 — 어떤 화면이 얼마나 쓰이는지만 보냅니다.'
+      단추.textContent = 끔 ? '다시 켜기' : '끄기'
+    }
+    단추.addEventListener('click', function () {
+      try { 꺼졌나() ? localStorage.removeItem(열쇠) : localStorage.setItem(열쇠, '1') } catch (e) { /* noop */ }
+      그리기()
+    })
+    그리기()
+  })()
+</script>
 </body>
 </html>

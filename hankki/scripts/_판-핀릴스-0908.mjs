@@ -57,10 +57,35 @@ const PORT = srv.address().port
 
 const { BASICS_VERSION, allBasicRecipes } = await import('../src/data/basics.js')
 // 🍂 가을 상 — 샘플 표지가 붙은 편은 «쓰지 않는다»(콩국수)
-const 고를것 = ['국물 떡볶이', '제육볶음', '두부 들깨 버섯전골', '고구마맛탕', '갈치조림', '버섯 솥밥']
+// 👨‍👩‍👧 누가 무엇을 고르나 — 창업자 *"아이랑 아빠랑 바뀐 듯 엄마는 미역국한다며"*
+//    ⛔ 지난 판은 «화면에 먼저 뜬 카드»를 차례로 눌러서 **아이가 김치찌개, 아빠가 떡볶이**를 골랐고
+//       자막은 엉뚱하게 「버섯전골」이라 했다. **자막과 화면이 어긋났다.**
+//    ⭐ 이제 «누가 무엇을»을 여기서 못 박고, 자막은 **실제로 꽂힌 카드 제목을 읽어서** 만든다(아래 가르기).
+//    📌 엄마 = 미역국 — 주간 식단표 시안(`_판-식단표시안-0908.mjs`)의 한 주 상과 같게 맞췄다.
+const 가족 = [
+  { 누구: '아이', 요리: '국물 떡볶이' },
+  { 누구: '아빠', 요리: '돼지고기 김치찌개' },
+  { 누구: '엄마', 요리: '소고기 미역국' },
+]
+// 🍂 화면에 남길 편 — 가족이 고르는 셋 ＋ 가을 상 셋. ⛔샘플 표지 편(콩국수)은 안 쓴다
+//    📮 창업자 = *"가을이니까 꽃게조림이나 탕에 하면 더 좋고"* → **꽃게탕**(9/7 열림 · 검수 창업자)
+//    ⛔ **고구마맛탕을 뺐다** — `from 2026-10-05` 라 **아직 안 열린 편**이다(실측 `recipe.mjs`).
+//       유저 폰엔 없는 걸 홍보에 띄우면 거짓 약속이 된다. 아래 가르기가 이제 그걸 막는다.
+const 고를것 = [...가족.map((g) => g.요리), '꽃게탕', '두부 들깨 버섯전골', '버섯 솥밥']
 const 샘플 = allBasicRecipes.filter((r) => r.sample).map((r) => r.title)
 const 겹침 = 고를것.filter((t) => 샘플.includes(t))
 if (겹침.length) throw new Error(`⛔ 샘플 표지 편이 섞였다 — ${겹침.join(', ')} (창업자 "콩국수 빼고")`)
+
+// 📅📅 **아직 «안 열린» 편은 홍보에 못 쓴다** — 날짜가 오면 저절로 열리는 편이 있다(`from`).
+//    ⛔ 지난 판에 고구마맛탕(`from 2026-10-05`)이 들어 있었다 — 유저 폰엔 «없는» 요리다.
+//    ⭐ 기억으로 고르지 않게 «파일을 읽어» 막는다(절대원칙 29).
+const { todayKST } = await import('../src/today.js')
+const 오늘 = todayKST()
+const 안열림 = 고를것.filter((t) => {
+  const r = allBasicRecipes.find((x) => x.title === t)
+  return r?.from && /^\d{4}-\d{2}-\d{2}$/.test(r.from) && r.from > 오늘
+})
+if (안열림.length) throw new Error(`⛔ 아직 안 열린 편이다 (오늘 ${오늘}) — ${안열림.join(', ')}`)
 
 const now = Date.now()
 const state = {
@@ -76,7 +101,12 @@ const state = {
   //   ⛔ DOM 을 손으로 감추지 않는다(그건 흉내다 · 절대원칙 30).
   //   ⭐ 앱엔 이미 「유저가 지운 기본 레시피는 되살리지 않는다」가 있다(store.jsx:124 removedSeedIds).
   //      그 자리에 넣으면 «진짜 유저가 지운 것»과 같은 상태로 돈다.
-  removedSeedIds: allBasicRecipes.filter((r) => r.sample).map((r) => r.id),
+  //   ⭐ 이제 «고를것 여섯 편만» 남긴다 — 그래야 아이·아빠·엄마가 고를 카드가 첫 화면에 다 보인다
+  //      (지난 판은 기본 75편이 섞여 들어와 «맨 앞에 뜬 카드»를 눌렀고, 그래서 아이가 김치찌개를 골랐다).
+  //   ⛔ «고를것만 남기기»로는 모자란다 — 같은 제목이 «기본 편 ＋ 내가 심은 편» 둘이 되어
+  //      제목으로 카드를 집을 때 둘이 잡힌다(실측: strict mode violation, 국물 떡볶이 2개).
+  //      그래서 **기본 편은 통째로 빼고** 위 여섯 편만 남긴다.
+  removedSeedIds: allBasicRecipes.map((r) => r.id),
 }
 
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
@@ -114,7 +144,13 @@ await p.waitForTimeout(1500)
 await p.getByText('레시피', { exact: true }).last().click()
 await p.waitForTimeout(1200)
 
-const 핀 = (i) => p.locator('.fav-dot').nth(i)
+// 🎯 핀은 «자리»가 아니라 «제목»으로 찾는다 — 창업자 *"아이랑 아빠랑 바뀐 듯"*
+//    ⛔ nth(0)·nth(1) 로 누르면 목록 차례가 바뀌는 순간 «누가 무엇을 골랐는지»가 조용히 뒤집힌다.
+const 핀 = (제목) => p.locator('.grid-card')
+  .filter({ has: p.locator('.name', { hasText: 제목 }) }).locator('.fav-dot').first()
+for (const g of 가족) {
+  if (!(await 핀(g.요리).count())) throw new Error(`⛔ ${g.누구}가 고를 카드가 화면에 없다 — ${g.요리}`)
+}
 if (!(await p.locator('.fav-dot').count())) throw new Error('⛔ 핀 단추(.fav-dot)를 못 찾았다 — 영상을 내지 않는다')
 // ⚠️ 확대(zoom)를 쓰면 «자와 눈금이 갈린다» — getBoundingClientRect 는 확대된 레이아웃 값(0~720)을 주는데
 //    window.innerHeight 는 확대 «전» 값(1440)이다. 그대로 견주면 늘 통과하거나 늘 막힌다(실제로 막혔다).
@@ -144,13 +180,23 @@ const 자리재기 = (골라) => p.evaluate((골라) => {
     return { x: (r.left + r.width / 2) * kx, y: (r.top + r.height / 2) * ky,
       w: r.width * kx, h: r.height * ky }
   }
-  if (골라.종 === '핀') return [...document.querySelectorAll('.fav-dot')].slice(0, 3).map(잰다)
+  if (골라.종 === '핀') {
+    const 카드 = [...document.querySelectorAll('.grid-card')]
+      .find((c) => c.querySelector('.name')?.textContent.trim() === 골라.제목)
+    const e = 카드?.querySelector('.fav-dot')
+    return e ? 잰다(e) : null
+  }
   const e = [...document.querySelectorAll('.pill')].find((x) => x.innerText.trim().startsWith(골라.글))
   return e ? 잰다(e) : null
 }, 골라)
-const 핀중심 = await 자리재기({ 종: '핀' })
-if (핀중심.some((c) => c.x < 0 || c.x > 810 || c.y < 0 || c.y > 1440))
-  throw new Error(`⛔ 핀 자리가 영상 밖이다 — ${JSON.stringify(핀중심)}`)
+const 핀중심 = {}
+for (const g of 가족) {
+  const c = await 자리재기({ 종: '핀', 제목: g.요리 })
+  if (!c) throw new Error(`⛔ ${g.요리} 핀 자리를 못 쟀다`)
+  if (c.x < 0 || c.x > 810 || c.y < 0 || c.y > 1440)
+    throw new Error(`⛔ ${g.요리} 핀이 영상 밖이다 — ${JSON.stringify(c)}`)
+  핀중심[g.요리] = c
+}
 const 칩중심 = (글) => 자리재기({ 종: '칩', 글 })
 
 // 잘라낼 칸은 영상과 «같은 비»(810:1440)라야 앱 카드에 넣을 때 안 늘어난다
@@ -173,16 +219,22 @@ const 찍자 = async (이름, 초, 할일, 표시) => {
 }
 
 await 찍자('①물음', 2.6)
-await 찍자('②아이', 3.2, () => 핀(0).click(), { 점: 핀중심[0], 확대: true, 말: '톡' })
-await 찍자('③아빠', 3.2, () => 핀(1).click(), { 점: 핀중심[1], 확대: true, 말: '톡' })
-await 찍자('④엄마', 3.2, () => 핀(2).click(), { 점: 핀중심[2], 확대: true, 말: '톡' })
+// ⭐ 「누가 무엇을」이 화면과 자막에서 «같은 곳»에서 나온다 — 어긋날 수가 없다
+const 이름 = { 아이: '②아이', 아빠: '③아빠', 엄마: '④엄마' }
+for (const g of 가족) {
+  await 찍자(이름[g.누구], 3.2, () => 핀(g.요리).click(),
+    { 점: 핀중심[g.요리], 확대: true, 말: '톡', 요리: g.요리, 누구: g.누구 })
+}
 
 const 칩글 = await p.evaluate(() => [...document.querySelectorAll('.pill')].map((e) => e.innerText.trim()))
 if (!칩글.some((t) => t.startsWith('해볼 것'))) throw new Error(`⛔ 「해볼 것」 칩이 안 섰다 (칩 줄 = ${칩글.join(' / ')})`)
 const 해볼것칩 = await 칩중심('해볼 것')
 if (!해볼것칩) throw new Error('⛔ 「해볼 것」 칩 자리를 못 쟀다')
 await 찍자('⑤서랍', 3.0, null, { 점: 해볼것칩, 확대: false, 말: '여기!' })
-await 찍자('⑥최애', 3.4, () => 핀(0).click(), { 점: 핀중심[0], 확대: true, 말: '한 번 더' })
+// ♥ 최애는 «아이가 고른 것»을 한 번 더 누른다 — 같은 카드라야 「모자 → 하트」가 눈에 보인다
+const 최애요리 = 가족[0].요리
+await 찍자('⑥최애', 3.4, () => 핀(최애요리).click(),
+  { 점: 핀중심[최애요리], 확대: true, 말: '한 번 더', 요리: 최애요리 })
 
 const 칩글2 = await p.evaluate(() => [...document.querySelectorAll('.pill')].map((e) => e.innerText.trim()))
 if (!칩글2.some((t) => t.startsWith('최애'))) throw new Error(`⛔ 「최애」 칩이 안 섰다 (칩 줄 = ${칩글2.join(' / ')})`)
@@ -206,7 +258,10 @@ console.log('🎥 녹화 · 장면', 장면.map((s) => `${s.이름}(${s.길이}s
 //   ⛔ 모눈 종이(회녹색 #efe9dd ＋ Gaegu)는 우리 어디에도 없던 결이었다. 버린다.
 //   ⚠️ 글씨체 이름은 «'GowunDodum'»(붙여 쓴다) — 'Gowun Dodum' 으로 적으면 조용히 딴 글씨가 된다
 //      (design/promo/fonts-embed.css 실측).
-const 크림 = '#fbf5e8', 살구 = '#f3dcc4', 갈 = '#5d3410', 팥 = '#c2410c', 흐림 = 'rgba(93,52,16,.62)'
+// 🌸 창업자 = *"색은 살구 그만쓰고 핑크계열이나 연보라?"* → **연핑크 → 연보라** 그러데이션으로 간다.
+//    ⭐ 글자는 표장 갈색(#5d3410) 그대로 둔다 — 그게 우리 브랜드 색이고, 연보라 위에서도 잘 읽힌다.
+//    ⭐ 표시(동그라미·말풍선)는 주황 대신 **자두빛**으로 — 핑크 바탕에서 주황은 탁해 보인다.
+const 크림 = '#fdf4f8', 살구 = '#e6ddf6', 갈 = '#5d3410', 팥 = '#b8477e', 흐림 = 'rgba(93,52,16,.62)'
 const 바탕HTML = `<style>${폰트}
 *{margin:0;padding:0}
 body{width:${W}px;height:${H}px;position:relative;overflow:hidden;
@@ -274,11 +329,18 @@ const 컷1 = `<img class="cut" src="${스('duos_03')}" style="left:26px;top:1660
 const 컷2 = `<img class="cut" src="${스('gp_duotb')}" style="right:26px;top:1650px;height:240px">`
 const 컷3 = `<img class="cut" src="${스('gp_gomft')}" style="right:34px;top:58px;height:180px">`
 
+// 🔗 자막이 화면을 «읽는다» — 장면마다 그때 꽂은 카드 제목
+const 장면들 = Object.fromEntries(장면.filter((s) => s.표시?.요리).map((s) => [s.이름, s.표시.요리]))
+for (const k of ['②아이', '③아빠', '④엄마']) {
+  if (!장면들[k]) throw new Error(`⛔ ${k} 장면에 «무엇을 꽂았는지»가 없다 — 자막을 지어내지 않는다`)
+}
 const 앞면들 = {
   '①물음': 앞면('이번 주에 뭐 먹지?', '가족이 모여 앉아<br><b>먹고 싶은 걸 하나씩 꽂아요</b>', 컷1),
-  '②아이': 앞면('아이가 골라요', '카드 오른쪽 위 <b>요리사 모자</b>를 톡', 컷1, { 꼬리표: '👧 아이 차례' }),
-  '③아빠': 앞면('아빠가 골라요', '누르면 <b>모자가 진해져요</b>', 컷1, { 꼬리표: '🧔 아빠 차례' }),
-  '④엄마': 앞면('엄마가 골라요', '이번 주엔 <b>버섯전골</b>', 컷1, { 꼬리표: '👩 엄마 차례' }),
+  // ⭐⭐ 자막의 요리 이름은 «장면에 적힌 실제 카드 제목»에서 온다 — 손으로 적지 않는다.
+  //    지난 판이 「엄마 = 버섯전골」이라 해놓고 화면에선 제육볶음을 꽂았다(창업자 *"엄마는 미역국한다며"*).
+  '②아이': 앞면('아이가 골라요', `${장면들['②아이']} — <b>요리사 모자</b>를 톡`, 컷1, { 꼬리표: '👧 아이 차례' }),
+  '③아빠': 앞면('아빠가 골라요', `${장면들['③아빠']} — 누르면 <b>모자가 진해져요</b>`, 컷1, { 꼬리표: '🧔 아빠 차례' }),
+  '④엄마': 앞면('엄마가 골라요', `이번 주엔 <b>${장면들['④엄마']}</b>`, 컷1, { 꼬리표: '👩 엄마 차례' }),
   '⑤서랍': 앞면('고른 게 한 서랍에', '위 칩에 <b>‘해볼 것 3’</b> 이 저절로 서요', 컷3),
   '⑥최애': 앞면('맛있었으면 한 번 더', '모자를 다시 누르면 <b>하트 = 최애</b>', 컷3, { 꼬리표: '♥ 한 번 더' }),
   '⑦다음주': 앞면('다음 주엔 최애만', '하트만 모아서 <b>또 해먹어요</b>', 컷2),

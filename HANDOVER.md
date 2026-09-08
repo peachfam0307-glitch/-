@@ -711,7 +711,7 @@
 ✅ **[13:55] 큰 틀 4 맥 빌드 run 34188325862 success** — Firebase·GoogleSignIn 번들이 앱 안에 실림 · GoogleService-Info.plist 없이도 «빌드»는 된다(실행 때만 필요 · 로그로 확정)
 ✅ **[14:5x] 큰 틀 6-① 「앱 안 계정 삭제」 ⓑ 코드 끝 = 5a327eea** (창업자 *"B로가자"*) — 전문 = 계획 **§12·§12-b** · 실측 = ［클라우드 비우기］ 단추가 앱에 «없었다»(웹 안내가 없는 단추를 가리킴) → 시트에 「클라우드 비우기」＋「계정 삭제」 · 폰 데이터는 안 건드림 · 재현판 14칸 · 실물 시트(비로그인) 캡처 · 스모크 전체 0
 　 ⚠️ 이 코드는 웹·안드로이드에도 그대로 나간다(좋은 일 — Play 삭제 경로도 진짜가 된다) · ⛔배포 갈래엔 창업자 「배포해」 뒤
-✅ **[14:4x~15:0x] 창업자 할 일 넷 중 셋 끝** — ①콘솔 iOS 앱 추가 → `GoogleService-Info.plist` 받아 심음(28e4d33b · URL 스킴 포함 · 맥 빌드 run 34191974806 success) ②Apple 로고 = 창업자가 dmg 를 주고 내가 리눅스에서 풀어 「Left White Logo Small」 무수정으로 `public/apple-logo-white.svg`(재현판 ⑨ ✅) ③**규칙 게시 = 창업자 「했어」(15:0x)** → ⏳`fbtest.html` ③④ 실물 판정(구글 유저 저장이 그대로 되나 = 회귀 확인) 캡처 대기 · ④Apple 켜기는 9/13 뒤
+✅ **[14:4x~15:0x] 창업자 할 일 넷 중 셋 끝** — ①콘솔 iOS 앱 추가 → `GoogleService-Info.plist` 받아 심음(28e4d33b · URL 스킴 포함 · 맥 빌드 run 34191974806 success) ②Apple 로고 = 창업자가 dmg 를 주고 내가 리눅스에서 풀어 「Left White Logo Small」 무수정으로 `public/apple-logo-white.svg`(재현판 ⑨ ✅) ③**규칙 게시 = 창업자 「했어」(15:0x) → ✅ fbtest.html 실물 판정 15:04(창업자 폰 캡처) = ①팝업 ✅ · ③내 칸 써지고 다시 읽힘 ✅ · ④남의 칸 permission-denied ✅ — 구글 유저 그대로 · 애플 줄만 늘어남 · ⚠️애플 길 자체는 9/13 뒤 딸 폰에서만 잴 수 있다** · ④Apple 켜기는 9/13 뒤
 👉 **다음** = ⑴ 창업자 할 일 넷 순서표(§10-b 아래 · ①콘솔 iOS 앱 추가→plist ②Apple 로그인 켜기(9/13 뒤) ③애플 로고 = `developer.apple.com/design/resources` 「Sign in with Apple」 → Logo-Sign-in-with-Apple.dmg(이 환경은 애플 CDN 000 · PC 에서) ④규칙 게시→fbtest) ⑵ 큰 틀 6-② AI 다듬기 제3자 고지(privacy.html · 애플 5.1.2(i)) ⑶ 딸 폰 시험 ⑤⑥⑦ 은 TestFlight 뒤 ⑷ 배포 갈래가 또 앞섰다(v12.7x · 9커밋) — 훅은 이제 안 옮기지만, 다음 «합치기»는 창업자 말 있을 때
 
 ## 아직 확인이 필요한 것

@@ -96,6 +96,11 @@ await ctx.addInitScript((s) => {
   localStorage.setItem('hankki:gridSize', 'small')   // ⭐ 3열이라야 가족 셋이 고른 것이 한 화면에 같이 보인다
 }, state)
 const p = await ctx.newPage()
+// ⏱⛔⛔ **녹화는 «이 순간»부터 돈다 — 장면 시각도 여기서 잰다.**
+//   지난 판은 준비(불러오기·확대·탭 옮기기)가 끝난 뒤에 0초를 잡았다.
+//   그래서 잘라 붙일 때 «5초쯤 앞»의 화면이 실려 첫 장면에 **홈 화면(로그인 띠·소식 카드)**이 나왔다
+//   — 창업자 *"첫 화면 이상한 것도 수정하고"* 가 정확히 이 사고다(실측 검수_1.2.jpg).
+const t녹화 = Date.now()
 const 오류 = []
 p.on('pageerror', (e) => 오류.push(String(e.message || e).split('\n')[0]))
 await p.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle' })
@@ -122,30 +127,71 @@ const 보이나 = await p.evaluate(() => {
 })
 if (보이나.length < 3 || 보이나.some((v) => !v)) throw new Error(`⛔ 핀 셋이 한 화면에 안 들어온다 — ${JSON.stringify(보이나)}`)
 
+// 🔍🔍 **창업자 = *"골라요에서 그 부분을 클로즈업 하고 표시를 해야할 것 같아"***
+//    → 「고르는」 장면(②③④⑥)은 앱을 통째로 두지 않고 **핀 언저리만 잘라 확대**하고,
+//      그 위에 **동그라미 표시**를 얹는다. 어디를 누르는지가 이 릴스의 전부다.
+//    ⛔ 좌표를 어림하지 않는다 — 진짜 단추를 재서 그 자리에 그린다.
+//    ⛔⛔ **`zoom` 을 곱하지 않는다** — 첫 판이 그렇게 짰다가 핀 자리가 **x=1451**(영상 폭 810 밖!)로 나와
+//       동그라미가 앱 카드 «오른쪽 바깥»에 그려졌다(실측 로그). 확대를 쓰면 rect 가 확대 «전»인지 «후»인지
+//       브라우저마다·속성마다 갈린다. **그래서 눈금을 아예 안 믿는다.**
+//    ✅ 대신 «화면 폭에 대한 비율»로 잰다 — 영상은 이 화면을 그대로 810×1440 으로 담으므로
+//       `rect / clientWidth × 810` 이면 확대가 몇 배든 «반드시» 맞는다.
+const 자리재기 = (골라) => p.evaluate((골라) => {
+  const d = document.documentElement
+  const kx = 810 / d.clientWidth, ky = 1440 / d.clientHeight
+  const 잰다 = (e) => {
+    const r = e.getBoundingClientRect()
+    return { x: (r.left + r.width / 2) * kx, y: (r.top + r.height / 2) * ky,
+      w: r.width * kx, h: r.height * ky }
+  }
+  if (골라.종 === '핀') return [...document.querySelectorAll('.fav-dot')].slice(0, 3).map(잰다)
+  const e = [...document.querySelectorAll('.pill')].find((x) => x.innerText.trim().startsWith(골라.글))
+  return e ? 잰다(e) : null
+}, 골라)
+const 핀중심 = await 자리재기({ 종: '핀' })
+if (핀중심.some((c) => c.x < 0 || c.x > 810 || c.y < 0 || c.y > 1440))
+  throw new Error(`⛔ 핀 자리가 영상 밖이다 — ${JSON.stringify(핀중심)}`)
+const 칩중심 = (글) => 자리재기({ 종: '칩', 글 })
+
+// 잘라낼 칸은 영상과 «같은 비»(810:1440)라야 앱 카드에 넣을 때 안 늘어난다
+const 확대배 = 1.9
+const 확대칸 = (c) => {
+  const cw = Math.round(810 / 확대배 / 2) * 2, ch = Math.round(1440 / 확대배 / 2) * 2
+  const cx = Math.max(0, Math.min(810 - cw, Math.round(c.x - cw / 2)))
+  const cy = Math.max(0, Math.min(1440 - ch, Math.round(c.y - ch / 2)))
+  return { cw, ch, cx, cy }
+}
+
 // ⏱ 장면마다 «녹화 시각»을 적어 둔다 — 나중에 이 시각으로 잘라 붙인다
 const 장면 = []
-const t0 = Date.now()
-const 찍자 = async (이름, 초, 할일) => {
-  const 시작 = (Date.now() - t0) / 1000
+// 표시 = { 점, 확대, 말 } — 점은 «영상 픽셀» 자리
+const 찍자 = async (이름, 초, 할일, 표시) => {
+  const 시작 = (Date.now() - t녹화) / 1000
   if (할일) await 할일()
   await p.waitForTimeout(Math.round(초 * 1000))
-  장면.push({ 이름, 시작: +시작.toFixed(2), 길이: +(((Date.now() - t0) / 1000) - 시작).toFixed(2) })
+  장면.push({ 이름, 시작: +시작.toFixed(2), 길이: +(((Date.now() - t녹화) / 1000) - 시작).toFixed(2), 표시 })
 }
 
 await 찍자('①물음', 2.6)
-await 찍자('②아이', 3.0, () => 핀(0).click())
-await 찍자('③아빠', 3.0, () => 핀(1).click())
-await 찍자('④엄마', 3.0, () => 핀(2).click())
+await 찍자('②아이', 3.2, () => 핀(0).click(), { 점: 핀중심[0], 확대: true, 말: '톡' })
+await 찍자('③아빠', 3.2, () => 핀(1).click(), { 점: 핀중심[1], 확대: true, 말: '톡' })
+await 찍자('④엄마', 3.2, () => 핀(2).click(), { 점: 핀중심[2], 확대: true, 말: '톡' })
 
 const 칩글 = await p.evaluate(() => [...document.querySelectorAll('.pill')].map((e) => e.innerText.trim()))
 if (!칩글.some((t) => t.startsWith('해볼 것'))) throw new Error(`⛔ 「해볼 것」 칩이 안 섰다 (칩 줄 = ${칩글.join(' / ')})`)
-await 찍자('⑤서랍', 2.8)
-await 찍자('⑥최애', 3.2, () => 핀(0).click())
+const 해볼것칩 = await 칩중심('해볼 것')
+if (!해볼것칩) throw new Error('⛔ 「해볼 것」 칩 자리를 못 쟀다')
+await 찍자('⑤서랍', 3.0, null, { 점: 해볼것칩, 확대: false, 말: '여기!' })
+await 찍자('⑥최애', 3.4, () => 핀(0).click(), { 점: 핀중심[0], 확대: true, 말: '한 번 더' })
 
 const 칩글2 = await p.evaluate(() => [...document.querySelectorAll('.pill')].map((e) => e.innerText.trim()))
 if (!칩글2.some((t) => t.startsWith('최애'))) throw new Error(`⛔ 「최애」 칩이 안 섰다 (칩 줄 = ${칩글2.join(' / ')})`)
-await 찍자('⑦다음주', 3.2, () => p.locator('.pill').filter({ hasText: '최애' }).first().click())
-await 찍자('⑧마무리', 3.0)
+const 최애칩 = await 칩중심('최애')
+await 찍자('⑦다음주', 3.2, () => p.locator('.pill').filter({ hasText: '최애' }).first().click(),
+  최애칩 ? { 점: 최애칩, 확대: false, 말: '여기!' } : undefined)
+// 🔚 마무리는 «전체»로 되돌린다 — 최애 하나만 남은 휑한 화면으로 끝나면
+//    「한 주가 이렇게 짜여요」라는 말과 화면이 어긋난다(실측 v_21.5.jpg).
+await 찍자('⑧마무리', 3.2, () => p.locator('.pill').filter({ hasText: '전체' }).first().click())
 
 await ctx.close(); await b.close(); srv.close()
 if (오류.length) { console.log('⛔ 화면 오류'); 오류.forEach((e) => console.log('  ' + e)); process.exit(1) }
@@ -154,37 +200,75 @@ if (!webm) throw new Error('⛔ 녹화 파일이 안 생겼다')
 console.log('🎥 녹화 · 장면', 장면.map((s) => `${s.이름}(${s.길이}s)`).join(' '))
 
 // ── ② 짜임 — 바탕 한 장 ＋ 장면마다 앞면 한 장 ────────────────────────────
-const 종이 = '#efe9dd', 먹 = '#3d3830', 팥 = '#9c5a45', 흐림 = '#7d7568'
+// 🎨🎨 **창업자 = *"짜임색이랑 스타일 바꾸자"***
+//   ⭐ 우리 릴스의 «이미 정해진 결»로 맞춘다 — 소소 릴스 셋이 쓴 색·글씨체다
+//      (scripts/_릴스-레꾸자랑시안-0905.mjs:42 — 크림 #fbf5e8 → 살구 #f3dcc4 · 표장 갈색 #5d3410 · Jua)
+//   ⛔ 모눈 종이(회녹색 #efe9dd ＋ Gaegu)는 우리 어디에도 없던 결이었다. 버린다.
+//   ⚠️ 글씨체 이름은 «'GowunDodum'»(붙여 쓴다) — 'Gowun Dodum' 으로 적으면 조용히 딴 글씨가 된다
+//      (design/promo/fonts-embed.css 실측).
+const 크림 = '#fbf5e8', 살구 = '#f3dcc4', 갈 = '#5d3410', 팥 = '#c2410c', 흐림 = 'rgba(93,52,16,.62)'
 const 바탕HTML = `<style>${폰트}
 *{margin:0;padding:0}
-body{width:${W}px;height:${H}px;background:${종이};position:relative;overflow:hidden;
-  background-image:linear-gradient(rgba(120,110,90,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(120,110,90,.09) 1px,transparent 1px);
-  background-size:60px 60px}
-.hole{position:absolute;left:${앱X}px;top:${앱Y}px;width:${앱W}px;height:${앱H}px;border-radius:34px;
-  background:#fff;box-shadow:0 26px 60px rgba(60,50,35,.28)}
+body{width:${W}px;height:${H}px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 16px 16px, rgba(93,52,16,.055) 3px, transparent 4px) 0 0/64px 64px,
+    linear-gradient(180deg,${크림} 0%,#f7e9d6 58%,${살구} 100%)}
+.hole{position:absolute;left:${앱X}px;top:${앱Y}px;width:${앱W}px;height:${앱H}px;border-radius:44px;
+  background:#fff;box-shadow:0 30px 66px rgba(60,35,10,.26)}
 </style><div class="hole"></div>`
 
 const 앞면 = (제목, 자막, 컷, 옵션 = {}) => `<style>${폰트}
 *{margin:0;padding:0}
 body{width:${W}px;height:${H}px;position:relative;overflow:hidden;background:transparent}
 /* 🔲 앱 카드 «모서리»를 종이색으로 덮어 둥글게 보이게 한다 (영상은 네모라서) */
-.corner{position:absolute;width:34px;height:34px;background:${종이}}
-.c1{left:${앱X}px;top:${앱Y}px;border-radius:0 0 34px 0}
-.c2{left:${앱X + 앱W - 34}px;top:${앱Y}px;border-radius:0 0 0 34px}
-.c3{left:${앱X}px;top:${앱Y + 앱H - 34}px;border-radius:0 34px 0 0}
-.c4{left:${앱X + 앱W - 34}px;top:${앱Y + 앱H - 34}px;border-radius:34px 0 0 0}
-.head{position:absolute;left:0;right:0;top:74px;text-align:center;font-family:'Gaegu';font-weight:700;
-  color:${먹};font-size:${옵션.제목크기 || 76}px;line-height:1.2;letter-spacing:-.01em}
+/* 🔲 앱 카드 모서리 — 바탕 그러데이션과 «같은 색»이라야 안 뜬다 → 종이 대신 조각을 덮지 않고
+   테두리 링으로 둥글려 준다 (색을 못 맞추면 네모 자국이 남는다) */
+.frame{position:absolute;left:${앱X - 6}px;top:${앱Y - 6}px;width:${앱W + 12}px;height:${앱H + 12}px;
+  border:6px solid rgba(93,52,16,.16);border-radius:50px;box-sizing:border-box;
+  box-shadow:inset 0 0 0 8px ${크림}}
+.head{position:absolute;left:0;right:0;top:66px;text-align:center;font-family:'Jua';
+  color:${갈};font-size:${옵션.제목크기 || 84}px;line-height:1.18;letter-spacing:-.02em}
 .head b{color:${팥}}
-.sub{position:absolute;left:0;right:0;top:${앱Y + 앱H + 34}px;text-align:center;
-  font-family:'Gowun Dodum';color:${흐림};font-size:40px;line-height:1.45}
-.sub b{color:${먹};font-weight:700}
-.cut{position:absolute;filter:drop-shadow(0 14px 22px rgba(50,40,25,.22))}
+.tag{position:absolute;left:50%;top:${앱Y - 96}px;transform:translateX(-50%);font-family:'Jua';
+  background:${갈};color:${크림};font-size:34px;padding:10px 34px;border-radius:999px;
+  box-shadow:0 10px 24px rgba(60,35,10,.22)}
+.sub{position:absolute;left:70px;right:70px;top:${앱Y + 앱H + 30}px;text-align:center;
+  font-family:'GowunDodum';color:${흐림};font-size:40px;line-height:1.5}
+.sub b{color:${갈};font-weight:700}
+.cut{position:absolute;filter:drop-shadow(0 14px 22px rgba(60,35,10,.22))}
+/* 🔴 «여기를 누른다» 표시 — 두 겹 동그라미 ＋ 말풍선 */
+.ring{position:absolute;border:9px solid ${팥};border-radius:999px;box-sizing:border-box;
+  box-shadow:0 0 0 7px rgba(255,255,255,.8),0 12px 28px rgba(60,35,10,.3)}
+.ring2{position:absolute;border:5px dashed rgba(194,65,12,.5);border-radius:999px;box-sizing:border-box}
+.say{position:absolute;font-family:'Jua';color:${크림};background:${팥};
+  padding:10px 30px;border-radius:999px;font-size:46px;white-space:nowrap;
+  box-shadow:0 12px 26px rgba(60,35,10,.3)}
 </style>
-<div class="corner c1"></div><div class="corner c2"></div><div class="corner c3"></div><div class="corner c4"></div>
+<div class="frame"></div>
 <div class="head">${제목}</div>
+${옵션.꼬리표 ? `<div class="tag">${옵션.꼬리표}</div>` : ''}
 <div class="sub">${자막}</div>
 ${컷 || ''}`
+
+// 표시 자리 셈 — 잘라 확대한 장면은 «자른 칸» 기준으로 다시 잰다
+const 표시HTML = (표시) => {
+  if (!표시) return ''
+  const { 점, 확대, 말 } = 표시
+  const 칸 = 확대 ? 확대칸(점) : { cw: 810, ch: 1440, cx: 0, cy: 0 }
+  const 배 = 앱W / 칸.cw
+  const x = 앱X + (점.x - 칸.cx) * 배
+  const y = 앱Y + (점.y - 칸.cy) * 배
+  // ⭕ 핀은 동그라미, 칩은 알약 — «그 물건 크기»에 맞춘다(원으로 그리면 칩이 화면 반을 덮는다)
+  const 여유 = 26
+  const w = Math.max(96, Math.round(점.w * 배)) + 여유 * 2
+  const h = Math.max(96, Math.round(점.h * 배)) + 여유 * 2
+  console.log('  🔎 표시', JSON.stringify({ 칸, x: Math.round(x), y: Math.round(y), w, h }))
+  const 상자 = (dx, cls) =>
+    `<div class="${cls}" style="left:${Math.round(x - w / 2 - dx)}px;top:${Math.round(y - h / 2 - dx)}px;` +
+    `width:${w + dx * 2}px;height:${h + dx * 2}px"></div>`
+  return 상자(0, 'ring') + 상자(22, 'ring2') +
+    `<div class="say" style="left:${Math.round(x)}px;top:${Math.round(y + h / 2 + 42)}px;transform:translateX(-50%)">${말}</div>`
+}
 
 const 컷1 = `<img class="cut" src="${스('duos_03')}" style="left:26px;top:1660px;height:230px">`
 const 컷2 = `<img class="cut" src="${스('gp_duotb')}" style="right:26px;top:1650px;height:240px">`
@@ -192,13 +276,13 @@ const 컷3 = `<img class="cut" src="${스('gp_gomft')}" style="right:34px;top:58
 
 const 앞면들 = {
   '①물음': 앞면('이번 주에 뭐 먹지?', '가족이 모여 앉아<br><b>먹고 싶은 걸 하나씩 꽂아요</b>', 컷1),
-  '②아이': 앞면('아이가 골라요', '카드 오른쪽 위 <b>요리사 모자</b>를 톡', 컷1),
-  '③아빠': 앞면('아빠가 골라요', '누르면 <b>모자가 진해져요</b>', 컷1),
-  '④엄마': 앞면('엄마가 골라요', '이번 주엔 <b>버섯전골</b>', 컷1),
+  '②아이': 앞면('아이가 골라요', '카드 오른쪽 위 <b>요리사 모자</b>를 톡', 컷1, { 꼬리표: '👧 아이 차례' }),
+  '③아빠': 앞면('아빠가 골라요', '누르면 <b>모자가 진해져요</b>', 컷1, { 꼬리표: '🧔 아빠 차례' }),
+  '④엄마': 앞면('엄마가 골라요', '이번 주엔 <b>버섯전골</b>', 컷1, { 꼬리표: '👩 엄마 차례' }),
   '⑤서랍': 앞면('고른 게 한 서랍에', '위 칩에 <b>‘해볼 것 3’</b> 이 저절로 서요', 컷3),
-  '⑥최애': 앞면('맛있었으면 한 번 더', '모자를 다시 누르면 <b>하트 = 최애</b>', 컷3),
+  '⑥최애': 앞면('맛있었으면 한 번 더', '모자를 다시 누르면 <b>하트 = 최애</b>', 컷3, { 꼬리표: '♥ 한 번 더' }),
   '⑦다음주': 앞면('다음 주엔 최애만', '하트만 모아서 <b>또 해먹어요</b>', 컷2),
-  '⑧마무리': 앞면('한 주가 이렇게 짜여요', '<b>해볼 것</b> = 이번 주에 할 것<br><b>최애</b> = 다음에 또 할 것', 컷2, { 제목크기: 68 }),
+  '⑧마무리': 앞면('한 주가 이렇게 짜여요', '<b>해볼 것</b> = 이번 주에 할 것<br><b>최애</b> = 다음에 또 할 것', 컷2, { 제목크기: 74 }),
 }
 
 const b2 = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
@@ -208,7 +292,8 @@ await pg.waitForTimeout(250)
 const 바탕판 = join(OUT, '_바탕.png')
 await pg.screenshot({ path: 바탕판 })
 for (const s of 장면) {
-  await pg.setContent(앞면들[s.이름], { waitUntil: 'networkidle' })
+  // 같은 앞면에 그 장면의 «동그라미 표시»를 얹는다
+  await pg.setContent(앞면들[s.이름] + 표시HTML(s.표시), { waitUntil: 'networkidle' })
   await pg.waitForTimeout(250)
   s.앞면 = join(OUT, `_앞_${s.이름}.png`)
   await pg.screenshot({ path: s.앞면, omitBackground: true })
@@ -224,7 +309,12 @@ for (const s of 장면) {
     '-ss', String(s.시작), '-t', String(s.길이), '-i', join(OUT, webm),
     '-loop', '1', '-i', s.앞면,
     '-filter_complex',
-    `[1:v]scale=${앱W}:${앱H}:flags=lanczos[app];[0:v][app]overlay=${앱X}:${앱Y}[bg];[bg][2:v]overlay=0:0,fps=60,format=yuv420p,setsar=1[v]`,
+    // 🔍 고르는 장면은 «핀 언저리만» 잘라 키운다 — 창업자 *"그 부분을 클로즈업"*
+    (() => {
+      const 칸 = s.표시?.확대 ? 확대칸(s.표시.점) : null
+      const 자름 = 칸 ? `crop=${칸.cw}:${칸.ch}:${칸.cx}:${칸.cy},` : ''
+      return `[1:v]${자름}scale=${앱W}:${앱H}:flags=lanczos[app];[0:v][app]overlay=${앱X}:${앱Y}[bg];[bg][2:v]overlay=0:0,fps=60,format=yuv420p,setsar=1[v]`
+    })(),
     '-map', '[v]', '-t', String(s.길이),
     '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-y', 조각], { stdio: 'inherit' })
   조각들.push(조각)

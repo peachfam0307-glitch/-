@@ -241,6 +241,9 @@ function migrateBasics(saved) {
     const merged = {
       ...s,
       favorite: r.favorite,
+      // 🔖 [2026-09-08] 핀의 «종»도 유저 것이다 — 안 실으면 시드가 갱신될 때마다 하트가 모자로 되돌아간다.
+      //    ⚠️ `favorite` 바로 옆에 둔다 — 둘은 «한 쌍»이라 떨어지면 한쪽만 실리는 사고가 난다.
+      favPin: r.favPin,
       cooked: r.cooked,
       cookedAt: r.cookedAt,
       savedAt: r.savedAt,
@@ -883,10 +886,22 @@ function reducer(state, action) {
       return { ...state, removedSeedIds, recipes: state.recipes.filter((r) => r.id !== action.id) }
     }
     case 'toggleFav': {
+      // 🔖 [2026-09-08] 종(`favPin`)은 «건드리지 않는다» — 뺐다가 다시 꽂아도 하트는 하트다.
+      //    ⛔ 뺄 때 종을 지우면 유저가 잘못 눌러 뺀 뒤 다시 꽂았을 때 «모자로 되돌아간다».
       return {
         ...state,
         recipes: state.recipes.map((r) =>
           r.id === action.id ? { ...r, favorite: !r.favorite } : r
+        ),
+      }
+    }
+    // 🔖 종을 고른다 — 고르면 «꽂힌다»(안 꽂힌 것을 고를 수도 있어야 해서).
+    //   📮 창업자 2026-09-08 = *"요리사모자는 해볼것, 하트는 최애 두 종으로 가자"*
+    case 'setFavPin': {
+      return {
+        ...state,
+        recipes: state.recipes.map((r) =>
+          r.id === action.id ? { ...r, favorite: true, favPin: action.pin } : r
         ),
       }
     }
@@ -1237,6 +1252,7 @@ export function StoreProvider({ children }) {
     updateRecipe: useCallback((id, patch) => dispatch({ type: 'update', id, patch }), []),
     removeRecipe: useCallback((id) => dispatch({ type: 'remove', id }), []),
     toggleFavorite: useCallback((id) => dispatch({ type: 'toggleFav', id }), []),
+    setFavPin: useCallback((id, pin) => dispatch({ type: 'setFavPin', id, pin }), []),
     cook: useCallback((id) => dispatch({ type: 'cook', id }), []),
     addFolder: useCallback((name) => dispatch({ type: 'addFolder', name }), []),
     removeFolder: useCallback((name) => dispatch({ type: 'removeFolder', name }), []),

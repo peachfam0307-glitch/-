@@ -55,6 +55,11 @@ git reset -q --hard HEAD~1   # 되감김 흉내 (자기 원격보다 1 뒤)
 rc=$(runhook)
 [ "$(git branch --show-current)" = "feat/y" ] && [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/feat/y)" ] && say ✅ "③ 자기 원격으로 앞으로 당겼고 갈래 그대로 (rc=$rc)" || say ⛔ "③ 실패 — 갈래=$(git branch --show-current) HEAD≠origin"
 
+# ⑤ 다른 갈래에 있어도 «로컬 배포 갈래 ref» 는 원격에 맞춰 둔다(base-guard 가 되감김으로 오해하지 않게) · 갈래·파일은 그대로
+fresh; git checkout -q -b feat/z; git push -q -u origin feat/z; echo dirty > f2.txt
+rc=$(runhook)
+[ "$(git rev-parse "$DEPLOY")" = "$(git rev-parse "origin/$DEPLOY")" ] && [ "$(git branch --show-current)" = "feat/z" ] && [ "$(cat f2.txt)" = "dirty" ] && say ✅ "⑤ 로컬 배포 ref 만 ff (갈래 feat/z · 고침 그대로 · rc=$rc)" || say ⛔ "⑤ 실패 — 배포ref=$(git rev-parse --short "$DEPLOY") 원격=$(git rev-parse --short "origin/$DEPLOY") 갈래=$(git branch --show-current)"
+
 # ④ 회귀 — 배포 갈래 · 뒤짐 · 깨끗 → 맞춘다
 fresh
 rc=$(runhook)

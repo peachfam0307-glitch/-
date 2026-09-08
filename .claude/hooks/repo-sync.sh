@@ -149,6 +149,10 @@ DIRTY="$(git status --porcelain 2>/dev/null | wc -l | tr -d ' ')"
 #    🧪 재현 = hankki/scripts/_repro-되감기갈래-0908.sh (배포 갈래가 앞선 채 다른 갈래에 서서 돌리면 «안 옮긴다»)
 if [ -n "$BR" ] && [ "$BR" != "$DEPLOY" ]; then
   refresh_hooks
+  # 🧷 «로컬 배포 갈래 ref» 만 원격에 맞춰 둔다(ff · 워킹트리 안 건드림 · 지금 갈래는 그대로).
+  #    ⛔ 안 하면 base-guard 가 「로컬 배포 ref ≠ 원격」을 «되감김»으로 읽고 모든 bash 를 막는다(2026-09-08 14:5x 실제로 막혔다).
+  #    ⭐ 체크아웃돼 있지 않은 갈래라 refspec 갱신이 안전하다 · ff 가 안 되면(로컬이 앞섬) 그냥 둔다.
+  git fetch -q origin "$DEPLOY:$DEPLOY" >/dev/null 2>&1 || true
   if git rev-parse --verify --quiet "origin/$BR" >/dev/null 2>&1; then
     run 30 git fetch origin "$BR" --quiet >/dev/null 2>&1 || true
     OWN_BEHIND="$(git rev-list --count "HEAD..origin/$BR" 2>/dev/null || echo 0)"

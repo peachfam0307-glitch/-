@@ -35,7 +35,9 @@ export default function TidyWaiting({ onClose, 자동, 남은말, 끝 }) {
       <Portal>
         <div className="sheet-mask">
           <div className="sheet" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: 'calc(18px + var(--safe-bottom))' }}>
-            <div style={{ padding: '6px 22px 0', textAlign: 'center', fontFamily: "'Jua', sans-serif" }}>
+            {/* ⛔ keep-all — 한글은 기본이 «글자» 단위라 낱말 «가운데»가 잘린다(「열쇠는 그대 / 로예요」).
+              ⭐ 칸마다 붙이지 않고 여기 «한 번»만 — 안쪽 글자들이 물려받는다 [2026-09-09] */}
+          <div style={{ padding: '6px 22px 0', textAlign: 'center', fontFamily: "'Jua', sans-serif", wordBreak: 'keep-all' }}>
               <img src={duoHi} alt="" aria-hidden draggable={false} style={{ width: 96, maxWidth: '30%', display: 'block', margin: '0 auto' }} />
               <div style={{ fontSize: 22, fontWeight: 400, lineHeight: 1.35, marginTop: 10 }}>{끝.머리}</div>
               <div className="t-sub" style={{ fontSize: 16, lineHeight: 1.7, marginTop: 12, wordBreak: 'keep-all' }}>{끝.몸}</div>
@@ -66,7 +68,9 @@ export default function TidyWaiting({ onClose, 자동, 남은말, 끝 }) {
           onClick={(e) => e.stopPropagation()}
           style={{ paddingBottom: 'calc(18px + var(--safe-bottom))' }}
         >
-          <div style={{ padding: '6px 22px 0', textAlign: 'center', fontFamily: "'Jua', sans-serif" }}>
+          {/* ⛔ keep-all — 한글은 기본이 «글자» 단위라 낱말 «가운데»가 잘린다(「열쇠는 그대 / 로예요」).
+              ⭐ 칸마다 붙이지 않고 여기 «한 번»만 — 안쪽 글자들이 물려받는다 [2026-09-09] */}
+          <div style={{ padding: '6px 22px 0', textAlign: 'center', fontFamily: "'Jua', sans-serif", wordBreak: 'keep-all' }}>
             {/* 📮 [2026-09-09] 창업자 = "안내는 다르게 해야겠지"
                 ⛔ 두 길은 «온 까닭»이 다르다 —
                    직접 누른 사람 = 「기다리려고」 왔다  →  얼마나 걸리나·다 되면 어디로 가나

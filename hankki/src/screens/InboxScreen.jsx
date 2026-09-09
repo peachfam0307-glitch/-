@@ -186,7 +186,8 @@ export default function InboxScreen() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span className="t-sub">{timeAgo(r.savedAt)}</span>
                     {/* 🔎 왜 아직 여기 있나 — 저장된 값만 세서 만든다(⛔AI 안 부른다 · 열쇠 0개) */}
-                    <span className="t-sub" style={{ color: 'var(--brown)' }}>· {남은까닭(r)}</span>
+                    {/* ⛔ keep-all — 창업자 캡처에서 「아래 / 단추로 한 번 더」로 갈라졌다 [2026-09-09] */}
+                    <span className="t-sub" style={{ color: 'var(--brown)', wordBreak: 'keep-all' }}>· {남은까닭(r)}</span>
                   </div>
                 </div>
               </button>

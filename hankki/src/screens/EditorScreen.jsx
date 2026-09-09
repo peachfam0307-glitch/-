@@ -1138,7 +1138,8 @@ export default function EditorScreen({ id, prefill }) {
                   }} />
                 </div>
                 {/* ⏱ 「오래 걸린다」를 «먼저» 말해 준다 — 예고된 기다림은 고장으로 안 읽힌다 */}
-                <div className="t-sub" style={{ fontSize: 15, marginTop: 5, lineHeight: 1.4 }}>
+                {/* ⛔ keep-all — 한글 낱말이 «가운데»서 잘리는 것을 막는다(전수 점검 2026-09-09) */}
+                <div className="t-sub" style={{ fontSize: 15, marginTop: 5, lineHeight: 1.4, wordBreak: 'keep-all' }}>
                   {ocr.total > 1
                     ? <>사진이 {ocr.total}장이라 조금 걸려요 · <b style={{ fontWeight: 800, color: 'var(--brown)' }}>이 화면 그대로 두면 돼요</b></>
                     : '잠깐만요, 다 읽으면 칸을 채워 드려요'}

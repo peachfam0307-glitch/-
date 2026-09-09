@@ -51,7 +51,10 @@ const 가로채기 = (page, { OCR = {}, AI = true, 지연 = 0 }) => {
     const body = route.request().postData() || ''
     if (/"기본"/.test(body)) return route.fulfill({ status:200, contentType:'application/json', body: JSON.stringify({ 웰컴:10, 매월:5 }) })
     route.fulfill({ status:200, contentType:'application/json',
-      body: JSON.stringify({ text: 읽은글, 깎음: true, 왜: '정상', left: { total:9, unknown:false }, ...OCR }) })
+      // ⛔ 진짜 워커와 «같은 모양»으로 보낸다 — total 만 보내면 앱이 0 으로 읽어 「0개 남았어요」가 뜬다
+      //    (2026-09-09 실물 확인 · ocr.js:180 은 welcome·month 를 읽는다). 가짜가 나를 속이면 안 된다.
+      body: JSON.stringify({ text: 읽은글, 깎음: true, 왜: '정상',
+        left: { 무제한:false, welcome:9, month:5, cap:10, bonus:0, earned:[], anon:3, acct:10, monthly:5, signed:true }, ...OCR }) })
   })
   page.route('**/hankki-tidy.annyeong-hankki.workers.dev/**', async (route) => {
     await new Promise((r) => setTimeout(r, 지연))

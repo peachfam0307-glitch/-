@@ -88,6 +88,16 @@ console.log('\n  ⑽ ⭐ 열쇠 말은 «한 가지»다 [창업자 2026-09-09 =
 잰다(!/열쇠는 그대로예요|열쇠는 안 써요/.test(말), '다른 말투가 남아 있지 않다')
 잰다(/열쇠 안 썼어요/.test(말), '한 가지 말로 통일됐다')
 
+console.log('\n  ⑽-2 ⛔ 이름을 다시 내보낼 때 «값이 사라지지» 않았나 [2026-09-09 실물 사고]')
+{
+  const o = 읽기('src', 'ocr.js')
+  const 다시내보내기만 = /^export \{ KEY_NAME, KEY_UNIT \} from/m.test(o)
+  잰다(!다시내보내기만 || /^import \{ KEY_NAME, KEY_UNIT \} from/m.test(o),
+    '⭐ocr.js 가 쓰는 이름을 «들여왔다» (export … from 만 쓰면 그 파일 안엔 값이 안 생긴다)')
+  잰다(/const keyCount = .*KEY_UNIT/.test(o) === false || /^import \{ KEY_NAME, KEY_UNIT \}/m.test(o),
+    'keyCount 가 쓰는 값이 실제로 있다')
+}
+
 console.log('\n  ⑾ ⭐ 0 개일 때 「0개 남았어요」라고 하지 않는다 [창업자 = "무료랑은 안맞는 말이잖아"]')
 잰다(남은열쇠말({ total: 0 }) === '열쇠를 다 썼어요 · 다음 달에 다시 채워져요', '0 이면 «다른 사건»으로 말한다')
 잰다(/남았어요/.test(남은열쇠말({ total: 3 })), '남아 있으면 개수를 말한다')

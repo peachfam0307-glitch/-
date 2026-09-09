@@ -601,16 +601,37 @@ export default function EditorScreen({ id, prefill }) {
     //   ✅ 표시가 남아 있으면 그 레시피를 열 때 `RecipeDetailScreen` 이 저절로 만회한다(열쇠 0).
     //   🧪 판 = `_repro-앱이정리됨-0904.mjs`
     updateRecipe(r.id, { tidyFail: 1 })
+    // 🏷🏷 **제목만 못 찾았을 때 — 「직접 적어주세요」로 데려간다** (창업자 확정 2026-09-09)
+    //
+    //   📮 창업자 = *"캡쳐에 제목이 없는거는 ai스캔을해도 안나오잖아. 이건 그냥 유저가 저장을 하는게 맞아"*
+    //
+    //   ⛔⛔ **이게 「기본읽기가 많은」 진짜 원인일 수 있다.** 제목이 안 잡히면 유저는
+    //      «나가서 사진을 다시 골랐다» — 열쇠를 또 태우는데 **같은 사진이라 결과도 똑같다.**
+    //      공짜 길(「AI로 다시 다듬기」·열쇠 0개)이 있는데 **접힌 서랍 안에 숨어 있어서** 아무도 못 찾았다.
+    //   ⭐ 그래서 «사진에 없는 것»은 AI 를 또 돌리지 말고 **한 줄로 알려주고 제목 칸으로 데려간다.**
+    //      ⛔ 열쇠 얘기는 «안» 한다 — 글자는 얻었으니 정당하게 쓴 것이다. 꺼내면 오히려 「깎였나?」로 읽힌다.
+    //
+    //   ⏱ **AI 다듬기가 «끝난 뒤»에 본다** — AI 가 제목을 채워 줄 수도 있어서,
+    //      먼저 말하면 20초 뒤 제목이 생겨 **틀린 안내**가 된다.
+    const 제목챙기기 = () => {
+      const el = titleRef.current
+      if (!el || el.value.trim()) return            // 이미 제목이 있으면 조용히 넘어간다
+      nav.showToast('사진에 제목이 없어요 · 직접 적어주세요', 6000)
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setTimeout(() => el.focus(), 300)
+    }
     tidyRecipe(combined, shotAccum.current).then((ai) => {
       if (ai) {
         채우기(mergeTidy(r, ai))
         updateRecipe(r.id, { tidyFail: 0 })   // ✅ 다 됐으니 표시를 지운다(안 지우면 또 다듬는다)
         nav.showToast('AI가 레시피를 더 다듬었어요' + tidyTail())
+        setTimeout(제목챙기기, 1200)          // ⏱ 위 안내를 읽을 틈을 준 뒤에
         return
       }
       // ⛔ 실패는 «유저에게 안 알린다» — 이미 채워져 있어 할 일이 0이다. 창업자(운영자)만 이유를 본다.
       //    ⭐ 표시는 «그대로 둔다» — 다음에 그 레시피를 열 때 만회한다.
       if (tidyFounder()) nav.showToast('AI 다듬기는 못 했어요' + tidyTail())
+      setTimeout(제목챙기기, 1200)
     })
   }
 

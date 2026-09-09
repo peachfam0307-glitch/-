@@ -14,15 +14,23 @@ await new Promise(r=>srv.listen(0,r))
 const { SEED_COACH_SEEN } = await import('../src/coach.js')
 const b = await chromium.launch({ executablePath: process.env.SMOKE_CHROMIUM })
 
-// 🔢 흰 글씨 대비 / 살구 배경 대비 — 전부 잰 값이다(지금 파랑은 4.56 / 4.11 로 제일 낮다)
-const 후보 = [
+// 🔢 흰 글씨 대비 / 배경 대비 — 전부 잰 값이다(살구에서 지금 파랑은 4.56 / 4.11 로 제일 낮다)
+// 📮 창업자 2026-09-09 = *"진한테마에도 넣어봐야하지않아?"* — 맞다.
+//   ⛔ **어두운 배경에선 같은 색을 쓸 수 없다** — 군고구마 #8a4a26 은 차콜(#17171b) 위에서 대비 2.63 이라
+//      단추가 «배경에 잠긴다». 그래서 진한 테마는 «밝게 올린» 짝을 따로 둔다(지금 파랑도 그렇게 하고 있다:
+//      살구 #5878a0 ↔ 진한 #7093c0).
+const 테마 = process.argv[2] === '진한' ? 'dark' : 'apricot'
+const 후보 = 테마 === 'dark' ? [
+  ['진한-지금파랑', '#7093c0'], ['진한-군고구마', '#c07a45'],
+  ['진한-대추진홍', '#cf6a55'], ['진한-밤웜', '#c98c5e'],
+] : [
   ['지금-파랑', '#5878a0'], ['대추진홍', '#9c4436'], ['군고구마', '#8a4a26'],
   ['가지자주', '#6d3550'], ['밤웜브라운', '#7d4a2c'], ['솔잎카키', '#5f6b3a'],
 ]
 for (const [이름, 색] of 후보) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2 })
   await ctx.addInitScript(SEED_COACH_SEEN)
-  await ctx.addInitScript(() => { try { localStorage.setItem('hankki:onboarded','1'); localStorage.setItem('hankki:news:off','1'); localStorage.setItem('hankki-theme','apricot') } catch {} })
+  await ctx.addInitScript((t) => { try { localStorage.setItem('hankki:onboarded','1'); localStorage.setItem('hankki:news:off','1'); localStorage.setItem('hankki-theme', t) } catch {} }, 테마)
   const p = await ctx.newPage()
   await p.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil: 'networkidle' })
   await p.waitForTimeout(2200)

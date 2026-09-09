@@ -20,11 +20,13 @@ const 카드 = [
   // 📮 창업자 2026-09-09 = *"배경짜임이랑 색을 «진하게» 하자는거야"* → 넷 다 «진한 상자»로.
   //   ⭐ 그러면서 넷이 서로 달라야 한다 → 꼴(모난 상자·알약·꼬리 말풍선·큰 상자)도 넷 다 다르게.
   { id: 'c1', html: `<div class="모난상자">
-      <div style="font-family:Gaegu;font-weight:700;font-size:70px;line-height:1.22">올해 추석,</div>
-      <div style="font-family:Gaegu;font-weight:700;font-size:70px;line-height:1.22;color:#f5c451">한끼도 한복 입었어요</div>
+      <div style="font-family:Gaegu;font-weight:700;font-size:70px;line-height:1.22">그냥 우리 홈이었는데</div>
     </div>` },
   { id: 'c2', html: `<div class="알약">
-      홈을 내리면 <b style="color:#f5c451">보름달</b>이 따라와요
+      추석이 오면 <b style="color:#f5c451">한복</b>을 입어요
+    </div>` },
+  { id: 'c5', html: `<div class="알약" style="background:#8c2f27">
+      굴려도 <b style="color:#f5c451">그 자리</b>에 있어요
     </div>` },
   { id: 'c3', html: `<div class="말풍선">탭마다 애들이 <u>갈아입어요</u><i></i></div>` },
   { id: 'c4', html: `<div class="큰상자">

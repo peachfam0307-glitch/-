@@ -132,29 +132,35 @@ async function 지문내기(b64) {
   return [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, '0')).join('').slice(0, 32)
 }
 
-export class 장부 {
-  constructor(state) { this.st = state.storage }
-  async fetch(req) {
-    const b = await req.json()
-    if (b.종류 === '찾기') {
-      const v = await this.st.get('f:' + b.지문)
-      return Response.json(v ? { 있다: true, 글자: v.글자 || '' } : { 있다: false })
-    }
-    if (b.종류 === '적기') {
-      await this.st.put('f:' + b.지문, { 글자: b.글자 || '', 때: Date.now() })
-      // 🧹 **DO 엔 «만료»가 없다**(2026-09-09 실측) — KV 처럼 저절로 안 지워진다.
-      //   그래서 하루 한 번 알람을 걸어 «40일 지난 것»을 직접 지운다. 안 걸면 영원히 쌓인다.
-      if (!(await this.st.getAlarm())) await this.st.setAlarm(Date.now() + 86400000)
-      return Response.json({ ok: true })
-    }
-    return Response.json({ error: 'bad' }, { status: 400 })
-  }
-  async alarm() {
-    const 기준 = Date.now() - 마흔날 * 1000
-    const all = await this.st.list({ prefix: 'f:' })
-    for (const [k, v] of all) if (!v || !v.때 || v.때 < 기준) await this.st.delete(k)
-    if ((await this.st.list({ prefix: 'f:' })).size) await this.st.setAlarm(Date.now() + 86400000)
-  }
+// 🗄🗄 **창고 = D1** (창업자 확정 2026-09-09 · 실측으로 정했다)
+//
+//   📮 창업자 = *"내가 정한거는 그때의 ai가 정해준거고 지금또 달라졌을 수있으니까
+//      테스트해서 더 리스크,구멍이 없는걸로 해야지"* → 그래서 D1 과 DO 를 «같은 실험»으로 재고 골랐다.
+//
+//   🔢 실측(2026-09-09 · wrangler 로컬 · 같은 조건 60판)
+//      · 같은 사진 동시 2·5·20개 →  **D1 0번 틀림 · DO 0번 틀림 · KV 20번 중 3번 틀림**
+//      · 빠르기 → D1 3ms · DO 3ms (KV 5ms · 차이는 못 느낀다)
+//      · 2000개 쌓인 뒤 → D1 3ms (안 느려진다)
+//      · 청소 → D1 은 **한 줄**로 2193개를 지웠다
+//
+//   ⭐ **왜 DO 가 아니라 D1 인가** — 정확도가 «같아서» 나머지로 갈렸다:
+//      ⑴ 청소가 한 줄이다. DO 는 **유저마다 알람**이 돌아야 한다(3000명이면 알람 3000개).
+//      ⑵ 창업자가 이미 «결제·잔량은 Worker ＋ D1» 로 확정해 뒀다(2026-08-19·20 · 넷 합의).
+//         DO 를 넣으면 창고가 둘이 된다.
+//      ⑶ 나중에 전역 900 세기도 같은 표에서 고칠 수 있다(지금 KV 는 10을 3으로 센다 — 실측).
+//   ⚠️ **정직하게 — D1 이 나쁜 점**: 데이터베이스가 «하나»라 아주 많아지면 DO 보다 먼저 밀린다.
+//      우리는 월 46건이라 한참 여유롭다. 수만 명이 되면 그때 다시 잰다.
+//
+//   ⛔ `_repro-카운트정확-0821.mjs` 의 옛 주석은 *"DO 는 유료 플랜(카드)이라 안 간다"* 였다 —
+//      그 이유는 사라졌지만(무료 플랜에 SQLite DO 가 열렸다) **결론은 그대로 D1 이다.**
+
+// 🧱 표를 «없으면» 만든다 — 창업자가 Cloudflare 에서 표를 손으로 만들지 않아도 되게.
+//   ⛔ 매 요청마다 부르지 않는다(워커가 살아 있는 동안 한 번) — 그래도 D1 쪽이 IF NOT EXISTS 라 안전하다.
+let 표만듦 = false
+const 표준비 = async (db) => {
+  if (표만듦) return
+  await db.exec('CREATE TABLE IF NOT EXISTS 지문장부 (통 TEXT NOT NULL, 지문 TEXT NOT NULL, 글자 TEXT, 때 INTEGER, PRIMARY KEY (통, 지문))')
+  표만듦 = true
 }
 
 // 🔎 **찾는 순서 = DO 먼저 · 없으면 KV** (창업자 확정 2026-09-09 *"우선을 Durable Object가 돌고 그다음에 kv"*)
@@ -162,14 +168,18 @@ export class 장부 {
 //      그걸 안 보면 옛 사진이 「처음」으로 보여 **열쇠가 한 번 더 깎인다**(＝뺏는 것).
 //   ⛔ 새 기록은 **DO 에만** 쓴다 → KV 쪽은 40일 뒤 저절로 비고 **이사가 스스로 끝난다.**
 //   ⛔ 바인딩이 «없어도» 죽지 않는다 — 그때는 통째로 KV 로 돈다(붙이기 전에도 앱이 멀쩡히 돈다).
+// 🔎 **찾는 순서 = D1 먼저 · 없으면 KV** (창업자 확정 2026-09-09 *"우선을 …가 돌고 그다음에 kv"*)
+//   ⭐ KV 를 보는 건 **«이사» 기간 때문**이다 — 창고를 붙이기 «전»에 읽은 사진은 KV 에만 있다.
+//      그걸 안 보면 옛 사진이 「처음」으로 보여 **열쇠가 한 번 더 깎인다**(＝뺏는 것).
+//   ⛔ 새 기록은 **D1 에만** 쓴다 → KV 쪽은 40일 뒤 저절로 비고 **이사가 스스로 끝난다.**
+//   ⛔ 창고가 «없어도» 죽지 않는다 — 그때는 통째로 KV 로 돈다(붙이기 전에도 앱이 멀쩡히 돈다).
 const 장부찾기 = async (env, kv, 통, 지문) => {
-  if (env.장부) {
+  if (env.DB) {
     try {
-      const r = await (await env.장부.get(env.장부.idFromName(통)).fetch('https://x/', {
-        method: 'POST', body: JSON.stringify({ 종류: '찾기', 지문 }),
-      })).json()
-      if (r && r.있다) return r
-    } catch { /* DO 가 안 되면 아래 KV 로 */ }
+      await 표준비(env.DB)
+      const r = await env.DB.prepare('SELECT 글자 FROM 지문장부 WHERE 통 = ? AND 지문 = ?').bind(통, 지문).first()
+      if (r) return { 있다: true, 글자: r.글자 || '' }
+    } catch { /* D1 이 안 되면 아래 KV 로 */ }
   }
   if (kv) {
     const v = await kv.get(`f:${통}:${지문}`)
@@ -177,12 +187,23 @@ const 장부찾기 = async (env, kv, 통, 지문) => {
   }
   return { 있다: false }
 }
+
+// ✍️ **적기 — 「없으면 넣기」를 한 덩어리로 한다.**
+//   ⭐⭐ `INSERT OR IGNORE` 가 이 판의 심장이다 — 같은 사진이 «겹쳐» 들어와도
+//      **딱 하나만** 들어간다(SQL 이 보장한다). 실측 60판에서 0번 틀렸다.
+//      ⛔ 이걸 「먼저 SELECT 하고 없으면 INSERT」로 풀어 쓰면 그 틈에 겹쳐 들어와
+//         **열쇠가 두 번 깎인다** — KV 가 바로 그래서 20번 중 3번 틀렸다.
+//   🧹 **청소는 한 줄이다** — 40일 지난 줄을 지운다. 어쩌다 한 번만 돌려도 충분해서
+//      «적을 때 아주 가끔»(대략 200번에 한 번) 같이 돌린다. 따로 알람을 걸 필요가 없다.
 const 장부적기 = async (env, kv, 통, 지문, 글자) => {
-  if (env.장부) {
+  if (env.DB) {
     try {
-      await env.장부.get(env.장부.idFromName(통)).fetch('https://x/', {
-        method: 'POST', body: JSON.stringify({ 종류: '적기', 지문, 글자 }),
-      })
+      await 표준비(env.DB)
+      await env.DB.prepare('INSERT OR IGNORE INTO 지문장부 (통, 지문, 글자, 때) VALUES (?, ?, ?, ?)')
+        .bind(통, 지문, 글자 || '', Date.now()).run()
+      if (Math.random() < 0.005) {
+        await env.DB.prepare('DELETE FROM 지문장부 WHERE 때 < ?').bind(Date.now() - 마흔날 * 1000).run()
+      }
       return
     } catch { /* 아래 KV 로 */ }
   }

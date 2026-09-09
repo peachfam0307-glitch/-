@@ -900,7 +900,7 @@ export default function App() {
             // ✅ 다 됐으니 「아직 못 다듬음」 표시를 «지운다» — 안 지우면 다음에 열 때 또 다듬는다(뉴런 낭비).
             store.updateRecipe(rec.id, { tidyFail: 0, tidying: 0, tidyJob: '' })   // 🧺 다 받았으니 번호를 버린다
             // 🔚 창이 «끝말»로 바뀐다 — 사라지기만 하면 됐는지 안 됐는지 모른다.
-            끝알림(다듬기끝말(true))
+            끝알림(다듬기끝말(true, tidyFounder() ? tidyTail() : ''))
             if (tidyFounder()) showToast('AI가 레시피를 더 다듬었어요' + tidyTail())
             return
           }
@@ -922,7 +922,7 @@ export default function App() {
           //      그런데 «졸업»이 AI 성공에 걸려 있어서, 실패하면 그 편은 임시보관함에 그대로 남는다.
           //      말이 없으면 유저는 「왜 안 넘어가지」만 남고 «무엇을 누르면 되는지»를 모른다.
           //   ⭐ 그래서 무엇이 안 됐는지 ＋ «어떻게 하면 되는지»를 한 줄로 붙여 말한다.
-          끝알림(다듬기끝말(false))
+          끝알림(다듬기끝말(false, tidyFounder() ? tidyTail() : ''))
           if (tidyFounder()) showToast('AI 다듬기는 못 했어요' + tidyTail(), 6500)
         }).catch(() => {
           // ⛔ 여기까지 오면 표시가 «영영» 도는 것으로 굳는다 — 그게 제일 나쁜 모양이다.

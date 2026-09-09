@@ -63,6 +63,28 @@ let _마지막 = null
 //   ⭐ 그래서 번호를 밖(레시피 한 줄)에 적어 두게 «알려준다». 적는 건 부르는 쪽이 한다.
 let _번호알림 = null
 export function 번호알림받기(fn) { _번호알림 = fn }
+
+// 📒📒 **[2026-09-10 · 창업자 요청] 「최근 AI 다듬기 다섯 번」을 남긴다 — ⛔창업자 폰에만 보인다.**
+//
+//   📮 창업자 = *"갈색띠가 안떠 성공해도"* ＋ *"계속남게할순없어?"*
+//   ⛔⛔ 왜 안 보였나 = 띠는 최대 4.8초다. 게다가 성공이 «나가 있는 동안» 나면 떴다 사라져
+//      **볼 수가 없다.** 오늘 아침 창업자가 겪은 게 정확히 그것이다.
+//   ⭐ 그래서 «지나가는 말»이 아니라 «쌓이는 기록»으로 바꾼다 — 설정 맨 아래에서 언제든 다시 본다.
+//   ⭐⭐ 이게 있으면 아직 못 푼 「왜 2분을 넘겼나」도 저절로 풀린다 — 걸린 시간이 쌓이니까.
+//   ⛔ 개인정보를 안 남긴다 — 레시피 «글자»는 한 자도 안 적는다(모델·걸린 시간·까닭만).
+const 기록칸 = 'hankki:tidylog'
+const 기록수 = 5
+function 기록하기(v) {
+  try {
+    if (!tidyFounder()) return                      // ⛔ 창업자 폰이 아니면 아예 안 쌓는다
+    const 줄 = { 때: Date.now(), ok: !!(v && v.ok), why: (v && v.why) || '', model: (v && v.model) || '', ms: (v && v.ms) || 0 }
+    const 옛 = JSON.parse(localStorage.getItem(기록칸) || '[]')
+    localStorage.setItem(기록칸, JSON.stringify([줄, ...(Array.isArray(옛) ? 옛 : [])].slice(0, 기록수)))
+  } catch { /* 기록이 말썽이어도 다듬기는 계속 */ }
+}
+export function 다듬기기록() {
+  try { const v = JSON.parse(localStorage.getItem(기록칸) || '[]'); return Array.isArray(v) ? v : [] } catch { return [] }
+}
 // 📷 마지막 판에서 «사진을 실었나» — 창업자 화면에만 붙는다(`tidyTail`)
 let _사진 = ''
 
@@ -130,7 +152,16 @@ export async function 선반집기(번호) {
   } catch { return '아직' }                            // 인터넷이 잠깐 끊긴 것 — 없다고 말하지 않는다
 }
 
+// 📒 **기록은 «한 겹 감싸서» 남긴다** — `_마지막` 이 정해지는 자리가 열 곳이라
+//    하나씩 고치면 «반드시» 빠뜨린다. 어느 길로 끝나든 여기를 지나간다. [2026-09-10]
 export async function tidyRecipe(text, 사진) {
+  const 잰때 = Date.now()
+  const 답 = await 다듬기속(text, 사진)
+  기록하기({ ...(_마지막 || {}), ms: (_마지막 && _마지막.ms) || (Date.now() - 잰때) })
+  return 답
+}
+
+async function 다듬기속(text, 사진) {
   _마지막 = null
   _사진 = ''
   const t = String(text || '').trim()

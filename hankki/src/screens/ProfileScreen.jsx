@@ -4,6 +4,7 @@ import { useStore, 서랍한도, 서랍다시재기 } from '../store'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import { APP_VERSION, APP_TAGLINE, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL } from '../version'
+import { tidyFounder, 다듬기기록 } from '../tidy'   // 📒 최근 AI 다듬기 기록 — ⛔창업자 폰에만
 import Icon from '../components/Icon'
 import KeyBadge from '../components/KeyBadge'
 import TabTips from '../components/TabTips'
@@ -747,6 +748,28 @@ export default function ProfileScreen() {
         <div style={{ textAlign: 'center', color: 'var(--sand)', fontSize: 15, marginTop: 10, lineHeight: 1.5 }}>
           설치한 앱이 옛 버전에서 멈췄을 때 눌러요
         </div>
+        {/* 📒📒 **최근 AI 다듬기 다섯 번 — ⛔창업자 폰에만 보인다** [창업자 2026-09-10]
+            📮 창업자 = *"갈색띠가 안떠 성공해도"* ＋ *"계속남게할순없어?"* ＋ *"나만보이게해줘"*
+            ⛔ 띠는 최대 4.8초다. 게다가 성공이 «나가 있는 동안» 나면 떴다 사라져 볼 수가 없다.
+            ⭐ 그래서 «지나가는 말»이 아니라 «쌓이는 기록»으로. 걸린 시간이 쌓이면
+               아직 못 푼 「왜 2분을 넘겼나」도 저절로 답이 나온다.
+            ⛔ 레시피 «글자»는 한 자도 안 적는다 — 모델·걸린 시간·까닭만(개인정보 0). */}
+        {tidyFounder() && 다듬기기록().length > 0 && (
+          <div style={{ marginTop: 16, padding: '12px 14px', borderRadius: 'var(--r-md)', background: 'var(--cream)', border: '1px solid var(--line)' }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--brown)', marginBottom: 8 }}>
+              최근 AI 다듬기 5번 <span style={{ fontWeight: 400, color: 'var(--text-sub)' }}>· 나만 보여요</span>
+            </div>
+            {다듬기기록().map((줄, i) => (
+              <div key={i} className="t-sub" style={{ fontSize: 14, lineHeight: 1.7, wordBreak: 'keep-all' }}>
+                {줄.ok ? '✅' : '⛔'} {new Date(줄.때).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                {줄.ms ? ` · ${(줄.ms / 1000).toFixed(1)}초` : ''}
+                {줄.model ? ` · ${줄.model}` : ''}
+                {줄.ok ? '' : ` · ${줄.why || '까닭없음'}`}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div style={{ textAlign: 'center', color: 'var(--sand)', fontSize: 15, marginTop: 12 }}>
           한끼 · {APP_VERSION} — {APP_TAGLINE}
         </div>

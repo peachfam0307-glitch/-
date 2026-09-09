@@ -58,19 +58,21 @@ function 요청({ uid = 'u1', batch = '', ip = null, origin = 'https://peachfam0
     url: 'https://hankki-ocr.example/',
     method: 'POST',
     headers: { get: (k) => h.get(k) ?? h.get(k.toLowerCase()) ?? null },
-    async json() { return { image: 'data:image/png;base64,AAAA', uid, batch } },
+    // 📸 사진마다 «다른» 그림 — 지문 장부(2026-09-09)가 같은 사진을 두 번 안 깎는다.
+    async json() { return { image: 'data:image/png;base64,AAAA' + (++사진번호), uid, batch } },
   }
 }
 
 // ── Vision 흉내 — 성공·실패를 내가 정한다 ─────────────────────────
 let 비전모드 = 'ok'
+let 사진번호 = 0
 const 진짜fetch = globalThis.fetch
 globalThis.fetch = async (url) => {
   if (!String(url).includes('vision.googleapis.com')) return 진짜fetch(url)
   if (비전모드 === 'throw') throw new Error('network down')      // vision_fetch_failed 경로
   if (비전모드 === 'http500') return new Response('boom', { status: 500 })  // vision_error 경로
   return new Response(JSON.stringify({
-    responses: [{ fullTextAnnotation: { text: '재료 두부 300g' } }],
+    responses: [{ fullTextAnnotation: { text: '재료 두부 300g\\n간장 1큰술\\n1. 부친다' /* 📏 12자 이상 = 「얻었다」(2026-09-09) */ } }],
   }), { status: 200 })
 }
 

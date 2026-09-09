@@ -17,7 +17,7 @@ import { guessFoodIcon } from '../components/FoodIcon'
 import { CATEGORIES } from '../theme'
 import { TAG_LIST } from '../data/seed'
 import { guessCategory, cropSquare, clampGraphemes, openExternal } from '../utils'
-import { ocrImage, getOcrNote, getOcrLeft, KEY_NAME, KEY_SHORT, KEY_UNIT, keyCount } from '../ocr'
+import { ocrImage, getOcrNote, getOcrLeft, 열쇠셈, 열쇠셈리셋, KEY_NAME, KEY_SHORT, KEY_UNIT, keyCount } from '../ocr'
 import { parseRecipeText, cleanMemo, isGibberish, stripLeadingOcrJunk, keepRaw, NO_TITLE } from '../parseRecipe'
 import { tidyRecipe, mergeTidy, tidyTail, tidyFounder, AI다듬는중 } from '../tidy'
 import { normalizeNumerals } from '../ocrCorrect'
@@ -416,6 +416,8 @@ export default function EditorScreen({ id, prefill }) {
     if (ocrBusy.current) return // 이미 돌고 있으면 그 펌프가 이어서 다 처리한다
     const target = ocrTargetRef.current || 'all'
     const total = ocrTotal.current
+    // 🔒 이번 읽기의 «열쇠 셈»을 0 으로 — 앞 읽기의 값이 남으면 안내가 어긋난다
+    if (!ocrParts.current.some((t) => t)) 열쇠셈리셋()
     ocrBusy.current = true
     // ⛔ `try/finally` 로 감싼다 — 여기서 무엇이 터져도 `ocrBusy` 가 true 로 «굳으면»
     //    남은 장이 영영 안 들어오고 단추도 계속 흐린 채로 남는다(옛 판에서 실제로 났던 사고).
@@ -472,11 +474,37 @@ export default function EditorScreen({ id, prefill }) {
     //         그래야 무료유저도 안떠나"*
     //   ⭐ 「사진 보며 고쳐 주세요」로 닫는 게 핵심이다 — 이 길은 사진이 **저절로 떠 있어서**
     //      바로 고칠 수 있다. 「덜 읽혔다」만 말하고 끝내면 그건 그냥 나쁜 소식이다.
-    const freeTail = ocrNoVision.current ? ' · 열쇠 안 쓰고 읽어서 덜 정확해요' : ''
+    // 🔒🔒 **열쇠 꼬리는 «서버가 실제로 깎았나»로만 만든다.** 화면이 추측하지 않는다.
+    //
+    //   📮 창업자 2026-09-09 = *"열쇠는 그대로에요 안내했는데 차감되는게 최악이야"*
+    //
+    //   ⛔⛔ 그 전엔 여기서 `noVision`·`getOcrNote()` 로 **짐작해** 문구를 만들었다.
+    //      서버가 무엇을 했는지는 안 봤으니 어긋날 수밖에 없었다.
+    //   ⭐ 이제 `ocr.js` 의 `열쇠셈()` 이 **서버가 보낸 사실**만 들고 있다:
+    //      · `깎인장수` = 진짜로 깎인 수  · `앎` = 서버 답을 받았나  · `안부름` = 「그냥 읽기」였나
+    //
+    //   📖 **한 줄 규칙** — 「열쇠 그대로」는 **깎인 장수가 0 이고, 그걸 «아는» 때만** 말한다.
+    //      ⛔ 답을 못 받았으면(`앎 === false`) **열쇠 얘기를 아예 안 한다**(모르면 침묵이 정답).
+    //   🔒 `scripts/_repro-지문장부-0909.mjs` 가 이 규칙을 잰다.
+    const 셈 = 열쇠셈()   // 🔒 서버가 보낸 «사실»(ocr.js) — 화면은 이 값만 읽는다
+    const 안썼다 = 셈.앎 && 셈.깎인장수 === 0
+
+    // 🆓 「그냥 읽기」 — 서버를 아예 안 불렀다. 창업자가 콕 집은 «두 가지»를 말한다:
+    //    ⑴ 열쇠를 안 썼다(고른 대로 됐다) ⑵ 덜 읽힐 수 있다(인식률 차이)
+    //    📮 창업자 = *"기본인식이라 인식률의 차이가 잇으니까 이부분을 집어줘야해 그래야 무료유저도 안떠나"*
+    const freeTail = 셈.안부름 ? ' · 열쇠 안 쓰고 읽어서 덜 정확해요' : ''
+
+    // 🈳 **원인별 한 줄 안내** — 서버가 말한 `왜` 로만 고른다.
+    //    ⛔ 「열쇠는 그대로예요」는 `안썼다` 일 때만 붙인다 — 이 조건이 이 판의 전부다.
+    //    ⛔ 「전에읽음」엔 열쇠 얘기를 «안» 한다 — 유저는 그냥 읽힌 걸로 느끼면 된다(설명이 잔소리가 된다).
+    const 원인Tail = 셈.안부름 ? ''
+      : 셈.왜 === '빈손' && 안썼다 ? ' · 글자가 안 보여요 · 밝은 곳에서 다시 찍어주세요 (열쇠는 그대로예요)'
+        : 셈.왜 === '구글실패' && 안썼다 ? ' · AI가 잠깐 안 돼요 · 열쇠는 그대로예요'
+          : ''
 
     // (마지막 장) 프록시 한도 안내 — 무료 소진 등이면 "기본 인식으로 진행됐어요" 꼬리를 붙인다.
     //   ⛔ `noVision` 이면 프록시를 «안 불렀으므로» 이 값들은 이번 읽기와 무관하다 → 통째로 죽인다.
-    const note = ocrNoVision.current ? null : getOcrNote() // 'user_quota' | 'global_quota' | 'rate_limited' | null
+    const note = 셈.안부름 ? null : getOcrNote() // 'user_quota' | 'global_quota' | 'rate_limited' | null
     const quotaTail =
       note === 'user_quota'
         ? ` · 무료 ${KEY_NAME}를 다 써서 기본 인식이에요`
@@ -488,8 +516,10 @@ export default function EditorScreen({ id, prefill }) {
     //   ⭐ 「막힌 다음」이 아니라 «마지막 장을 쓴 그 순간» 알린다. 그래야 한 박자 늦지 않다.
     //   ⭐⭐ 미리 알림은 «1장 남았을 때 한 번만** (창업자 *"어차피 유저도 알잖아 쓰면서 몇장남았는지"*)
     //      ⛔ 3장·1장 두 번은 안 한다 — 가져오기 화면 뱃지가 이미 잔량을 보여줘서 잔소리가 된다.
+    //   ⛔⛔ **안 깎였으면 잔량 얘기를 꺼내지 않는다**(`안썼다`) — 안 썼는데 「1장 남았어요」가 뜨면
+    //      유저는 「어? 썼나?」로 읽는다. 그게 이 판이 없애려는 바로 그 어긋남이다.
     const leftNow = getOcrLeft()
-    const leftTail = quotaTail || ocrNoVision.current // 🆓 안 썼으면 잔량 얘기를 꺼내지 않는다
+    const leftTail = quotaTail || 원인Tail || 안썼다
       ? ''
       : leftNow.total === 0
         ? ` · 무료 ${KEY_NAME}를 다 썼어요 · 이제 기본 인식으로 계속 돼요`
@@ -500,12 +530,13 @@ export default function EditorScreen({ id, prefill }) {
     // 마지막 장 — 결과 반영
     if (target === 'ingredients' || target === 'steps') {
       const base = target === 'ingredients' ? '재료 초안을 담았어요' : '만드는 법 초안을 담았어요'
-      nav.showToast(base + (freeTail || quotaTail || leftTail || ' · 다듬어 주세요'), freeTail || quotaTail || leftTail ? 6500 : 4800)
+      nav.showToast(base + (freeTail || 원인Tail || quotaTail || leftTail || ' · 다듬어 주세요'), freeTail || 원인Tail || quotaTail || leftTail ? 6500 : 4800)
       return
     }
     const combined = ocrAccum.current
     // 🆓 freeTail = 「그냥 읽기」로 왔다(열쇠를 안 썼다) — 열쇠 얘기보다 «먼저» 말한다
-    if (!combined.trim()) { nav.showToast('사진에서 글자를 찾지 못했어요' + (freeTail || quotaTail), freeTail || quotaTail ? 6000 : 3200); return }
+    // 🈳 글자를 못 얻었다 — 원인Tail 이 「열쇠는 그대로예요」까지 말해 준다(서버가 안 깎았을 때만)
+    if (!combined.trim()) { nav.showToast('사진에서 글자를 찾지 못했어요' + (freeTail || 원인Tail || quotaTail), freeTail || 원인Tail || quotaTail ? 6500 : 3200); return }
     // 🤖 AI 다듬기 — ⭐**규칙 파서를 «먼저» 돌려놓는다.**
     //   AI 가 안 되든 느리든 이상하든 이 `r` 이 그대로 쓰인다(3층 구조 1층 · 앱은 절대 안 죽는다).
     //   ⛔ 순서를 뒤집지 말 것 — AI 를 먼저 기다렸다가 실패하면 그때 파싱하면, 실패한 만큼 유저가 더 기다린다.
@@ -552,7 +583,9 @@ export default function EditorScreen({ id, prefill }) {
       //   ⏱ 그래서 길이(ms)를 «준다» — 20초. 다 되면 아래 결과 토스트가 덮는다.
       (freeTail
         ? '초안을 채웠어요' + freeTail + ' · 사진 보며 고쳐 주세요'
-        : quotaTail
+        : 원인Tail
+          ? '초안을 채웠어요' + 원인Tail
+          : quotaTail
           ? '초안을 채웠어요' + quotaTail + ' · 결과를 더 다듬어 주세요'
           : leftTail
             ? '초안을 채웠어요' + leftTail

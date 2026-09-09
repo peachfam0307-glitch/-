@@ -443,7 +443,11 @@ export default {
     //   각자 지으면 반드시 어긋난다. `깎았나` 하나만 받아 「이 호출이 깎았는지」를 반영한다.
     //   ⚠️ `kv` 는 없을 수도 있다(바인딩 누락·로컬) — 없이 `num()` 을 부르면 죽는다.
     const 남은알림 = async (깎았나) => {
-      const lw = Math.max(0, welcomeLeft - (깎았나 ? 1 : 0))
+      // ⛔⛔ `welcomeLeft` 를 그대로 쓰지 «않는다» — 그건 이 함수가 만들어질 때의 «옛 값»이다.
+      //   🕳 행동 열쇠를 받으면 `보너스` 가 그 뒤에 올라간다. 옛 값을 쓰면 방금 받은 한 장이
+      //      안 보여서 **「받았는데 안 늘었다」**가 된다(2026-09-09 에 세 곳을 한 곳으로 모으다 만들 뻔했다).
+      //   ⭐ 그래서 «부를 때» 다시 센다 — 상한·보너스·쓴수 는 모두 지금 값이다.
+      const lw = Math.max(0, 웰컴상한 + 보너스 - 쓴수 - (깎았나 ? 1 : 0))
       let lm = LIMITS.PER_USER_MONTHLY   // 웰컴을 쓰는 동안엔 월 몫이 아직 안 줄었다
       if (kv && lw <= 0) lm = Math.max(0, LIMITS.PER_USER_MONTHLY - (await num(kv, `u:${uid}:${ym}`)))
       return {
@@ -503,14 +507,10 @@ export default {
     if (body.조회) {
       return json({
         ok: true,
-        left: {
-          welcome: welcomeLeft, month: LIMITS.PER_USER_MONTHLY,
-          cap: 웰컴상한 + 보너스, bonus: 보너스,
-          무제한: founder,                      // 🔓 아래 OCR 길의 주석 참조 — 세 곳이 같은 말을 해야 한다
-          earned: 받은행동,
-          anon: LIMITS.WELCOME_ANON, acct: LIMITS.WELCOME_ACCT,
-          monthly: LIMITS.PER_USER_MONTHLY, signed: 로그인,
-        },
+        // 🔒 **left 를 만드는 곳은 «한 곳»뿐이다**(`남은알림`) — 2026-09-09 에 셋을 하나로 모았다.
+        //   ⛔ 그 전엔 세 곳이 같은 목록을 따로 적어 두고 손으로 맞췄다. 하나만 고치면
+        //      그 길로 들어온 사람은 옛 답을 본다(2026-09-02 「무제한」 사고가 정확히 그거였다).
+        left: await 남은알림(false),   // 조회는 «아무것도 안 깎는다»
       }, 200, cors)
     }
 
@@ -543,18 +543,12 @@ export default {
           ...(로그인 ? [kv.put(`bo:d:${uid}`, String(보너스), { expirationTtl: 60 * 60 * 24 * 365 })] : []),
         ])
       }
-      const 남음 = Math.max(0, 웰컴상한 + 보너스 - 쓴수)
       return json({
         ok: true,
         준것,                                   // 1 = 방금 받았다 · 0 = 이미 받았던 행동이다
-        left: {
-          welcome: 남음, month: LIMITS.PER_USER_MONTHLY,
-          cap: 웰컴상한 + 보너스, bonus: 보너스,
-          무제한: founder,                      // 🔓 아래 OCR 길의 주석 참조
-          earned: 받은행동,                     // 다섯 중 «어느 것»을 받았나(화면이 줄을 긋는다)
-          anon: LIMITS.WELCOME_ANON, acct: LIMITS.WELCOME_ACCT,
-          monthly: LIMITS.PER_USER_MONTHLY, signed: 로그인,
-        },
+        // 🔒 위와 같다 — left 는 `남은알림` 한 곳에서만 만든다.
+        //   ⛔ 행동 열쇠는 «주는» 길이라 깎지 않는다. 방금 늘어난 `보너스` 는 `남은알림` 이 그대로 읽는다.
+        left: await 남은알림(false),
       }, 200, cors)
     }
 

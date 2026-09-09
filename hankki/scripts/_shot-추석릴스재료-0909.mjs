@@ -19,8 +19,11 @@ const PORT = srv.address().port
 const { SEED_COACH_SEEN } = await import('../src/coach.js')
 const b = await chromium.launch({ executablePath: process.env.SMOKE_CHROMIUM })
 
-// ⛔ 「장식 없는 홈」은 코드를 고쳐서 만들지 않는다 — 시계를 창 «밖»으로 옮긴다.
-//    그래야 유저가 11월에 보는 화면과 «같은 것»을 찍게 된다(가짜 화면을 만들지 않는다).
+// ⛔⛔ [2026-09-09 창업자 제보] *"홈에 꼬르곰도 글자부분에 붙었고"*
+//    🔎 1판은 「장식 없는 홈」을 **시계를 11월로 돌려서** 찍었다. 그랬더니 «홈 내용이 통째로 달라졌고»
+//       (11월 레시피가 뜬다) 그 위에 9월 자리값으로 조각을 얹으니 곰펭이 글자 위에 앉았다.
+//    ✅ 그래서 **같은 화면에서** 둘을 찍는다 — 장식만 잠깐 감췄다가(display:none) 도로 켠다.
+//       내용이 한 글자도 안 달라지므로 「없던 게 생긴다」가 정직해진다.
 const 열기 = async (장식) => {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3 })
   await ctx.addInitScript(SEED_COACH_SEEN)
@@ -57,14 +60,18 @@ const 열기 = async (장식) => {
   return { ctx, p }
 }
 
-const { ctx: c1, p: p1 } = await 열기(false)
-await p1.screenshot({ path: '/tmp/추석릴스/홈-민판.png' })
-const 조각수0 = await p1.evaluate(() => document.querySelectorAll('body > div[aria-hidden] img').length)
-await c1.close()
-
 const { ctx: c2, p: p2 } = await 열기(true)
-await p2.screenshot({ path: '/tmp/추석릴스/홈-추석.png' })
 const 조각수1 = await p2.evaluate(() => document.querySelectorAll('body > div[aria-hidden] img').length)
+// 🙈 장식만 감춘다 — 화면 내용은 그대로다
+const 장식보이기 = (켬) => p2.evaluate((k) => {
+  document.querySelectorAll('body > div[aria-hidden]').forEach((d) => { d.style.display = k ? '' : 'none' })
+}, 켬)
+await 장식보이기(false); await p2.waitForTimeout(300)
+await p2.screenshot({ path: '/tmp/추석릴스/홈-민판.png' })
+const 조각수0 = await p2.evaluate(() =>
+  [...document.querySelectorAll('body > div[aria-hidden]')].filter((d) => d.style.display !== 'none').length)
+await 장식보이기(true); await p2.waitForTimeout(300)
+await p2.screenshot({ path: '/tmp/추석릴스/홈-추석.png' })
 for (const [이름, 누를것, 안에서] of [['레시피','레시피'],['일기','일기'],['장보기','장보기'],['냉장고','장보기','냉장고'],['레꾸자랑','레꾸자랑']]) {
   await p2.locator('.bottom-nav .nav-item').filter({ hasText: 누를것 }).first().click().catch(() => {})
   await p2.waitForTimeout(1300)

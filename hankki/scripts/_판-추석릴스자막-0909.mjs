@@ -25,8 +25,12 @@ const 카드 = [
   { id: 'c2', html: `<div class="알약">
       추석이 오면 <b style="color:#f5c451">한복</b>을 입어요
     </div>` },
+  // 확대 장면에 붙는 말 — 판이 휑하면 「뭘 보라는 거지」가 된다
   { id: 'c5', html: `<div class="알약" style="background:#8c2f27">
-      굴려도 <b style="color:#f5c451">그 자리</b>에 있어요
+      홈에 <b style="color:#f5c451">보름달</b>이 떴어요
+    </div>` },
+  { id: 'c6', html: `<div class="알약" style="background:#5b2a45">
+      꼬르곰도 <b style="color:#f5c451">한복</b>을 입고
     </div>` },
   { id: 'c3', html: `<div class="말풍선">탭마다 애들이 <u>갈아입어요</u><i></i></div>` },
   { id: 'c4', html: `<div class="큰상자">
@@ -51,10 +55,14 @@ body{margin:0;background:transparent}
       노랑 #f5c451 은 그 위에서 8.85 / 5.77 / 5.06 / 7.13 → 포인트로 쓸 수 있다. */
 .모난상자{background:#3a2518;color:#fff;padding:30px 40px;border-radius:10px;
   box-shadow:0 14px 30px rgba(58,37,24,.34);text-align:left}
-.큰상자{background:#23395b;color:#fff;padding:34px 54px;border-radius:40px;
-  box-shadow:0 16px 34px rgba(35,57,91,.34);text-align:center}
-.알약{font-family:'Gowun Dodum';font-size:46px;color:#fff;background:#1f4e46;
-  padding:26px 46px;border-radius:999px;box-shadow:0 12px 28px rgba(31,78,70,.32)}
+.큰상자{background:#5b2a45;color:#fff;padding:34px 54px;border-radius:40px;
+  box-shadow:0 16px 34px rgba(91,42,69,.34);text-align:center}
+/* 📮 창업자 2026-09-09 = *"우리 알약색 바꾸면 안되나 가을인데 추워보여"* — 맞는 말이다.
+   ⛔ 옥색(#1f4e46)·남색(#23395b)은 «찬 쪽»이라 살구·단풍과 겉돈다.
+   ✅ 넷을 다 «따뜻한 진한 색»으로 바꿨다 — 밤갈 → 군고구마 → 대추진홍 → 가지자주.
+   🔢 흰 글씨 대비 = 14.41 / 8.50 / 8.23 / 11.28 · 노랑 포인트 = 8.85 / 5.22 / 5.06 / 6.93 (전부 넉넉) */
+.알약{font-family:'Gowun Dodum';font-size:46px;color:#fff;background:#7a3b1e;
+  padding:26px 46px;border-radius:999px;box-shadow:0 12px 28px rgba(122,59,30,.32)}
 /* ⭐ 말풍선은 알약과 «반대로» 짰다 — 알약이 옥색이면 이건 진홍, 알약이 둥근 알약이면 이건 모난 상자. */
 .말풍선{position:relative;font-family:'Gowun Dodum';font-size:46px;color:#fff;background:#8c2f27;
   padding:26px 40px;border-radius:22px;box-shadow:0 12px 28px rgba(140,47,39,.30)}

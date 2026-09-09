@@ -23,18 +23,14 @@ export default function SeasonDecor() {
 
   useEffect(() => {
     if (!철 || !컷) return
-    // ⛔ ref 로 찾지 않는다 — 이제 장식이 body 로 나가 있어서 `closest` 로는 통을 못 찾는다.
-    const 통 = document.querySelector('.screen')
-    if (!통) return
-    const 재기 = () => {
-      const r = 통.getBoundingClientRect()
-      set잰것({ 폭: r.width, 높이: r.height, 왼: r.left, 위: r.top })
-    }
+    // ⛔⛔ [2026-09-09 창업자 제보] *"홈에 꼬르곰펭펭 저자리 아니야"* → 목표는 놓아보기 판 그대로다.
+    //    🔎 판(`/tmp/장식판.html`)은 배경이 «창 전체 캡쳐»(540×960)였고 조각을 그 그림에 대고 놓았다.
+    //       그런데 앱은 `.screen`(440px)에 대고 그렸다 → 조각이 «19% 작고» 자리도 밀렸다.
+    //    ✅ 그래서 판과 «같은 자»를 쓴다 = 창(window). 폰에선 창 = 앱 폭이라 그대로 맞는다.
+    const 재기 = () => set잰것({ 폭: innerWidth, 높이: innerHeight, 왼: 0, 위: 0 })
     재기()
     const ro = new ResizeObserver(재기)
-    ro.observe(통)
-    // 📌 목록이 늘면 통이 길어진다 — 통 «안쪽»도 본다.
-    if (통.firstElementChild) ro.observe(통.firstElementChild)
+    ro.observe(document.documentElement)
     window.addEventListener('resize', 재기)
     return () => { ro.disconnect(); window.removeEventListener('resize', 재기) }
   }, [철, 컷])
@@ -53,26 +49,34 @@ export default function SeasonDecor() {
     <div aria-hidden style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 6 }}>
       {잰것 && 조각들.map((조각, i) => {
         const w = 조각.w * 잰것.폭
+        // ⭐ y 는 «가운데»다(판이 translate(-50%,-50%) 로 놓았다) — 여기서도 가운데로 놓는다.
         const 위쪽 = 잰것.위 + 조각.y * 잰것.높이
+        // ⛔⛔ 자리잡기와 «움직임»을 한 상자에 같이 두면 안 된다 — `hk-m-float` 같은 모션이
+        //    `transform` 을 통째로 갈아끼워서 `translate(-50%,-50%)`(가운데맞춤)를 지워 버린다.
+        //    ✅ 바깥 껍데기 = 자리·가운데맞춤·좌우뒤집기 / 안쪽 그림 = 모션. 서로 안 건드린다.
         return (
-          <img
+          <span
             key={i}
-            src={컷[조각.id]}
-            alt=""
-            draggable={false}
-            className={조각.모션}
-            // ⛔ 못 받아도 «깨진 그림 아이콘»이 뜨면 안 된다 — 조용히 숨긴다.
-            onError={(e) => { e.currentTarget.style.display = 'none' }}
             style={{
               position: 'fixed',
-              left: 잰것.왼 + 조각.x * 잰것.폭 - w / 2,
+              left: 잰것.왼 + 조각.x * 잰것.폭,
               top: 위쪽,
               width: w,
               opacity: 조각.o,
-              transform: 조각.반전 ? 'scaleX(-1)' : undefined,
+              transform: `translate(-50%, -50%)${조각.반전 ? ' scaleX(-1)' : ''}`,
               zIndex: 0,
             }}
-          />
+          >
+            <img
+              src={컷[조각.id]}
+              alt=""
+              draggable={false}
+              className={조각.모션}
+              // ⛔ 못 받아도 «깨진 그림 아이콘»이 뜨면 안 된다 — 조용히 숨긴다.
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+              style={{ display: 'block', width: '100%' }}
+            />
+          </span>
         )
       })}
     </div>,

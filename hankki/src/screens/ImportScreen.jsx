@@ -192,11 +192,23 @@ export default function ImportScreen() {
       // ⛔ 여기서 읽지 «않는다» — 자르기·인식·합치기는 편집 화면이 이미 다 갖고 있다.
       //    두 곳에 적으면 한쪽만 고치는 사고가 난다(우리가 여러 번 겪은 것).
       // 🆓 `noVision` 이면 편집 화면이 구글 AI 를 건너뛰고 기본 인식으로만 읽는다(`ocr.js`)
-      nav.push({ name: 'editor', prefill: { source: 'photo', ocrImages: urls, noVision: noVisionRef.current } })
+      nav.push({ name: 'editor', prefill: { source: 'photo', ocrImages: urls, noVision: noVisionRef.current, noVisionWhy: noVisionWhyRef.current } })
     })
   }
   // 🆓 사진 고르기 창을 «누른 손짓 그대로» 연다 — 갈래만 먼저 적어 둔다.
-  const 사진고르기 = (무료) => { noVisionRef.current = !!무료; photoInRef.current?.click() }
+  //
+  // 📊📊 **왜 두 번째 값(어떤 갈래인가)이 필요한가** (창업자 2026-09-09 *"기본읽기가 너무 많이 되는거아닌가?"*)
+  //   ⛔⛔ 그 전엔 열쇠를 안 쓰는 길이 «전부» 「고름」으로 세어졌다 — 그런데 아래 buttons 를 보면
+  //      **열쇠가 0 인 사람에게는 단추가 「사진 고르기」 하나뿐**이다. 그 사람은 «고른» 게 아니다.
+  //   ⭐ 뜻이 정반대라 처방도 정반대다 —
+  //      고름 = 열쇠가 있는데 안 썼다(값이 비싸다) · 없음 = 열쇠가 없어서 못 썼다(장수가 모자라다).
+  //   📌 세는 곳 = ocr.js 의 기본인식알림 · 보여주는 곳 = ocr-proxy/worker.js 의 기본인식.갈래
+  const noVisionWhyRef = useRef('고름')
+  const 사진고르기 = (무료, 왜 = '고름') => {
+    noVisionRef.current = !!무료
+    noVisionWhyRef.current = 왜
+    photoInRef.current?.click()
+  }
 
   // ⭐ [창업자 2026-08-28] **네 갈래 «전부» 안내 화면을 거친다** — *"각각의 화면을 누르면 안내+가져오기"*.
   //    ⛔ 예전엔 「사진·직접 작성하기」가 목록에서 곧장 편집 화면으로 갔다. 그러면
@@ -379,11 +391,15 @@ export default function ImportScreen() {
       buttons: (ocrLeft.unknown || ocrLeft.total > 0
         ? [
             { label: `AI로 정확하게 읽기 · ${keyCount(1)}`, onClick: () => 사진고르기(false) },
-            { label: `그냥 읽기 · ${KEY_SHORT} 안 써요`, ghost: true, onClick: () => 사진고르기(true) },
+            // 📊 열쇠가 «있는데» 이걸 눌렀다 = 진짜 「고름」이다(값이 비싸게 느껴진다는 신호)
+            { label: `그냥 읽기 · ${KEY_SHORT} 안 써요`, ghost: true, onClick: () => 사진고르기(true, '고름') },
           ]
         // ⭐⭐ **여기서 «누른 손짓»으로 고르기 창을 연다** — 다음 화면에서 저절로 열려고 하면
         //    브라우저가 「손짓 없이 연 창」으로 보고 막을 수 있다.
-        : [{ label: '사진 고르기', onClick: () => 사진고르기(true) }]),
+        // 📊📊 열쇠가 0 이라 **단추가 이것 하나뿐**이다 — 유저는 «고른» 게 아니다.
+        //   ⛔ 그래서 「고름」이 아니라 「없음」으로 센다(2026-09-09). 처방이 정반대다 —
+        //      없음 = 장수가 모자라다(막힘과 같다) · 고름 = 값이 비싸다.
+        : [{ label: '사진 고르기', onClick: () => 사진고르기(true, '없음') }]),
     },
     write: {
       lead: '가져올 게 없어도 괜찮아요. 빈 종이에 그냥 적으면 돼요.',

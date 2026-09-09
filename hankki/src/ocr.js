@@ -22,6 +22,25 @@ const OCR_APP_TOKEN = '0VRNDSjHBhwniTzIDAbnRaJygyfGJ2K2'
 // 마지막 프록시 호출의 안내 신호 — 'user_quota'(내 월 무료 소진)·'global_quota'·'rate_limited'.
 // 앱(EditorScreen)이 읽어 "무료 다 써서 기본 인식이에요" 안내를 띄운다. 읽으면 소비(초기화).
 let _ocrNote = null
+
+// 🔒🔒 **열쇠 셈 — 「서버가 실제로 깎았나」만 기록한다. 앱이 추측하지 않는다.**
+//
+//   📮 창업자 2026-09-09 = *"열쇠는 그대로에요 안내했는데 차감되는게 최악이야"*
+//
+//   ⛔⛔ 그 전엔 화면이 `getOcrNote()`·`noVision` 같은 걸로 **스스로 짐작해** 문구를 만들었다.
+//      서버가 실제로 무엇을 했는지는 안 봤다 — 어긋날 수밖에 없는 구조였다.
+//   ⭐ 이제 서버가 `깎음`(true/false)을 «사실»로 실어 보낸다. 여기서는 그걸 세기만 한다.
+//
+//   📖 세 가지 상태를 «갈라» 둔다 — 셋을 뭉치면 또 어긋난다:
+//      · `깎인장수` = 서버가 진짜로 깎은 장수
+//      · `앎` = 서버 답을 받았나. **못 받았으면 false** → 화면은 그때 «열쇠 얘기를 아예 안 한다»(모르면 침묵)
+//      · `안부름` = 「그냥 읽기」로 와서 서버를 아예 안 불렀다 → 「열쇠 안 쓰고 읽었어요」는 이 경우다
+let _셈 = { 깎인장수: 0, 앎: true, 안부름: false }
+export function 열쇠셈리셋() { _셈 = { 깎인장수: 0, 앎: true, 안부름: false } }
+export function 열쇠셈() { return { ..._셈, 왜: _왜 } }
+// 📖 서버가 말한 «원인» — 전에읽음 · 빈손 · 구글실패 · 처리중 · 정상
+//   ⛔ 한도 안내값(_ocrNote)과 «섞지 않는다» — 그건 다른 코드가 읽는 값이라 뜻을 겹치면 어긋난다.
+let _왜 = null
 export function getOcrNote() {
   const n = _ocrNote
   _ocrNote = null
@@ -49,6 +68,7 @@ function deviceId() {
 //   (앱의 편집 화면 한 번 = 레시피 하나 = 한 묶음 · 창업자 확정 2026-08-13)
 async function ocrViaProxy(dataUrl, onProgress, batch) {
   _ocrNote = null
+  _왜 = null
   if (typeof dataUrl !== 'string' || !/^data:image\//.test(dataUrl)) throw new Error('not_dataurl')
   if (typeof navigator !== 'undefined' && navigator.onLine === false) throw new Error('offline')
   if (onProgress) onProgress(8)
@@ -92,10 +112,17 @@ async function ocrViaProxy(dataUrl, onProgress, batch) {
   }
   그만기어()
   if (!resp.ok) {
+    // ⛔⛔ [2026-09-09] **몸통의 «왜»를 여기서도 읽는다.**
+    //    옛 판은 429 만 열어 봤다 → 서버가 502 에 실어 보낸 왜(구글실패)가 **앱까지 오지 않았다.**
+    //    그러면 화면은 「잘 안 됐어요」밖에 못 하고, «열쇠는 그대로예요»를 말할 근거를 잃는다.
+    //    📖 표 = docs/열쇠와안내-까닭별-2026-09-09.md
+    const d = await resp.json().catch(() => null)
+    if (d && d.왜) _왜 = d.왜
     // 429(한도 초과) → 어느 한도인지 기록(앱이 "무료 다 썼어요" 안내). 전부 폴백으로 넘긴다 — 앱은 늘 동작해야 하니까.
     if (resp.status === 429) {
-      const d = await resp.json().catch(() => null)
       _ocrNote = (d && d.error) || 'quota'
+      // ⭐ 한도도 «까닭»이다 — 한 곳(까닭말)에서 말을 고르게 같은 통에 넣는다.
+      if (!_왜) _왜 = _ocrNote
     }
     throw new Error('proxy_http_' + resp.status)
   }
@@ -103,6 +130,9 @@ async function ocrViaProxy(dataUrl, onProgress, batch) {
   if (onProgress) onProgress(92)
   // 📢 남은 장수 — 서버가 매번 같이 보내준다. ⛔예전엔 이 줄을 «버렸다»(창업자 *"카운트가 안된다고"*).
   if (data && data.left) saveOcrLeft(data.left)
+  // 🔒 **서버가 «실제로» 깎았는지만 센다** — 여기서 추측하지 않는다(위 `_셈` 주석).
+  if (data && data.깎음) _셈.깎인장수 += 1
+  _왜 = (data && data.왜) || null                          // 화면이 원인별 문구를 고르는 근거
   return (data && data.text) || ''
 }
 
@@ -141,9 +171,12 @@ export const LEFT_EVENT = 'hankki:left'
 //
 // ⭐ 넓은 자리엔 `KEY_NAME`, 좁은 자리(칸·꼬리말)엔 `KEY_SHORT` — 창업자 잣대가
 //    *"좁은 자리에선 줄여 쓸 수 있어야 한다(레시피열쇠 → 열쇠)"* 였다.
-export const KEY_NAME = '레시피열쇠'
-export const KEY_SHORT = '열쇠'
-export const KEY_UNIT = '개'
+// ⭐ 값은 src/열쇠이름.js 한 곳에 있다 — 여기서 그대로 다시 내보내 부르는 쪽은 안 바뀐다 [2026-09-09]
+//   ⛔⛔ 「export … from」 만 쓰면 **이 파일 «안»에는 값이 안 생긴다** — 바로 아래 keyCount 가 쓰는데 없어서
+//      앱이 첫 화면에서 죽었다(KEY_UNIT is not defined · 2026-09-09 스모크가 잡았다).
+//      ⭐ 그래서 «들여오고» 다시 내보낸다. 부르는 쪽은 그대로다.
+import { KEY_NAME, KEY_UNIT, KEY_SHORT } from './열쇠이름.js'
+export { KEY_NAME, KEY_UNIT, KEY_SHORT }
 // 「열쇠 3개」처럼 세어 준다. 좁은 자리용.
 export const keyCount = (n) => `${KEY_SHORT} ${n}${KEY_UNIT}`
 
@@ -616,17 +649,47 @@ function assembleFromBlocks(data) {
 //   ⛔ 이 옵션을 ①②(공유로 들어오는 사진)에 붙이지 말 것 — 거기선 «물어볼 화면이 없다».
 //      창업자 확정(2026-08-29) = 열쇠 쓰는 길과 공짜 길이 «둘 다» 살아 있어야 한다.
 export async function ocrImage(image, onProgress, opts = {}) {
+  // 🆓 「그냥 읽기」 = 서버를 아예 안 부른다 → 「열쇠 안 쓰고 읽었어요」는 이 경우다(깎음 값이 «없는» 게 맞다)
+  if (opts.noVision) _셈.안부름 = true
   // 0) Google Vision 프록시 우선 — 한국어 인식 최상. 실패하면 폰내장→tesseract로 폴백.
   //    🆓 `opts.noVision` 이면 이 칸을 통째로 건너뛴다 = 열쇠가 안 깎인다.
   if (typeof image === 'string' && !opts.noVision) {
-    try {
-      const t = await ocrViaProxy(image, onProgress, opts.batch)
-      if (t && !looksGibberish(t)) {
-        if (onProgress) onProgress(100)
-        return normalizeNumerals(t)
+    // 🔁🔁 **자동으로 한 번 더 보낸다 — 유저는 아무것도 안 해도 된다.**
+    //
+    //   📮 창업자 2026-09-09 = *"이게 자동으로 돌아가는 시스템이어야지 일일이 우리가 확인해서
+    //      어떻게 열쇠를 돌려주냐고"*
+    //
+    //   ⛔⛔ **왜 필요한가** — 지하철에서 화면이 꺼지면 브라우저가 통신을 «죽인다».
+    //      서버는 다 읽고 깎았는데 유저는 못 받는다. 그 전엔 거기서 끝이었다(열쇠 1장 증발).
+    //      🔢 실측 = 앱에 타임아웃 코드가 «0곳»이다 — 끊는 주체는 브라우저다. 앱은 알아챌 수 있다.
+    //
+    //   ⭐ 서버가 사진 지문을 기억하므로 **같은 바이트를 그대로 다시 보내면 공짜로 글자를 돌려준다**
+    //      (구글도 다시 안 부른다 · 진짜 워커 실측으로 확인).
+    //      ⛔ 그래서 「사진을 다시 고르세요」가 아니다 — **다시 고르면 1픽셀만 달라도 새 사진**이 된다
+    //         (`components/CropSheet.jsx` 가 자를 때 JPEG 로 다시 만든다). 보냈던 그 이미지 그대로여야 한다.
+    //
+    //   📖 두 가지를 다시 보낸다:
+    //      ⑴ **통신이 터졌다** — 브라우저가 끊었다. 바로 한 번 더.
+    //      ⑵ **처리중** — 같은 사진이 «겹쳐» 들어와 남이 먼저 자리를 찜했다(그쪽이 곧 글자를 채운다).
+    //         창업자 확정 = **말없이 잠깐 뒤 다시 묻는다**(A안 · 유저는 조금 더 기다린 걸로 느낀다).
+    //   ⛔ 429(한도 초과)는 다시 안 보낸다 — 정상 답이라 또 해도 똑같다.
+    const 잠깐 = (ms) => new Promise((r) => setTimeout(r, ms))
+    for (let 판 = 0; 판 < 3; 판++) {
+      try {
+        const t = await ocrViaProxy(image, onProgress, opts.batch)
+        if (_왜 === '처리중') { await 잠깐(1200); continue }             // ⑵ 남이 읽는 중 — 조금 뒤 다시
+        if (t && !looksGibberish(t)) {
+          if (onProgress) onProgress(100)
+          return normalizeNumerals(t)
+        }
+        break                                    // 빈손이거나 외계어 → 아래 기본 인식으로
+      } catch {
+        // ⑴ 통신이 터졌다 → 한 번만 더. ⛔한도(429)는 `_ocrNote` 에 남아 있으니 다시 안 한다.
+        if (판 === 0 && !_ocrNote) { await 잠깐(400); continue }
+        // ⛔ **답을 못 받았다 = 깎였는지 «모른다».** 화면은 이때 열쇠 얘기를 아예 안 한다.
+        if (!_ocrNote) _셈.앎 = false
+        break
       }
-    } catch {
-      /* 폴백 계속 (오프라인·한도·오류) */
     }
   }
   // 📊📊 **여기부터는 «열쇠를 안 쓰는» 길이다** — 유료를 켤 때 「무료로 얼마나 읽히나」의 잣대가 된다.

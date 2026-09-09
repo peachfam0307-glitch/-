@@ -24,7 +24,8 @@ const PORT = Number(process.env.REPRO_PORT || 4377)
 
 // 🔑 이름은 «앱에서 읽는다» — 판이 글자로 박으면 이름이 바뀔 때마다 판이 낡는다(절대원칙 30).
 //    2026-08-24 「AI 스캔 N회」→「열쇠 N개」로 갈 때 이 판이 죽어서 드러났다.
-const OCR봉 = readFileSync(path.join(root, 'src/ocr.js'), 'utf8')
+// ⭐ 이름·단위는 src/열쇠이름.js 한 곳에 있다 — ocr.js 가 그대로 다시 내보낸다 [2026-09-09]
+const OCR봉 = readFileSync(path.join(root, 'src/열쇠이름.js'), 'utf8')
 const 뽑기 = (이름) => {
   const m = OCR봉.match(new RegExp(`export const ${이름} = '([^']+)'`))
   if (!m) { console.log(`⛔ src/ocr.js 에서 ${이름} 을 못 찾았다`); process.exit(1) }

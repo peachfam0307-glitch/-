@@ -102,6 +102,9 @@ export default function EditorScreen({ id, prefill }) {
   //   ⛔ 편집 화면 «안»의 캡처 단추는 이걸 안 탄다(`prefill` 이 없다) — 거긴 지금처럼 열쇠를 쓴다.
   //      창업자 확정 = 열쇠 쓰는 길과 공짜 길이 «둘 다» 살아 있어야 한다.
   const ocrNoVision = useRef(!!prefill?.noVision)
+  // 📊 왜 열쇠를 «안 썼나» — 고름(있는데 안 씀) / 없음(0 이라 못 씀). 처방이 정반대라 갈라 센다.
+  //   기본값을 '고름' 으로 둔다 — 옛 화면에서 들어오면 그 전 셈법 그대로다(숫자가 튀지 않는다).
+  const ocrNoVisionWhy = useRef(prefill?.noVisionWhy || '고름')
   const ingRef = useRef(null) // 재료 입력칸
   const stepRef = useRef(null) // 만드는 법 입력칸
   const titleRef = useRef(null) // 제목 입력칸 — 제목 없이 저장 누르면 여기로 데려간다
@@ -425,7 +428,7 @@ export default function EditorScreen({ id, prefill }) {
         let text = ''
         try {
           // 🆓 `noVision` 이면 구글 AI 를 건너뛰고 기본 인식으로만 읽는다 = 열쇠가 안 깎인다
-          text = await ocrImage(img, (pct) => setOcr({ busy: true, pct, page, total }), { batch: ocrBatch.current, noVision: ocrNoVision.current })
+          text = await ocrImage(img, (pct) => setOcr({ busy: true, pct, page, total }), { batch: ocrBatch.current, noVision: ocrNoVision.current, noVisionWhy: ocrNoVisionWhy.current })
         } catch {
           // ⛔ 한 장이 실패해도 «남은 장은 계속 간다».
           text = ''

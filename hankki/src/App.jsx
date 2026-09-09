@@ -5,8 +5,9 @@ import { consumeSharedIntake, detectSource, firstUrl, captionFrom, firstLine } f
 import { makeInboxRecipe } from './screens/ImportScreen'
 import { ocrImage, getOcrLeft, 열쇠셈, 밀린열쇠보내기, 밀린기본보내기, KEY_NAME, KEY_UNIT } from './ocr'
 import { parseRecipeText, keepRaw, 자리표제목 } from './parseRecipe'
-import { tidyRecipe, mergeTidy, tidyTail, tidyFounder, AI다듬는중 } from './tidy'
+import { tidyRecipe, mergeTidy, tidyTail, tidyFounder, AI다듬는중, 번호알림받기, 선반집기 } from './tidy'
 import { 까닭말, 다듬기끝말, 남은열쇠말 } from './안내말'
+import { 만회값 } from './retidy'   // 🧺 선반에서 받은 답을 얹는 규칙 — 상세 화면 자동 만회와 «같은 곳»
 // ⏳ `fetchLinkRecipe` import 는 뺐다 — 「⏳⏳ 서버 되면 되살릴 것 ④」 참조(2026-08-27 · 창업자 확정 "1번").
 //    ⛔ `src/linkReader.js` 파일은 «안 지웠다» — 되살릴 때 그대로 쓴다(v11.19 와 같은 방식).
 import { guessCategory, fitImage, imageSize } from './utils'
@@ -421,6 +422,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+
   // ⭐ 아래 「저절로 올리기」가 «한 번만» 도는데 그 안에서 최신 store 를 봐야 한다 — 그래서 ref 로 들고 있는다.
   // 🧺 저절로 도는 다듬기 동안 뜨는 하얀 창 [2026-09-09]
   const [자동다듬기창, set자동다듬기창] = useState(false)
@@ -432,6 +434,45 @@ export default function App() {
   const 끝알림 = (끝말) => { set자동끝(끝말); if (!창닫음.current) set자동다듬기창(true) }
   const storeRef = useRef(store)
   storeRef.current = store
+
+  // 🧺🧺 **선반에 놓인 답을 집어온다 — 깨어날 때마다** [2026-09-10 · 창업자 실물 녹화로 잡았다]
+  //
+  //   📮 창업자 = 20초에 다른 앱으로 나갔고 42초에 돌아오니 「AI 다듬기가 안 됐어요」
+  //   ⛔⛔ 뿌리 = 폰이 앱을 얼리면 «물어보는 루프»가 죽는다. 워커는 계속 일해 답을 선반에 두는데
+  //      앱이 깨어나서 **다시 안 물어봤다** → 다 만든 답을 통째로 버리고 「안 됐어요」라고 말했다.
+  //      📌 창은 「앱을 닫아도 계속 다듬어요」라고 «약속»한다 — 그 약속을 못 지키고 있었다.
+  //   ⭐ 그래서 번호(tidyJob)를 레시피에 적어 두고, 깨어날 때 그 번호로 «한 번만» 물어본다.
+  //      ⛔ 기다리지 않는다 · AI 를 안 부른다(뉴런 0) · 없으면 지금과 똑같다(나빠지는 게 0).
+  //   ⏳ 선반은 1시간이다 — 그보다 오래된 번호는 «버린다»(영영 물어보는 것을 막는다).
+  //   🧪 판 = scripts/_repro-선반집기-0910.mjs
+  useEffect(() => {
+    const 한시간 = 60 * 60 * 1000
+    let 그만 = false
+    const 집으러 = async () => {
+      if (그만 || document.visibilityState !== 'visible') return
+      for (const r of storeRef.current.recipes || []) {
+        const 번호 = r && r.tidyJob
+        if (!번호) continue
+        if (r.tidyJobAt && Date.now() - r.tidyJobAt > 한시간) {
+          storeRef.current.updateRecipe(r.id, { tidyJob: '' })   // ⏳ 선반이 이미 비었다
+          continue
+        }
+        const 답 = await 선반집기(번호)
+        if (그만) return
+        if (답 === '아직') continue                               // 워커가 아직 일하는 중
+        if (!답) { storeRef.current.updateRecipe(r.id, { tidyJob: '' }); continue }
+        // ✅ 받았다 — 얹는 규칙은 retidy.js 의 만회값 «한 곳»(상세 화면 자동 만회와 같은 말)
+        const { 바꿀것 } = 만회값(r, String(r.rawText || ''), 답)
+        storeRef.current.updateRecipe(r.id, { ...바꿀것, tidyFail: 0, tidying: 0, tidyJob: '' })
+        showToastRef.current?.('AI가 다 다듬었어요 · 「레시피」 탭에서 보세요', 5000)
+      }
+    }
+    집으러()
+    const 깨면 = () => { if (document.visibilityState === 'visible') 집으러() }
+    document.addEventListener('visibilitychange', 깨면)
+    return () => { 그만 = true; document.removeEventListener('visibilitychange', 깨면) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // 🙏 저장 신호가 올라오면 «최신 레시피 수»로 판정한다 (위 `리뷰신호` 주석 참고).
   //   ⛔ 소개 화면·클라우드 첫 화면이 떠 있으면 안 띄운다 — 시트가 겹치면 둘 다 못 읽는다.
@@ -847,6 +888,9 @@ export default function App() {
         store.updateRecipe(rec.id, { tidyFail: 1, tidying: 1 })
         창닫음.current = false        // 새 사진 = 새 판 · 지난번에 닫았어도 다시 띄운다
         set자동다듬기창(true)
+        // 🧺 워커가 맡은 «번호»를 그 레시피에 적어 둔다 — 앱이 얼어도 살아남는다 [2026-09-10]
+        //   ⛔ 이게 없으면 깨어났을 때 «물어볼 번호»가 없어 선반에 놓인 답을 통째로 버린다.
+        번호알림받기((번호) => store.updateRecipe(rec.id, { tidyJob: 번호, tidyJobAt: Date.now() }))
         tidyRecipe(text, 장들[0]).then((ai) => {
           set자동다듬기창(false)
           if (cancelled) { store.updateRecipe(rec.id, { tidying: 0 }); return }
@@ -854,7 +898,7 @@ export default function App() {
             // ⭐ **여기가 「AI 가 읽어서 성공했을 때」다** — 졸업은 이 판에서만 일어난다(창업자 확정 2026-09-05).
             채우기(mergeTidy(기본, ai), { AI끝남: true })
             // ✅ 다 됐으니 「아직 못 다듬음」 표시를 «지운다» — 안 지우면 다음에 열 때 또 다듬는다(뉴런 낭비).
-            store.updateRecipe(rec.id, { tidyFail: 0, tidying: 0 })
+            store.updateRecipe(rec.id, { tidyFail: 0, tidying: 0, tidyJob: '' })   // 🧺 다 받았으니 번호를 버린다
             // 🔚 창이 «끝말»로 바뀐다 — 사라지기만 하면 됐는지 안 됐는지 모른다.
             끝알림(다듬기끝말(true))
             if (tidyFounder()) showToast('AI가 레시피를 더 다듬었어요' + tidyTail())
@@ -871,7 +915,7 @@ export default function App() {
           //   ⛔ 지금 다시 걸지 않는다 — 방금 실패한 조건 그대로라 또 실패할 확률이 높고,
           //      그러면 무료 통만 두 배로 먹는다. **표만 남기고 «다음에» 만회한다.**
           //   📌 표를 지우는 것도 여기서 안 한다 — 만회한 쪽(상세 화면)이 지운다.
-          store.updateRecipe(rec.id, { tidyFail: 1, tidying: 0 })
+          store.updateRecipe(rec.id, { tidyFail: 1, tidying: 0 })   // ⭐ 번호는 «안» 지운다 — 선반에 답이 놓일 수 있다
           // 📢📢 **[2026-09-09 창업자] 실패도 «유저에게» 말한다.**
           //   📮 창업자 = "당황스럽잖아 이게 됐는지 안됐는지 모르니까. 안내를 해줘야 할 거 아냐. 어떻게 하라고"
           //   ⛔ 옛 판은 창업자에게만 알렸다 — 「이미 채워져 있으니 유저가 할 일이 0」이라고 봤다.
@@ -883,7 +927,7 @@ export default function App() {
         }).catch(() => {
           // ⛔ 여기까지 오면 표시가 «영영» 도는 것으로 굳는다 — 그게 제일 나쁜 모양이다.
           set자동다듬기창(false)
-          store.updateRecipe(rec.id, { tidyFail: 1, tidying: 0 })
+          store.updateRecipe(rec.id, { tidyFail: 1, tidying: 0 })   // ⭐ 번호는 «안» 지운다 — 선반에 답이 놓일 수 있다
         })
         return
       }

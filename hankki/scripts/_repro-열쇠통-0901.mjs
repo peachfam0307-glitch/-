@@ -37,7 +37,7 @@ const 앞글자 = (kv, 앞) => {
 const 진짜fetch = globalThis.fetch
 globalThis.fetch = async (url) => {
   if (String(url).includes('vision.googleapis.com')) {
-    return new Response(JSON.stringify({ responses: [{ fullTextAnnotation: { text: '연근 400g' } }] }),
+    return new Response(JSON.stringify({ responses: [{ fullTextAnnotation: { text: '연근 400g\\n간장 2큰술\\n1. 팬에 굽는다' /* 📏 12자 이상이어야 «얻었다»로 친다(2026-09-09 빈손 규칙) */ } }] }),
       { status: 200, headers: { 'Content-Type': 'application/json' } })
   }
   return 진짜fetch(url)
@@ -58,11 +58,14 @@ const ENV = (kv) => ({ VISION_KEY: 'k', APP_TOKEN, FOUNDER_SECRET: 'FOUNDERKEY',
 //    일곱 번째 호출부터 rate_limited 가 나고 «엉뚱한 이유로» 판이 죽는다(2026-09-01 실제로 겪음).
 //    ⭐ 진짜 워커를 부르니 진짜 방어벽도 같이 도는 것이다 — 흉내였으면 안 걸렸다.
 let ip번호 = 0
-async function 담기(kv, { uid = 'u1', sub = '', ip = 'ip' + (++ip번호) } = {}) {
+// 📸 사진마다 «다른» 그림 — 지문 장부(2026-09-09)가 같은 사진을 두 번 안 깎기 때문이다.
+let 사진번호 = 0
+async function 담기(kv, { uid = 'u1', sub = '', ip = 'ip' + (++ip번호), 사진 = null } = {}) {
+  const 그림 = 'data:image/png;base64,QUJDRA' + (사진 || ++사진번호)
   const req = new Request('https://hankki-ocr.example/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-hankki-token': APP_TOKEN, Origin: ORIGIN, 'CF-Connecting-IP': ip },
-    body: JSON.stringify({ image: 'data:image/png;base64,QUJDRA==', uid, ...(sub ? { sub } : {}) }),
+    body: JSON.stringify({ image: 그림, uid, ...(sub ? { sub } : {}) }),
   })
   const res = await worker.fetch(req, ENV(kv))
   return { status: res.status, body: await res.json() }

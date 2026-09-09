@@ -173,41 +173,79 @@ const 표준비 = async (db) => {
 //      그걸 안 보면 옛 사진이 「처음」으로 보여 **열쇠가 한 번 더 깎인다**(＝뺏는 것).
 //   ⛔ 새 기록은 **D1 에만** 쓴다 → KV 쪽은 40일 뒤 저절로 비고 **이사가 스스로 끝난다.**
 //   ⛔ 창고가 «없어도» 죽지 않는다 — 그때는 통째로 KV 로 돈다(붙이기 전에도 앱이 멀쩡히 돈다).
+// 🎫🎫 **자리를 «먼저» 찜한다** — 이 판의 심장이다.
+//
+//   ⛔⛔ **2026-09-09 · 진짜 워커를 진짜 런타임에 올려서 잡은 구멍.**
+//      그 전엔 ①보고 ②구글 부르고 ③적고 ④깎았다. 보는 것과 적는 것 사이에
+//      **구글 호출 20초**가 통째로 끼어 있어서, 같은 사진이 겹치면 둘 다 「없다」를 보고
+//      **둘 다 구글을 부르고 둘 다 깎았다**(실측 = 동시 2장 10판 중 1판 · 20장 10판 중 2판).
+//      📌 시험용 코드로는 «안 잡혔다» — 거기선 보기와 적기가 붙어 있었다.
+//         **진짜 워커로 재야만 나오는 구멍**이었다.
+//
+//   ⭐ 그래서 순서를 뒤집는다 — **구글을 부르기 «전»에 자리부터 찜한다.**
+//      `INSERT OR IGNORE` 는 한 덩어리라 겹쳐 들어와도 **딱 하나만** 찜한다(SQL 이 보장).
+//        · 내가 찜했다(changes 1) → 구글 부르고 · 글자 적고 · 깎는다
+//        · 남이 이미 찜했다(changes 0) → **구글도 안 부르고 안 깎는다**
+//             글자가 이미 있으면 그대로 주고, 아직 없으면 「처리중」이라 알린다(앱이 잠깐 뒤 다시 묻는다)
+//
+//   ⛔ 찜해 놓고 구글이 실패하면 **찜을 «지운다»** — 안 지우면 그 사진은 40일 동안
+//      영영 「처리중」으로 굳어 유저가 다시는 못 읽는다.
+//
+//   ⚠️ **정직하게** — D1 이 없을 때(KV 폴백)는 이 보장이 «없다». KV 는 한 덩어리로 못 한다.
+//      그래도 지금보다는 낫다(빈손·구글실패 무차감은 그대로 돈다). 창고를 붙이면 구멍이 닫힌다.
+
+// 🔎 이미 있나 — D1 먼저 · 없으면 KV(이사 기간)
 const 장부찾기 = async (env, kv, 통, 지문) => {
   if (env.DB) {
     try {
       await 표준비(env.DB)
       const r = await env.DB.prepare('SELECT 글자 FROM 지문장부 WHERE 통 = ? AND 지문 = ?').bind(통, 지문).first()
-      if (r) return { 있다: true, 글자: r.글자 || '' }
+      if (r) return { 있다: true, 글자: r.글자, 처리중: r.글자 === null }
     } catch { /* D1 이 안 되면 아래 KV 로 */ }
   }
   if (kv) {
     const v = await kv.get(`f:${통}:${지문}`)
-    if (v !== null) return { 있다: true, 글자: v }
+    if (v !== null) return { 있다: true, 글자: v, 처리중: false }
   }
   return { 있다: false }
 }
 
-// ✍️ **적기 — 「없으면 넣기」를 한 덩어리로 한다.**
-//   ⭐⭐ `INSERT OR IGNORE` 가 이 판의 심장이다 — 같은 사진이 «겹쳐» 들어와도
-//      **딱 하나만** 들어간다(SQL 이 보장한다). 실측 60판에서 0번 틀렸다.
-//      ⛔ 이걸 「먼저 SELECT 하고 없으면 INSERT」로 풀어 쓰면 그 틈에 겹쳐 들어와
-//         **열쇠가 두 번 깎인다** — KV 가 바로 그래서 20번 중 3번 틀렸다.
-//   🧹 **청소는 한 줄이다** — 40일 지난 줄을 지운다. 어쩌다 한 번만 돌려도 충분해서
-//      «적을 때 아주 가끔»(대략 200번에 한 번) 같이 돌린다. 따로 알람을 걸 필요가 없다.
+// 🎫 자리 찜하기 — 「내가 찜했나」를 돌려준다. ⛔글자는 아직 NULL 이다(＝처리중 표시).
+const 자리찜 = async (env, 통, 지문) => {
+  if (!env.DB) return true               // 창고가 없으면 찜을 못 한다 → 그냥 진행(KV 폴백)
+  try {
+    await 표준비(env.DB)
+    const r = await env.DB.prepare('INSERT OR IGNORE INTO 지문장부 (통, 지문, 글자, 때) VALUES (?, ?, NULL, ?)')
+      .bind(통, 지문, Date.now()).run()
+    return (r.meta?.changes || 0) > 0
+  } catch { return true }
+}
+
+// ✍️ 글자 적기 — 찜해 둔 자리에 글자를 채운다.
+//   🧹 청소는 한 줄이다. 어쩌다 한 번만 돌면 되므로 «아주 가끔»(대략 200번에 한 번) 같이 돌린다.
+//      ⛔ 「처리중(글자 NULL)」인 채로 굳은 줄도 같이 걷어낸다 — 워커가 중간에 죽은 자리다.
 const 장부적기 = async (env, kv, 통, 지문, 글자) => {
   if (env.DB) {
     try {
       await 표준비(env.DB)
-      await env.DB.prepare('INSERT OR IGNORE INTO 지문장부 (통, 지문, 글자, 때) VALUES (?, ?, ?, ?)')
-        .bind(통, 지문, 글자 || '', Date.now()).run()
+      await env.DB.prepare('UPDATE 지문장부 SET 글자 = ?, 때 = ? WHERE 통 = ? AND 지문 = ?')
+        .bind(글자 || '', Date.now(), 통, 지문).run()
       if (Math.random() < 0.005) {
         await env.DB.prepare('DELETE FROM 지문장부 WHERE 때 < ?').bind(Date.now() - 마흔날 * 1000).run()
+        await env.DB.prepare('DELETE FROM 지문장부 WHERE 글자 IS NULL AND 때 < ?').bind(Date.now() - 600000).run()
       }
       return
     } catch { /* 아래 KV 로 */ }
   }
   if (kv) await kv.put(`f:${통}:${지문}`, 글자 || '', { expirationTtl: 마흔날 })
+}
+
+// 🗑 찜만 해놓고 실패했을 때 — 자리를 비운다(안 비우면 그 사진이 영영 막힌다)
+const 찜지우기 = async (env, 통, 지문) => {
+  if (!env.DB) return
+  try {
+    await env.DB.prepare('DELETE FROM 지문장부 WHERE 통 = ? AND 지문 = ? AND 글자 IS NULL').bind(통, 지문).run()
+  } catch { /* 못 지워도 10분 뒤 청소가 걷어간다 */ }
 }
 
 export default {
@@ -540,7 +578,12 @@ export default {
     const 지문 = await 지문내기(b64)
     const 전에 = await 장부찾기(env, kv, 통, 지문)
     if (전에.있다) {
-      // 🈳 글자가 «없이» 적혀 있으면 그건 「빈손이었던 사진」이다 — 다시 불러도 또 빈손이라 안 부른다.
+      // ⏳ 「처리중」 = 남이 «방금» 찜해 갔고 아직 글자가 안 채워졌다(글자가 NULL).
+      //   ⛔ 여기서도 **안 깎는다** — 앱이 잠깐 뒤 다시 물어보면 글자를 받는다.
+      if (전에.처리중) {
+        return json({ text: '', 깎음: false, 왜: '처리중', left: await 남은알림(false) }, 200, cors)
+      }
+      // 🈳 글자가 «비어» 있으면 그건 「빈손이었던 사진」이다 — 다시 불러도 또 빈손이라 안 부른다.
       const 빈손이었다 = !String(전에.글자 || '').trim()
       return json({
         text: 전에.글자 || '',
@@ -548,6 +591,11 @@ export default {
         왜: 빈손이었다 ? '빈손' : '전에읽음',
         left: await 남은알림(false),
       }, 200, cors)
+    }
+    // 🎫 **구글을 부르기 «전»에 자리부터 찜한다** — 겹쳐 들어와도 하나만 통과한다.
+    //   ⛔ 남이 먼저 찜했으면 여기서 끝낸다: 구글도 안 부르고 안 깎는다.
+    if (!(await 자리찜(env, 통, 지문))) {
+      return json({ text: '', 깎음: false, 왜: '처리중', left: await 남은알림(false) }, 200, cors)
     }
 
     // 🔢 **사진 «한 장마다» 열쇠 1개** (창업자 최종 확정 2026-08-13 밤)
@@ -664,10 +712,14 @@ export default {
       })
     // ⛔ 구글에 못 닿았다 = **우리도 청구를 안 받는다.** 그러니 유저 열쇠도 «안» 깎는다.
     //   📢 `깎음: false` 를 실어 보낸다 — 앱은 이 값 하나로만 「열쇠는 그대로예요」를 말한다.
-    } catch { return json({ error: 'vision_fetch_failed', 깎음: false, 왜: '구글실패' }, 502, cors) }
+    } catch {
+      await 찜지우기(env, 통, 지문)   // 🗑 찜만 남으면 그 사진이 40일 동안 막힌다
+      return json({ error: 'vision_fetch_failed', 깎음: false, 왜: '구글실패' }, 502, cors)
+    }
 
     if (!vr.ok) {
       const detail = (await vr.text().catch(() => '')).slice(0, 300)
+      await 찜지우기(env, 통, 지문)   // 🗑 위와 같은 이유
       return json({ error: 'vision_error', status: vr.status, detail, 깎음: false, 왜: '구글실패' }, 502, cors)
     }
     // ⭐ 구글이 200 으로 답했다 ＝ 우리는 이미 요금을 냈다. 위 두 return(502) 을 지난 뒤라

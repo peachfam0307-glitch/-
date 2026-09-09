@@ -59,6 +59,9 @@ import { weeklyNow, homemadeNow, snsNow } from '../data/weekly'
 import { whatsNew } from '../data/whatsnew'
 import { pantryScore } from '../pantryMatch'
 import SeasonDecor from '../components/SeasonDecor.jsx'
+// 🇰🇷 명절엔 홈의 «우리 애» 둘도 한복을 입는다 — 📮창업자 2026-09-09 *"쟤들만 한복아니니까 이상해서.."*
+import { 홈컷 } from '../data/seasonDecor.js'
+import { useSeasonCuts } from '../season/useSeasonCuts.js'
 
 // 🗓🍳 「이번 주」 박스 — 제철 줄과 우리집레시피 줄이 «똑같이» 생겼다.
 //   ⛔ 마크업을 두 번 적지 않는다 — 그러면 한쪽만 고치는 사고가 난다(2026-08-11 신설).
@@ -237,6 +240,11 @@ export default function HomeScreen() {
   //   ⭐ **읽으면 꺼지고, 새것이 오면 다시 뜬다** — 판정은 `isNewsUnread`(팝업과 같은 열쇠) 한 곳에서.
   //   ⛔ `useState` 로 «한 번만» 읽는다 — 그리는 중에 localStorage 를 매번 읽으면
   //      표시를 하고도 화면이 안 바뀐다(리액트는 저장소를 안 본다).
+  // 🇰🇷 명절이면 그림만 한복으로 바꿔치기한다 — 자리·크기·움직임은 손대지 않는다.
+  //    ⛔ 철이 아니거나 그 철에 한복 컷이 없으면 «원래 컷» 그대로 (없는 걸 억지로 끼우지 않는다).
+  const { 철: 명절, 컷: 명절컷 } = useSeasonCuts()
+  const 한복 = (자리, 원래) => (명절컷 && 명절컷[홈컷[명절]?.[자리]]) || 원래
+
   const [unread, setUnread] = useState(() => isNewsUnread(news))
   const 소식봤음 = () => { markNewsSeen(news); setUnread(false) }
   // ⚠️ 어떻게 닫든 «봤음»으로 친다 — 안 그러면 뒤로가기로 닫은 사람에게 매번 뜬다.
@@ -503,7 +511,7 @@ export default function HomeScreen() {
                 ⛔⛔ 크기가 `width={26}` «인라인»이라 CSS 로는 못 이긴다(v10.08 에 당했다).
                    ✅ 그래서 크기를 **CSS 변수**로 읽게 한다 — 폰은 26px 그대로, 패드에서만 `.news-gom` 이 키운다.
                    ⭐ 「한끼 소식」 글자 크기를 클래스로 뺀 것과 «같은 처방»이다(바로 아래 주석). */}
-            <img src={uiGomWow} alt="" draggable={false} className="hk-m-tongtong news-gom"
+            <img src={한복('소식', uiGomWow)} alt="" draggable={false} className="hk-m-tongtong news-gom"
               style={{ flex: '0 0 auto', display: 'block', objectFit: 'contain', margin: '-9px 0',
                 width: 'var(--news-gom, 26px)', height: 'auto' }} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -555,7 +563,7 @@ export default function HomeScreen() {
                     {/* 🐧 펭펭은 갈래와 무관하게 «한 컷»이다 — 이 카드가 한 장뿐이라 갈래마다 바꿀 이유가 없고,
                         찾는 포즈(`pn_search`)가 「다음에 뭐 할까」와 뜻이 맞는다.
                         ⛔ 펭펭을 웃기지 않는다(정본 규칙) — `pn_search` 는 무표정이라 그대로 쓴다. */}
-                    <img src={uiPengSearch} alt="" draggable={false} className="next-peng hk-m-tongtong" />
+                    <img src={한복('다음', uiPengSearch)} alt="" draggable={false} className="next-peng hk-m-tongtong" />
                     {/* 🖼 [창업자 확정 2026-08-26] **패드에서만** 그 요리 «표지»를 왼쪽에 세운다.
                         📮 창업자 = *"D에서 표지랑 펭펭 알약까지 들어가니까 정신없어보여"* →
                            *"오늘 뭐해먹지랑 똑같이 만들되 제목을 아직 안해봤어요를 알약으로"* · *"펭펭은 빼자"*

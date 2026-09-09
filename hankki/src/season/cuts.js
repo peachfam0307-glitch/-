@@ -19,9 +19,13 @@ import hw_03 from '../assets/stickers/season/hw_03.webp'
 import hw_06 from '../assets/stickers/season/hw_06.webp'
 import hw_09 from '../assets/stickers/season/hw_09.webp'
 import hw_13 from '../assets/stickers/season/hw_13.webp'
+// 🇰🇷 명절 한복 컷 — 📮창업자 2026-09-09 *"한끼소식이랑 아직 안해봤어요 자리에.. 쟤들만 한복아니니까 이상해서"*
+import 한복곰 from '../assets/stickers/season/한복곰.webp'
+import 한복펭 from '../assets/stickers/season/한복펭.webp'
 
 export default {
   추석소품01, duo301, duo401, duo101, 거미줄02, 거미줄03,
   박쥐짙은02, 박쥐짙은03, 박쥐짙은04,
   cs_b02, hb09, hb12, hw_02, hw_03, hw_06, hw_09, hw_13,
+  한복곰, 한복펭,
 }

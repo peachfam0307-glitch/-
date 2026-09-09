@@ -6,7 +6,7 @@ import { makeInboxRecipe } from './screens/ImportScreen'
 import { ocrImage, getOcrLeft, 열쇠셈, 밀린열쇠보내기, 밀린기본보내기, KEY_NAME, KEY_UNIT } from './ocr'
 import { parseRecipeText, keepRaw, 자리표제목 } from './parseRecipe'
 import { tidyRecipe, mergeTidy, tidyTail, tidyFounder, AI다듬는중 } from './tidy'
-import { 까닭말, 다듬기끝말 } from './안내말'
+import { 까닭말, 다듬기끝말, 남은열쇠말 } from './안내말'
 // ⏳ `fetchLinkRecipe` import 는 뺐다 — 「⏳⏳ 서버 되면 되살릴 것 ④」 참조(2026-08-27 · 창업자 확정 "1번").
 //    ⛔ `src/linkReader.js` 파일은 «안 지웠다» — 되살릴 때 그대로 쓴다(v11.19 와 같은 방식).
 import { guessCategory, fitImage, imageSize } from './utils'
@@ -426,7 +426,7 @@ export default function App() {
   const [자동다듬기창, set자동다듬기창] = useState(false)
   const [자동남은말, set자동남은말] = useState('')   // 🔑 열쇠 잔량 — 하얀 창이 들고 간다
   const [자동끝, set자동끝] = useState(null)        // 🔚 끝말(까닭별) — 있으면 창이 «끝 모양»으로 바뀐다
-  // ⛔ 유저가 「알겠어요」로 닫았으면 «다시 안 띄운다» — 60초 뒤에 창이 튀어나오면 하던 일을 끊는다.
+  // ⛔ 유저가 「닫기」로 닫았으면 «다시 안 띄운다» — 60초 뒤에 창이 튀어나오면 하던 일을 끊는다.
   //    ⭐ 그래도 결과는 잃지 않는다 — 임시보관함 카드 줄이 같은 말을 들고 있다. [2026-09-09]
   const 창닫음 = useRef(false)
   const 끝알림 = (끝말) => { set자동끝(끝말); if (!창닫음.current) set자동다듬기창(true) }
@@ -813,9 +813,8 @@ export default function App() {
         //           ＋ "유저는 굳이 파랑색토스트를 띄울필요가 없자나"
         //   ⛔ 위아래로 둘이 뜨면 «둘 다» 안 읽힌다. 그래서 열쇠 잔량까지 하얀 창이 들고 간다.
         //   ⭐ 띠는 «창업자 폰에서만» 남긴다 — 진단 꼬리(모델·ms·사진크기)를 봐야 하기 때문이다.
-        const 남은말 = left.unknown || left.무제한
-          ? ''
-          : `무료 ${KEY_NAME} ${left.total}${KEY_UNIT} 남았어요`
+        //   ⭐ 말은 안내말.js 한 곳에서 온다 — 0 이면 「다 썼어요」로 «갈아서» 준다 [창업자 2026-09-09]
+        const 남은말 = left.unknown ? '' : 남은열쇠말(left)
         set자동남은말(남은말)
         if (tidyFounder()) {
           showToast((남은말 ? `사진에서 글자를 읽어 채웠어요 · ${남은말}` : '사진에서 글자를 읽어 채웠어요') + AI다듬는중, 20000)

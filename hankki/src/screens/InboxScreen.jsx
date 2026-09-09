@@ -7,6 +7,7 @@ import SourceBadge from '../components/SourceBadge'
 import ConfirmSheet from '../components/ConfirmSheet'
 import { timeAgo } from '../utils'
 import { getOcrLeft, KEY_NAME, KEY_UNIT } from '../ocr'
+import { 남은열쇠말 } from '../안내말'
 import { tidyRecipe, 실패꼬리 } from '../tidy'
 import { 만회값 } from '../retidy'
 import TidyWaiting from '../components/TidyWaiting'
@@ -132,7 +133,7 @@ export default function InboxScreen() {
           style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 40, justifyContent: 'flex-end' }}
           aria-label={ocrLeft.무제한
             ? `운영자 모드 · ${KEY_NAME} 무제한`
-            : `무료 ${KEY_NAME} ${ocrLeft.total}${KEY_UNIT} 남았어요`}
+            : 남은열쇠말(ocrLeft)}
         >
           {/* 🔓 [2026-09-02] 운영자면 「∞」 — 전엔 여기가 «서버가 준 0»을 그대로 그려서
               한도는 안 걸리는데 화면만 0 이었다(창업자 폰 실물). 잣대는 `getOcrLeft().무제한` 하나다. */}

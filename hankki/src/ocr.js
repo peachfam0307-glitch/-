@@ -171,9 +171,9 @@ export const LEFT_EVENT = 'hankki:left'
 //
 // ⭐ 넓은 자리엔 `KEY_NAME`, 좁은 자리(칸·꼬리말)엔 `KEY_SHORT` — 창업자 잣대가
 //    *"좁은 자리에선 줄여 쓸 수 있어야 한다(레시피열쇠 → 열쇠)"* 였다.
-export const KEY_NAME = '레시피열쇠'
+// ⭐ 값은 src/열쇠이름.js 한 곳에 있다 — 여기서 그대로 다시 내보내 부르는 쪽은 안 바뀐다 [2026-09-09]
+export { KEY_NAME, KEY_UNIT } from './열쇠이름.js'
 export const KEY_SHORT = '열쇠'
-export const KEY_UNIT = '개'
 // 「열쇠 3개」처럼 세어 준다. 좁은 자리용.
 export const keyCount = (n) => `${KEY_SHORT} ${n}${KEY_UNIT}`
 

@@ -48,7 +48,7 @@ export default function TidyWaiting({ onClose, 자동, 남은말, 끝 }) {
                 className="press" onClick={onClose}
                 style={{ width: '100%', color: 'var(--text-sub)', fontSize: 16.5, fontWeight: 400, padding: '8px 0', fontFamily: "'Jua', sans-serif" }}
               >
-                알겠어요
+                닫기
               </button>
             </div>
           </div>
@@ -97,7 +97,8 @@ export default function TidyWaiting({ onClose, 자동, 남은말, 끝 }) {
               className="press" onClick={onClose}
               style={{ width: '100%', color: 'var(--text-sub)', fontSize: 16.5, fontWeight: 400, padding: '8px 0', fontFamily: "'Jua', sans-serif" }}
             >
-              {자동 ? '알겠어요' : '닫고 다른 일 하기'}
+              {/* ⭐ [창업자 2026-09-09] 「알겠어요」·「닫고 다른 일 하기」 → «닫기» 하나로. 단추는 하는 일을 말한다 */}
+              닫기
             </button>
           </div>
         </div>

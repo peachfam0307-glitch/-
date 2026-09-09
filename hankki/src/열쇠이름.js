@@ -4,3 +4,5 @@
 //   ⭐ 값은 여전히 «한 곳»이다 — ocr.js 가 여기서 읽어 그대로 다시 내보낸다.
 export const KEY_NAME = '레시피열쇠'
 export const KEY_UNIT = '개'
+// ⭐ 넓은 자리엔 KEY_NAME, 좁은 자리(칸·꼬리말)엔 KEY_SHORT — 셋이 한 식구라 같이 둔다
+export const KEY_SHORT = '열쇠'

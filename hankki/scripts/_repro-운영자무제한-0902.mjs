@@ -16,6 +16,7 @@
 // 🏷 이름표 = 반영됨
 import assert from 'node:assert'
 import { readFileSync } from 'node:fs'
+import { 남은열쇠말 } from '../src/안내말.js'   // ⭐ 말이 만들어지는 그 한 곳을 «직접» 부른다
 
 const 뿌리 = new URL('..', import.meta.url)
 const 읽기 = (p) => readFileSync(new URL(p, 뿌리), 'utf8')
@@ -72,7 +73,10 @@ for (const [이름, 길, 숫자잣대] of [
     '(tidyFounder 를 직접 import 하면 잣대가 또 갈린다)')
 }
 const app = 읽기('src/App.jsx')
-칸('사진 읽기 토스트가 운영자에겐 숫자를 안 붙인다', /left\.unknown \|\| left\.무제한/.test(app))
+// ⭐ [2026-09-09] 무제한 판정이 «남은열쇠말» 안으로 들어갔다 — 화면은 그 한 곳만 부른다.
+//    ⛔ 그래서 「App 이 무제한을 보나」가 아니라 «그 한 곳이 운영자에게 침묵하나»를 본다.
+칸('사진 읽기 토스트가 운영자에겐 숫자를 안 붙인다',
+  /남은열쇠말\(left\)/.test(app) && 남은열쇠말({ 무제한: true }) === '')
 
 console.log('③ 잣대가 «진짜로» 도나 — getOcrLeft 를 불러서')
 // ⛔ 소스만 보면 「부르기만 하고 안 도는」 것을 못 잡는다(오늘 ⑥-c 가 그 병이었다).

@@ -175,9 +175,8 @@ export const LEFT_EVENT = 'hankki:left'
 //   ⛔⛔ 「export … from」 만 쓰면 **이 파일 «안»에는 값이 안 생긴다** — 바로 아래 keyCount 가 쓰는데 없어서
 //      앱이 첫 화면에서 죽었다(KEY_UNIT is not defined · 2026-09-09 스모크가 잡았다).
 //      ⭐ 그래서 «들여오고» 다시 내보낸다. 부르는 쪽은 그대로다.
-import { KEY_NAME, KEY_UNIT } from './열쇠이름.js'
-export { KEY_NAME, KEY_UNIT }
-export const KEY_SHORT = '열쇠'
+import { KEY_NAME, KEY_UNIT, KEY_SHORT } from './열쇠이름.js'
+export { KEY_NAME, KEY_UNIT, KEY_SHORT }
 // 「열쇠 3개」처럼 세어 준다. 좁은 자리용.
 export const keyCount = (n) => `${KEY_SHORT} ${n}${KEY_UNIT}`
 

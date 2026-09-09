@@ -91,11 +91,16 @@ console.log('\n  ⑽ ⭐ 열쇠 말은 «한 가지»다 [창업자 2026-09-09 =
 console.log('\n  ⑽-2 ⛔ 이름을 다시 내보낼 때 «값이 사라지지» 않았나 [2026-09-09 실물 사고]')
 {
   const o = 읽기('src', 'ocr.js')
-  const 다시내보내기만 = /^export \{ KEY_NAME, KEY_UNIT \} from/m.test(o)
-  잰다(!다시내보내기만 || /^import \{ KEY_NAME, KEY_UNIT \} from/m.test(o),
-    '⭐ocr.js 가 쓰는 이름을 «들여왔다» (export … from 만 쓰면 그 파일 안엔 값이 안 생긴다)')
-  잰다(/const keyCount = .*KEY_UNIT/.test(o) === false || /^import \{ KEY_NAME, KEY_UNIT \}/m.test(o),
-    'keyCount 가 쓰는 값이 실제로 있다')
+  // ⛔ 이름 목록을 «글자 그대로» 맞추지 않는다 — 하나 더 옮기면 검사가 또 깨진다(KEY_SHORT 이 그랬다).
+  //    ⭐ 뜻만 본다 = 「이 파일이 «쓰는» 이름이 이 파일 안에 실제로 있나」.
+  //       export … from 만 쓰면 다른 파일로 지나가기만 하고 «여기엔 값이 안 생긴다» — 그게 그날 앱을 죽였다.
+  const 알맹이 = o.replace(/^(?:im|ex)port[^\n]*$/gm, '')       // 들여오기·내보내기 줄을 뺀 «쓰는 자리»만
+  for (const 이름 of ['KEY_NAME', 'KEY_UNIT', 'KEY_SHORT']) {
+    if (!new RegExp(`\\b${이름}\\b`).test(알맹이)) continue      // 안 쓰면 있을 필요도 없다
+    const 있다 = new RegExp(`^import \\{[^}]*\\b${이름}\\b[^}]*\\} from`, 'm').test(o)
+      || new RegExp(`^export const ${이름}\\b`, 'm').test(o)
+    잰다(있다, `⭐ocr.js 가 «쓰는» ${이름} 이 이 파일 안에 있다`)
+  }
 }
 
 console.log('\n  ⑾ ⭐ 0 개일 때 「0개 남았어요」라고 하지 않는다 [창업자 = "무료랑은 안맞는 말이잖아"]')

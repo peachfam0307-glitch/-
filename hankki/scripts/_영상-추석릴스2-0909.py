@@ -141,5 +141,16 @@ for f in range(int(총초*FPS)):
         x = 64 if 맞춤=='왼쪽' else (W-c.width)//2
         칸 = c.copy(); 칸.putalpha(칸.getchannel('A').point(lambda v:int(v*max(0,a))))
         프.alpha_composite(칸, (x, int(y*H)+int(24*(1-min(1,(t-시)/0.32)))))
-    프.convert('RGB').save(f'{낼}/{f+1:04d}.png')
+    # 📱📱 [창업자 실측 2026-09-09] 인스타가 «위»를 덮는다 — 닉네임(annyeong_hankki) ＋ 음원 줄.
+    #    🔢 창업자 캡처로 잼 = 영상 칸 y 210~1790(배율 0.823) · 덮는 줄 아래끝 화면 320 → 영상 좌표 134px.
+    #       그날 올린 릴스의 제목이 121px 에 있어서 «그대로» 가렸다.
+    #    ✅ 그래서 판을 통째로 줄여 «안전 띠»를 만든다 — 위 240 / 아래 260 안에는 아무것도 안 온다.
+    #    ⛔ 자막 y 를 하나씩 내리지 않는다 — 칸마다 따로 고치면 다음 릴스에서 또 틀린다(한 곳에서).
+    위띠, 아래띠 = 240, 260
+    남 = H - 위띠 - 아래띠
+    배 = min(1.0, 남/H)
+    작 = 프.convert('RGB').resize((int(W*배), int(H*배)), Image.LANCZOS)
+    바탕 = Image.new('RGB', (W, H), 살구)
+    바탕.paste(작, ((W-작.width)//2, 위띠 + (남-작.height)//2))
+    바탕.save(f'{낼}/{f+1:04d}.png')
 print('합성2', int(총초*FPS), '칸')

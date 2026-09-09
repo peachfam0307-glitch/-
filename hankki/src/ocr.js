@@ -112,10 +112,17 @@ async function ocrViaProxy(dataUrl, onProgress, batch) {
   }
   그만기어()
   if (!resp.ok) {
+    // ⛔⛔ [2026-09-09] **몸통의 «왜»를 여기서도 읽는다.**
+    //    옛 판은 429 만 열어 봤다 → 서버가 502 에 실어 보낸 왜(구글실패)가 **앱까지 오지 않았다.**
+    //    그러면 화면은 「잘 안 됐어요」밖에 못 하고, «열쇠는 그대로예요»를 말할 근거를 잃는다.
+    //    📖 표 = docs/열쇠와안내-까닭별-2026-09-09.md
+    const d = await resp.json().catch(() => null)
+    if (d && d.왜) _왜 = d.왜
     // 429(한도 초과) → 어느 한도인지 기록(앱이 "무료 다 썼어요" 안내). 전부 폴백으로 넘긴다 — 앱은 늘 동작해야 하니까.
     if (resp.status === 429) {
-      const d = await resp.json().catch(() => null)
       _ocrNote = (d && d.error) || 'quota'
+      // ⭐ 한도도 «까닭»이다 — 한 곳(까닭말)에서 말을 고르게 같은 통에 넣는다.
+      if (!_왜) _왜 = _ocrNote
     }
     throw new Error('proxy_http_' + resp.status)
   }

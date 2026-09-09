@@ -850,64 +850,6 @@ export default function EditorScreen({ id, prefill }) {
       </div>
 
 
-      {/* 📣📣 **「지금 뭐 하는 중인지」는 «맨 위»에 둔다** [2026-09-09 창업자 실물 제보]
-          📮 창업자 = *"난 토스트만 봤어. 넘 아래있으니 못본건지 아님 안뜬건지 모르겠다"*
-          ⛔ 옛 자리 = 사진칸(34vh) + 안내상자 «아래»라 폰에서 첫 화면에 안 들어왔다.
-             떠 있었는데 «못 본» 것이다 — 안 뜬 것보다 나쁘다(고쳤다고 착각한다).
-          ⭐ 상단바 바로 밑 = 스크롤을 어디로 하든 처음에 반드시 보이는 자리.
-          🔒 판 = scripts/_repro-다듬는중표시-0909.mjs */}
-        {/* 사진 읽는 중 — 칸 채우기 진행 표시
-            ⏳⏳ [2026-08-13 창업자 제보] *"레시피 2장 올릴때 로딩이 좀 걸려. **못기다리고 이상하다 하고 끌수도 있을 듯.**"*
-            ⛔ 옛 판 = 동그라미 하나 돌고 「…40%」 한 줄. **한 장을 다 읽으면 40% 가 0% 로 돌아간다** —
-               숫자가 뒤로 가니 «멈췄다/고장났다»로 읽힌다. 그게 끄고 싶어지는 순간이다.
-            ✅ 셋을 고쳤다 —
-               ① **막대가 앞으로만 간다**(장 수를 반영한 «전체» 진척률 — 1장째 40% 면 2장 중 20%)
-               ② **얼마나 걸리는지 미리 말한다**(여러 장이면 「조금 걸려요」 · 「그대로 두면 돼요」)
-               ③ **꼬르곰이 통통 뛴다** — 그림이 움직이면 «살아 있다»가 보인다(동그라미보다 세다) */}
-        {ocr.busy && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 'var(--r-md)', background: 'var(--cream)', color: 'var(--brown)', marginBottom: 12 }}>
-            <img src={uiGomPot} alt="" aria-hidden="true" draggable={false} className="hk-m-tongtong"
-              width={33} height={47} style={{ flex: '0 0 auto', objectFit: 'contain', margin: '-6px 0' }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16.5, fontWeight: 700 }}>
-                사진에서 글자 읽는 중… {ocr.total > 1 ? `${ocr.total}장 중 ${ocr.page}장째` : `${ocr.pct}%`}
-              </div>
-              {/* 📊 전체 진척률 — 여러 장이면 「앞 장들은 다 끝났다」까지 세어야 막대가 뒤로 안 간다 */}
-              <div style={{ height: 6, borderRadius: 99, background: 'rgba(122,90,58,.16)', overflow: 'hidden', margin: '6px 0 0' }}>
-                <div style={{
-                  height: '100%', borderRadius: 99, background: 'var(--brown)',
-                  width: `${Math.min(100, Math.round(((ocr.page - 1) * 100 + ocr.pct) / Math.max(1, ocr.total)))}%`,
-                  transition: 'width .35s ease',
-                }} />
-              </div>
-              {/* ⏱ 「오래 걸린다」를 «먼저» 말해 준다 — 예고된 기다림은 고장으로 안 읽힌다 */}
-              <div className="t-sub" style={{ fontSize: 15, marginTop: 5, lineHeight: 1.4 }}>
-                {ocr.total > 1
-                  ? <>사진이 {ocr.total}장이라 조금 걸려요 · <b style={{ fontWeight: 800, color: 'var(--brown)' }}>이 화면 그대로 두면 돼요</b></>
-                  : '잠깐만요, 다 읽으면 칸을 채워 드려요'}
-              </div>
-            </div>
-          </div>
-        )}
-      
-        {/* 🤖🤖 **AI 가 더 다듬는 중 — 끝날 때까지 «안 사라지는» 줄** [2026-09-09 창업자 실물 제보]
-            📮 창업자 = *"ai가 읽는다 안내가 끝나고 어느순간 아무일도 없다가 갑자기돼"* (30초쯤)
-            ⛔ 옛 판 = 토스트 20초 vs 실제 20~60초 → **화면이 죽은 것처럼 보인다.** 그때 앱을 끈다.
-            ⭐ 토스트는 시간이 정해져 있어 못 맞춘다 — «상태»로 띄우고 끝나면 저절로 사라지게 한다.
-            ⛔ 「사진 읽는 중」과 «같이» 뜨지 않는다 — 글자 읽기가 끝난 «뒤»에 다듬기가 시작된다.
-            🔒 판 = scripts/_repro-다듬는중표시-0909.mjs */}
-        {다듬는중 && !ocr.busy && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 'var(--r-md)', background: 'var(--cream)', color: 'var(--brown)', marginBottom: 12 }}>
-            <img src={uiGomPot} alt="" aria-hidden="true" draggable={false} className="hk-m-tongtong"
-              width={33} height={47} style={{ flex: '0 0 auto', objectFit: 'contain', margin: '-6px 0' }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 16.5, fontWeight: 700 }}>AI가 더 다듬는 중이에요…</div>
-              <div className="t-sub" style={{ fontSize: 15, marginTop: 4, lineHeight: 1.4, wordBreak: 'keep-all' }}>
-                20~60초 걸려요 · <b style={{ fontWeight: 800, color: 'var(--brown)' }}>그동안 아래 칸을 고쳐도 돼요</b>
-              </div>
-            </div>
-          </div>
-        )}
       <input ref={photoRef} type="file" accept="image/*" onChange={onPhoto} style={{ display: 'none' }} />
 
       <input ref={ocrRef} type="file" accept="image/*" multiple onChange={onOcrFile} style={{ display: 'none' }} />
@@ -1165,7 +1107,66 @@ export default function EditorScreen({ id, prefill }) {
         </div>
 
 
+        {/* 📣📣 **「지금 뭐 하는 중인지」는 «맨 위»에 둔다** [2026-09-09 창업자 실물 제보]
+            📮 창업자 = *"난 토스트만 봤어. 넘 아래있으니 못본건지 아님 안뜬건지 모르겠다"*
+            ⛔ 옛 자리 = 사진칸(34vh) + 안내상자 «아래»라 폰에서 첫 화면에 안 들어왔다.
+               떠 있었는데 «못 본» 것이다 — 안 뜬 것보다 나쁘다(고쳤다고 착각한다).
+            ⭐ 상단바 바로 밑 = 스크롤을 어디로 하든 처음에 반드시 보이는 자리.
+            🔒 판 = scripts/_repro-다듬는중표시-0909.mjs */}
+          {/* 사진 읽는 중 — 칸 채우기 진행 표시
+              ⏳⏳ [2026-08-13 창업자 제보] *"레시피 2장 올릴때 로딩이 좀 걸려. **못기다리고 이상하다 하고 끌수도 있을 듯.**"*
+              ⛔ 옛 판 = 동그라미 하나 돌고 「…40%」 한 줄. **한 장을 다 읽으면 40% 가 0% 로 돌아간다** —
+                 숫자가 뒤로 가니 «멈췄다/고장났다»로 읽힌다. 그게 끄고 싶어지는 순간이다.
+              ✅ 셋을 고쳤다 —
+                 ① **막대가 앞으로만 간다**(장 수를 반영한 «전체» 진척률 — 1장째 40% 면 2장 중 20%)
+                 ② **얼마나 걸리는지 미리 말한다**(여러 장이면 「조금 걸려요」 · 「그대로 두면 돼요」)
+                 ③ **꼬르곰이 통통 뛴다** — 그림이 움직이면 «살아 있다»가 보인다(동그라미보다 세다) */}
+          {ocr.busy && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 'var(--r-md)', background: 'var(--cream)', color: 'var(--brown)', marginBottom: 12 }}>
+              <img src={uiGomPot} alt="" aria-hidden="true" draggable={false} className="hk-m-tongtong"
+                width={33} height={47} style={{ flex: '0 0 auto', objectFit: 'contain', margin: '-6px 0' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16.5, fontWeight: 700 }}>
+                  사진에서 글자 읽는 중… {ocr.total > 1 ? `${ocr.total}장 중 ${ocr.page}장째` : `${ocr.pct}%`}
+                </div>
+                {/* 📊 전체 진척률 — 여러 장이면 「앞 장들은 다 끝났다」까지 세어야 막대가 뒤로 안 간다 */}
+                <div style={{ height: 6, borderRadius: 99, background: 'rgba(122,90,58,.16)', overflow: 'hidden', margin: '6px 0 0' }}>
+                  <div style={{
+                    height: '100%', borderRadius: 99, background: 'var(--brown)',
+                    width: `${Math.min(100, Math.round(((ocr.page - 1) * 100 + ocr.pct) / Math.max(1, ocr.total)))}%`,
+                    transition: 'width .35s ease',
+                  }} />
+                </div>
+                {/* ⏱ 「오래 걸린다」를 «먼저» 말해 준다 — 예고된 기다림은 고장으로 안 읽힌다 */}
+                <div className="t-sub" style={{ fontSize: 15, marginTop: 5, lineHeight: 1.4 }}>
+                  {ocr.total > 1
+                    ? <>사진이 {ocr.total}장이라 조금 걸려요 · <b style={{ fontWeight: 800, color: 'var(--brown)' }}>이 화면 그대로 두면 돼요</b></>
+                    : '잠깐만요, 다 읽으면 칸을 채워 드려요'}
+                </div>
+              </div>
+            </div>
+          )}
+        
+          {/* 🤖🤖 **AI 가 더 다듬는 중 — 끝날 때까지 «안 사라지는» 줄** [2026-09-09 창업자 실물 제보]
+              📮 창업자 = *"ai가 읽는다 안내가 끝나고 어느순간 아무일도 없다가 갑자기돼"* (30초쯤)
+              ⛔ 옛 판 = 토스트 20초 vs 실제 20~60초 → **화면이 죽은 것처럼 보인다.** 그때 앱을 끈다.
+              ⭐ 토스트는 시간이 정해져 있어 못 맞춘다 — «상태»로 띄우고 끝나면 저절로 사라지게 한다.
+              ⛔ 「사진 읽는 중」과 «같이» 뜨지 않는다 — 글자 읽기가 끝난 «뒤»에 다듬기가 시작된다.
+              🔒 판 = scripts/_repro-다듬는중표시-0909.mjs */}
+          {다듬는중 && !ocr.busy && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 13px', borderRadius: 'var(--r-md)', background: 'var(--cream)', color: 'var(--brown)', marginBottom: 12 }}>
+              <img src={uiGomPot} alt="" aria-hidden="true" draggable={false} className="hk-m-tongtong"
+                width={33} height={47} style={{ flex: '0 0 auto', objectFit: 'contain', margin: '-6px 0' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16.5, fontWeight: 700 }}>AI가 더 다듬는 중이에요…</div>
+                <div className="t-sub" style={{ fontSize: 15, marginTop: 4, lineHeight: 1.4, wordBreak: 'keep-all' }}>
+                  20~60초 걸려요 · <b style={{ fontWeight: 800, color: 'var(--brown)' }}>그동안 아래 칸을 고쳐도 돼요</b>
+                </div>
+              </div>
+            </div>
+          )}
         {/* 사진으로 채우기는 재료·만드는 법 각 칸 옆의 📷 버튼으로 — 썸네일 사진과 헷갈리지 않게 여기엔 두지 않는다 */}
+
         <div className="field">
           <label>제목</label>
           {/* autoFocus 금지 — 화면에 들어오자마자 키보드가 아래 내용을 다 가려버린다. */}

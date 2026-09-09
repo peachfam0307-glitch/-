@@ -1,0 +1,86 @@
+#!/usr/bin/env node
+/**
+ * 🔑 「어떤 오류에 어떤 안내 · 열쇠는 어떻게」 재현판 — 2026-09-09
+ *
+ * 📮 창업자 = "어떤 오류에 어떤 안내가 들어가고 열쇠는 어떻게 되는지 세밀하게 설계해서 남겨"
+ *          ＋ "자동으로 돌아가게 하라고 열쇠도, 안내도."
+ *          ＋ "유저입장에서 땜빵금지야. 구멍샅샅히 고려해서 아까 워커붙인거 반영해서"
+ *
+ * ⭐ 불변식 = 「열쇠는 그대로예요」라고 말했으면 «진짜로» 안 깎여야 한다.
+ *    그래서 서버가 «안 깎았다»고 보낸 까닭에만 그 말이 붙는지 잰다.
+ *
+ * 📖 표 = docs/열쇠와안내-까닭별-2026-09-09.md
+ */
+import { readFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { 까닭말, 다듬기끝말 } from '../src/안내말.js'
+
+const 여기 = dirname(fileURLToPath(import.meta.url))
+const 읽기 = (...p) => readFileSync(join(여기, '..', ...p), 'utf8')
+const worker = 읽기('ocr-proxy', 'worker.js')
+const ocr = 읽기('src', 'ocr.js')
+const 말 = 읽기('src', '안내말.js')
+const app = 읽기('src', 'App.jsx')
+const 창 = 읽기('src', 'components', 'TidyWaiting.jsx')
+const 문서 = 읽기('docs', '열쇠와안내-까닭별-2026-09-09.md')
+
+let 틀림 = 0
+const 잰다 = (ok, 이름) => { if (!ok) 틀림++; console.log(`   ${ok ? '✅' : '❌'} ${이름}`) }
+
+console.log('\n🔑 까닭별 안내 · 열쇠 — 재현판\n')
+
+// ⑴ ⭐ 서버가 «안 깎았다»고 보내는 까닭들 — 그 말이 문서·코드에 다 있나
+const 안깎는까닭 = ['빈손', '전에읽음', '처리중', '구글실패']
+console.log('  ⑴ 서버가 보내는 까닭이 하나도 안 새나')
+for (const 왜 of [...new Set([...worker.matchAll(/왜: '([^']+)'/g)].map((m) => m[1]))]) {
+  if (왜 === '정상') continue
+  const m = 까닭말(왜)
+  잰다(m.머리 !== '잘 안 됐어요', `«${왜}» 에 제 말이 있다 — ${m.머리}`)
+  잰다(문서.includes(왜), `«${왜}» 가 표에도 적혀 있다`)
+}
+
+console.log('\n  ⑵ ⭐ 「열쇠는 그대로/안 썼어요」는 «안 깎은» 까닭에만 붙는다')
+for (const 왜 of 안깎는까닭) 잰다(/열쇠/.test(까닭말(왜).열쇠말), `«${왜}» 는 열쇠 얘기를 한다`)
+잰다(까닭말('아무거나모르는것').열쇠말 === '', '모르는 까닭엔 열쇠 얘기를 «안» 한다')
+잰다(까닭말('빈손', false).열쇠말 === '' && /연결/.test(까닭말('빈손', false).머리),
+  '⭐답을 못 받았으면(앎=false) 열쇠 얘기를 «통째로» 뺀다 — 모르는 걸 안다고 하면 안 된다')
+
+console.log('\n  ⑶ 한도(429)도 같은 통으로 들어온다')
+for (const 왜 of ['rate_limited', 'global_quota', 'user_quota']) {
+  잰다(까닭말(왜).머리 !== '잘 안 됐어요', `«${왜}» 에 제 말이 있다 — ${까닭말(왜).머리}`)
+  잰다(worker.includes(왜), `«${왜}» 를 서버가 실제로 보낸다`)
+}
+잰다(/if \(!_왜\) _왜 = _ocrNote/.test(ocr), '한도를 까닭 통에 옮겨 담는다')
+
+console.log('\n  ⑷ ⭐ 502 의 까닭이 앱까지 온다 (2026-09-09 에 잡은 구멍)')
+잰다(/const d = await resp\.json\(\)\.catch\(\(\) => null\)\s*\n\s*if \(d && d\.왜\) _왜 = d\.왜/.test(ocr),
+  '응답이 실패해도 몸통의 «왜»를 읽는다')
+
+console.log('\n  ⑸ ⭐ 글자를 못 얻어도 «말은 한다» (조용히 return 하던 자리)')
+잰다(/if \(!text\.trim\(\)\) \{[\s\S]{0,400}끝알림\(까닭말\(셈\.왜, 셈\.앎\)\)/.test(app),
+  '못 읽었으면 까닭을 창에 띄운다')
+잰다(/try \{ t = await ocrImage\(장\) \} catch \{ t = '' \}/.test(app),
+  '한 장이 터져도 안내까지 날아가지 않는다')
+
+console.log('\n  ⑹ 끝말이 «남는다» — 사라지기만 하면 됐는지 모른다')
+잰다(/끝알림\(다듬기끝말\(true\)\)/.test(app), 'AI 성공을 말한다')
+잰다(/끝알림\(다듬기끝말\(false\)\)/.test(app), 'AI 실패도 말한다(옛 판은 창업자에게만 말했다)')
+잰다(/한 번 더 눌러 주세요/.test(다듬기끝말(false).몸), '실패엔 «무엇을 누르면 되는지»가 있다')
+잰다(다듬기끝말(false).열쇠말 === '열쇠는 안 써요', '다시 눌러도 열쇠가 안 든다고 말한다')
+잰다(/\{끝\.머리\}/.test(창) && /\{끝\.몸\}/.test(창), '창이 그 말을 그대로 띄운다')
+
+console.log('\n  ⑺ 창이 되풀이해 튀어나오지 않는다')
+잰다(/창닫음\.current = true/.test(app), '닫으면 기억한다')
+잰다(/if \(!창닫음\.current\) set자동다듬기창\(true\)/.test(app), '닫은 뒤엔 다시 안 띄운다')
+잰다(/창닫음\.current = false/.test(app), '새 사진이면 다시 띄운다')
+
+console.log('\n  ⑻ 유저에겐 하얀 창 «하나»만 (창업자 폰에만 파란 띠)')
+잰다(/if \(tidyFounder\(\)\) \{\s*\n\s*showToast\(/.test(app), '읽었어요 띠는 창업자에게만')
+잰다(/if \(tidyFounder\(\)\) showToast\('AI 다듬기는 못 했어요'/.test(app), '못 했어요 띠도 창업자에게만')
+
+console.log('\n  ⑼ 말은 «한 곳»에서만 나온다')
+잰다(!/글자가 안 보여요/.test(app) && !/글자가 안 보여요/.test(창), '까닭 문구를 화면 코드에 또 적지 않았다')
+
+if (틀림) { console.log(`\n❌ ${틀림}개 틀렸다 — 안내와 열쇠가 어긋난다.\n`); process.exit(1) }
+console.log('\n✅ 전부 통과 — 까닭마다 제 말이 나가고, 안 깎았을 때만 「그대로예요」라고 한다.\n')

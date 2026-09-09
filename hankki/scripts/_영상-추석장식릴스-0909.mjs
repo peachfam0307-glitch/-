@@ -59,7 +59,9 @@ for (let i = 0; i < 5; i++) {
 // ⛔ body 배경색으로 재면 안 된다 — 살구 토큰(#fdf1e8)과 실제 칠해지는 색이 다르다(그라데이션·겹칩).
 //    테마는  로 걸리니 «그 속성»을 본다(theme.js 43줄).
 const 바탕 = await p.evaluate(() => document.documentElement.getAttribute('data-theme'))
-const 철 = await p.evaluate(() => document.querySelectorAll('.screen img[style*="position: absolute"]').length)
+// ⛔ 장식은 «body 로 나가 있다»(.fade 의 transform 때문에 통 안에 두면 fixed 가 갇힌다).
+//    그래서 .screen 안에서 찾으면 늘 0 이 나온다 — 2026-09-09 에 실제로 그렇게 헛발을 짚었다.
+const 철 = await p.evaluate(() => document.querySelectorAll('body > div[aria-hidden] img[src*="season"], body > div[aria-hidden] img').length)
 console.log('  · 배경 =', 바탕, '· 홈 장식 조각 =', 철)
 
 await p.waitForTimeout(1200)

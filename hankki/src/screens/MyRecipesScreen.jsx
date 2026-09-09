@@ -54,6 +54,7 @@ import { isPinned, pinName, pinOf, nextPin, FAV_PINS } from '../favPin'
 import idxHeart from '../assets/ui/idx_heart.png'
 // 🖼 일기 사진이 「큰 창고」에 있으면 쪽지(`idb://…`)다 — 달력·앨범도 꺼내서 그려야 한다
 import StoredImg from '../photoView'
+import SeasonHeadCut from '../components/SeasonHeadCut.jsx'
 
 // 레시피 탭 첫 방문 코치마크 — 모아보기·요리 기록 세그먼트 안내
 const MYRECIPES_COACH_KEY = COACH.myrecipes
@@ -542,10 +543,13 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
             {/* 🐧 [2026-08-13 창업자 제보] *"레시피, 한끼일기탭은 «같은 모양» 꼬르곰이"* ＋ *"펭펭이든 친구들이든 우리애들"*
                 ⭐ 한 화면인데 제목만 갈리니 **같은 곰이 두 탭에 그대로** 있었다 → 일기일 땐 펭펭이 한 술 뜬다(냠냠).
                    일기 = «먹은 것을 적는 자리» 라 숟가락 든 컷이 맞다. */}
+            {/* 🎑🎃 명절엔 이 자리가 명절 컷으로 «바뀐다»(SeasonHeadCut). 철이 아니면 아래 기본 컷 그대로. */}
             {view === 'log' ? (
-              <img src={pengNyam} alt="" draggable={false} width={34} height={44} className="hk-m-nyam" style={{ display: 'block', objectFit: 'contain', transformOrigin: 'bottom center', margin: '-5px 0' }} />
+              <SeasonHeadCut 탭="log" 기본={pengNyam} 폭={34} 높이={44} 여백={-5} 모션="hk-m-nyam"
+                style={{ transformOrigin: 'bottom center' }} />
             ) : (
-              <img src={gomHeader} alt="" draggable={false} width={42} height={42} className="hk-m-sway" style={{ display: 'block', objectFit: 'contain', transformOrigin: 'bottom center', margin: '-4px 0' }} />
+              <SeasonHeadCut 탭="rec" 기본={gomHeader} 폭={42} 높이={42} 여백={-4} 모션="hk-m-sway"
+                style={{ transformOrigin: 'bottom center' }} />
             )}
             {/* 🏷 제목은 «지금 보고 있는 것»을 말한다 — 「일기」 탭으로 들어왔는데 머리글이
                 「레시피」면 어디에 있는지 헷갈린다(검수판에서 드러났다). */}

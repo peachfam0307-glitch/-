@@ -58,6 +58,10 @@ import { 로그인해뒀나 } from '../cloud'
 import { weeklyNow, homemadeNow, snsNow } from '../data/weekly'
 import { whatsNew } from '../data/whatsnew'
 import { pantryScore } from '../pantryMatch'
+import SeasonDecor from '../components/SeasonDecor.jsx'
+// 🇰🇷 명절엔 홈의 «우리 애» 둘도 한복을 입는다 — 📮창업자 2026-09-09 *"쟤들만 한복아니니까 이상해서.."*
+import { 홈컷, 줄장식 } from '../data/seasonDecor.js'
+import { useSeasonCuts } from '../season/useSeasonCuts.js'
 
 // 🗓🍳 「이번 주」 박스 — 제철 줄과 우리집레시피 줄이 «똑같이» 생겼다.
 //   ⛔ 마크업을 두 번 적지 않는다 — 그러면 한쪽만 고치는 사고가 난다(2026-08-11 신설).
@@ -65,7 +69,7 @@ import { pantryScore } from '../pantryMatch'
 // 📅 [창업자 2026-09-07 00:05] *"홈화면에 이번주제철 옆에 월요일 업뎃을 표시할까??"* · *"sns는 수요일 업뎃인거"* · *"월 배지를 옆에 달아도 좋고"*
 //    → 키커 옆 작은 동그라미 「월」·「수」. 🔢 실측 = 제철 19주·우리집 25주 `from` 전부 월요일 · SNS 20편 전부 수요일(weekly.js·basics.js).
 //    ⛔ 요일을 코드에서 «세지» 않는다 — 데이터가 그 요일에 열리게 우리가 맞춰 두는 것이라(check-weekly 가 월요일을 지킨다) 글자로 준다.
-function WeekBox({ w, 기본, open, 요일 }) {
+function WeekBox({ w, 기본, open, 요일, 줄컷 }) {
   return (
     <div className="weekly-box">
       <div className="weekly-text">
@@ -80,6 +84,19 @@ function WeekBox({ w, 기본, open, 요일 }) {
               (2026-09-28 「추석 남은 음식」이 실제로 그랬고, 52주 표 기준 17주가 제철이 아니다) */}
           <div className="weekly-kicker">{w.kicker || 기본}</div>
           {요일 && <span className="weekly-day" aria-label={`${요일}요일마다 새로 와요`}>{요일}</span>}
+          {/* 🧒🧒 [2026-09-09 창업자 확정] 명절 듀오는 «이 줄에 박는다» — 화면 고정이 아니다.
+              📮 *"월요일 옆에 있자나 애들이!!!"* ＋ *"고정해줘 스크롤하면 내려가는거이상해"*
+              ⛔ 아침엔 «화면 고정»으로 만들었다(*"홈을 내리면 안따라와"*). 그때는 「보름달」 얘기였고,
+                 듀오는 «글에 붙어야» 하는 것이었다 — 알약 옆이 제자리라 카드가 굴러가면 같이 가야 한다.
+              ⭐ 줄 높이는 «안 늘어난다» — `position: absolute` 로 줄 밖으로 나와 앉는다. */}
+          {줄컷 && (
+            <span aria-hidden style={{ position: 'relative', width: 0, height: 0, flex: '0 0 auto' }}>
+              <img src={줄컷} alt="" draggable={false}
+                // ⛔ maxWidth:'none' 이 «반드시» 있어야 한다 — 전역 「img{max-width:100%}」 가
+                //    기준을 «폭 0 인 껍데기»로 잡아 그림을 0×0 으로 만든다(2026-09-09 실제로 그랬다).
+                style={{ position: 'absolute', left: 4, top: -26, width: 62, maxWidth: 'none', opacity: 0.9, pointerEvents: 'none' }} />
+            </span>
+          )}
         </div>
         <div className="weekly-title">{w.title}</div>
         <div className="t-sub weekly-why">{w.why}</div>
@@ -236,6 +253,11 @@ export default function HomeScreen() {
   //   ⭐ **읽으면 꺼지고, 새것이 오면 다시 뜬다** — 판정은 `isNewsUnread`(팝업과 같은 열쇠) 한 곳에서.
   //   ⛔ `useState` 로 «한 번만» 읽는다 — 그리는 중에 localStorage 를 매번 읽으면
   //      표시를 하고도 화면이 안 바뀐다(리액트는 저장소를 안 본다).
+  // 🇰🇷 명절이면 그림만 한복으로 바꿔치기한다 — 자리·크기·움직임은 손대지 않는다.
+  //    ⛔ 철이 아니거나 그 철에 한복 컷이 없으면 «원래 컷» 그대로 (없는 걸 억지로 끼우지 않는다).
+  const { 철: 명절, 컷: 명절컷 } = useSeasonCuts()
+  const 한복 = (자리, 원래) => (명절컷 && 명절컷[홈컷[명절]?.[자리]]) || 원래
+
   const [unread, setUnread] = useState(() => isNewsUnread(news))
   const 소식봤음 = () => { markNewsSeen(news); setUnread(false) }
   // ⚠️ 어떻게 닫든 «봤음»으로 친다 — 안 그러면 뒤로가기로 닫은 사람에게 매번 뜬다.
@@ -330,6 +352,9 @@ export default function HomeScreen() {
 
   return (
     <>
+      {/* 🎑🎃 명절 장식 — 철이 아니면 아무것도 안 그리고 그림도 «안 받는다»(useSeasonCuts).
+          ⛔ 반드시 «맨 앞»에 둔다 — 담는 칸의 자리가 통 맨 위여야 창업자가 놓은 y 가 맞는다. */}
+      <SeasonDecor />
       <div className="topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           {/* 곰 자리에 내 아바타를 넣었다(창업자 2026-07-29). 인사하는 곰은 '레시피' 탭으로 옮김.
@@ -499,7 +524,7 @@ export default function HomeScreen() {
                 ⛔⛔ 크기가 `width={26}` «인라인»이라 CSS 로는 못 이긴다(v10.08 에 당했다).
                    ✅ 그래서 크기를 **CSS 변수**로 읽게 한다 — 폰은 26px 그대로, 패드에서만 `.news-gom` 이 키운다.
                    ⭐ 「한끼 소식」 글자 크기를 클래스로 뺀 것과 «같은 처방»이다(바로 아래 주석). */}
-            <img src={uiGomWow} alt="" draggable={false} className="hk-m-tongtong news-gom"
+            <img src={한복('소식', uiGomWow)} alt="" draggable={false} className="hk-m-tongtong news-gom"
               style={{ flex: '0 0 auto', display: 'block', objectFit: 'contain', margin: '-9px 0',
                 width: 'var(--news-gom, 26px)', height: 'auto' }} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -551,7 +576,7 @@ export default function HomeScreen() {
                     {/* 🐧 펭펭은 갈래와 무관하게 «한 컷»이다 — 이 카드가 한 장뿐이라 갈래마다 바꿀 이유가 없고,
                         찾는 포즈(`pn_search`)가 「다음에 뭐 할까」와 뜻이 맞는다.
                         ⛔ 펭펭을 웃기지 않는다(정본 규칙) — `pn_search` 는 무표정이라 그대로 쓴다. */}
-                    <img src={uiPengSearch} alt="" draggable={false} className="next-peng hk-m-tongtong" />
+                    <img src={한복('다음', uiPengSearch)} alt="" draggable={false} className="next-peng hk-m-tongtong" />
                     {/* 🖼 [창업자 확정 2026-08-26] **패드에서만** 그 요리 «표지»를 왼쪽에 세운다.
                         📮 창업자 = *"D에서 표지랑 펭펭 알약까지 들어가니까 정신없어보여"* →
                            *"오늘 뭐해먹지랑 똑같이 만들되 제목을 아직 안해봤어요를 알약으로"* · *"펭펭은 빼자"*
@@ -626,7 +651,7 @@ export default function HomeScreen() {
             ⛔ `two` 는 «둘 다 있을 때만» 붙는다 — 하나뿐이면 지금 모양(박스 안이 좌우로) 그대로다. */}
         {(weekly || homemade) && (
           <div className={`week-pair${weekly && homemade ? ' two' : ''}`}>
-            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} 요일="월" />}
+            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} 요일="월" 줄컷={명절컷 && 명절컷[줄장식[명절]]} />}
             {homemade && <WeekBox w={homemade} 기본="우리집레시피" open={open} 요일="월" />}
           </div>
         )}

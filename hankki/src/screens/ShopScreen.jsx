@@ -38,6 +38,7 @@ import ConfirmSheet from '../components/ConfirmSheet'
 import { openExternal, matchKo } from '../utils'
 import { CURATION, curIcon, weeklyPicks, isHansalim } from '../data/curation'
 import { weeklyNow, todayKST } from '../data/weekly'
+import SeasonHeadCut from '../components/SeasonHeadCut.jsx'
 
 // 외부 쇼핑몰 열기 — 정식 새 탭(설치된 앱 있으면 App Link 로 앱)으로 연다.
 // (features 문자열을 주면 팝업 창으로 열려 모바일에서 세로로 깨지고 두 번 열린 듯 보였음)
@@ -111,8 +112,9 @@ export default function ShopScreen() {
               ⭐ 여기만 펭펭인 이유 = 이 화면 «아래» 「주부의 장바구니」에 이미 장바구니 든 꼬르곰이 있다.
                  상단바까지 꼬르곰이면 한 화면에 같은 애가 둘 → 펭펭을 올려 둘 다 나오게 했다.
               🧍‍♀️ [2026-08-14 확정] 캐릭터는 **글자 «왼쪽»** — 창업자 *"캐릭터는 같은방향에넣자.왼쪽으로"* */}
-          <img src={uiPengShop} alt="" draggable={false} width={34} height={45} className="hk-m-tongtong"
-            style={{ display: 'block', objectFit: 'contain', margin: '-6px 0' }} />
+          {/* 🎑🎃 명절엔 명절 컷으로 바뀐다. ⭐장보기와 냉장고는 «다른 컷»이다(같은 화면이지만 보는 게 다르다). */}
+          <SeasonHeadCut 탭={view === 'pantry' ? 'fridge' : 'shop'} 기본={uiPengShop}
+            폭={34} 높이={45} 여백={-6} 모션="hk-m-tongtong" />
           <div className="h-title">장보기</div>
           <TabTips tab="shop" />
         </div>

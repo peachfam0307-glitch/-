@@ -4,6 +4,8 @@ import Icon from './Icon'
 import Thumb from './Thumb'
 import DecorLayer from './DecorLayer'
 import { PaperBox, WRITE_SIZES } from './PaperSheet'
+// 🎨 꾸미기를 «재는» 자리 — 📮창업자 2026-09-10 *"꾸미기를 해본사람있어?"* → 잴 눈이 없어서 못 답했다.
+import { 꾸미기열림, 꾸미기저장 } from '../stats.js'
 import { PAPER_RULES, PAPER_SKINS, PAPER_ARTS, paperStyle } from '../data/papers'
 import { seasonRank, isReleased } from '../season'
 import GiftPackSheet, { giftRows } from './GiftPackSheet'
@@ -212,6 +214,9 @@ export default function DecorEditor({ recipe, onSave, onClose, closeRef, ratio =
   // 저장된 표지 상태로 시작하되, 자동저장 초안이 있으면 그걸로 복구(꾸미던 중 날아간 것 되살림).
   const draft = loadDraft(recipe.id)
   const [items, setItemsRaw] = useState(() => (draft?.items || recipe.decor || []).map((d) => ({ ...d })))
+  // 🎨 «꾸미기 서랍을 열었다» 를 한 번 센다(뜰 때 딱 한 번 · 빈 의존성).
+  //   ⭐ 저장(`decor_saved`)과 «따로» 세야 「열었는데 안 붙인 비율」이 나온다.
+  useEffect(() => { try { 꾸미기열림() } catch { /* 통계가 죽어도 꾸미기는 된다 */ } }, [])
   // ↩↩ **실행 취소** (창업자 2026-08-06 — 남들이 «무료 기본»에 두는 것)
   //   ⭐ 왜 필요한가 = 창업자 *"x버튼 있지 않아? 그거랑 다른건가?"* → **다르다.**
   //      X = 그 스티커를 «없앤다»(되살릴 길 0). 실행 취소 = 방금 한 짓을 «무른다».
@@ -524,7 +529,14 @@ export default function DecorEditor({ recipe, onSave, onClose, closeRef, ratio =
   // 저장 안 한 변경이 있나(취소 시 확인용)
   const isDirty = () => JSON.stringify(items) !== JSON.stringify(recipe.decor || []) ||
     (bg || 'none') !== (recipe.decorBg || 'none') || thumb !== savedThumb
-  const doSave = () => { clearDraft(); onSave(items, bg, thumb) }
+  // 🎨 «붙여서 저장했다» 를 한 번 센다 — ⛔무엇을·어느 레시피인지는 안 보낸다(이름 한 개뿐).
+  //   ⭐ 잣대 = 「붙인 게 하나라도 있거나 속지를 골랐거나 표지를 바꿨나」.
+  //      ⛔ 그냥 열었다 닫은 것(뒤로가기도 저장이다)까지 «꾸몄다»로 세면 숫자가 거짓말이 된다.
+  const doSave = () => {
+    const 꾸몄나 = (items && items.length > 0) || (bg && bg !== 'none') || thumb !== savedThumb
+    if (꾸몄나) { try { 꾸미기저장() } catch { /* 통계가 죽어도 저장은 된다 */ } }
+    clearDraft(); onSave(items, bg, thumb)
+  }
   const doExit = () => { clearDraft(); onClose() }
   const handleCancel = () => { if (isDirty()) setExitAsk(true); else doExit() }
   // 🔙🔙 **뒤로가기 = 「저장하고 닫기」. 묻지 않는다.** (창업자 2026-08-12 *"뒤로가기 안됨 … 급짜증난다ㅠ"*)

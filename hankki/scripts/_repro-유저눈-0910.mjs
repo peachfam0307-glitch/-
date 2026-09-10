@@ -97,6 +97,18 @@ console.log('\n👀 유저 눈으로 보기\n')
   잰다(/켜짐/.test(m2.상태글 || ''), '③ 켜짐으로 바뀐다', m2.상태글)
   잰다(m2.열쇠배지 !== '운영자', '③ ⭐열쇠 배지가 «유저처럼» 바뀐다', String(m2.열쇠배지))
   await p.screenshot({ path: `${OUT}/2-on.jpg`, quality: 40, type: 'jpeg' })
+
+  // ── ④ ⭐⭐ 유저 눈을 켜도 **통계는 여전히 「우리 것」이다**
+  //    📮 창업자 = *"유저 눈 스위치 켜면 통계도 안 잡히게 되는거야?"*
+  //    ⛔ 화면은 유저처럼 보이지만 GA4 에는 traffic_type: 'internal' 이 그대로 나가야 한다.
+  //       안 그러면 창업자가 눌러 보는 것이 «유저 행동»으로 쌓여 숫자가 망가진다(활성 19명 기준).
+  const 보낸것 = await p.evaluate(() => [...(window.dataLayer || [])]
+    .map((a) => [...a])
+    .filter((a) => a[0] === 'config')
+    .map((a) => a[2]?.traffic_type || null))
+  잰다(보낸것.length > 0, '④ 통계 설정이 나갔다', JSON.stringify(보낸것))
+  잰다(보낸것.every((t) => t === 'internal'),
+    '④ ⭐유저 눈을 켜도 통계는 «우리 것»으로 나간다 (화면만 유저처럼)', JSON.stringify(보낸것))
   await ctx.close()
 }
 

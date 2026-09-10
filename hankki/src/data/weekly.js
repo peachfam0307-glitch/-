@@ -174,12 +174,12 @@ export const WEEKLY = [
     // 📅 김장철이라 「그 시기의 일」 갈래다 — 제철 재료가 아니라서 kicker 를 바꿨다.
     from: '2026-11-02', title: '김장날 고기', kicker: KICKER_SPECIAL,
     why: '김장하는 날엔 고기죠. 삶고 굽는 세 가지로 골라 보세요.',
-    ids: ['basic-yangji-suyuk', 'basic-suyuk', 'basic-samgyeop-kkwarigochu'],
+    ids: ['basic-yangji-suyuk', 'basic-samgyeop-kkwarigochu'],
   },
   {
     from: '2026-11-09', title: '항정살', kicker: '이번 주 재료',
     why: '항정살 한 덩이로 세 가지가 나와요. 구워서 졸이면 손님상에도 좋아요.',
-    ids: ['basic-hangjeong-suyuk', 'basic-hangjeong-samhap', 'basic-hangjeongsal-ganjang-jorim'],
+    ids: ['basic-hangjeong-samhap', 'basic-hangjeongsal-ganjang-jorim'],
   },
   {
     // ⏳ 두 편뿐이다 — 셋째 「팽이버섯 베이컨 전」은 **창업자가 만드는 법을 쓰기로 했다**(2026-08-18).
@@ -200,12 +200,12 @@ export const WEEKLY = [
   {
     from: '2026-11-30', title: '묵은지', kicker: '이번 주 재료',
     why: '묵은지가 제일 맛있게 익었을 때예요. 볶고 지지고 조리는 세 가지로.',
-    ids: ['basic-mugeunji-bokkeum', 'basic-dwaeji-kimchi-duruchigi', 'basic-godeungeo-mugeunji-jorim'],
+    ids: ['basic-dwaeji-kimchi-duruchigi', 'basic-godeungeo-mugeunji-jorim'],
   },
   {
     from: '2026-12-07', title: '연말 파스타', kicker: KICKER_SPECIAL,
     why: '연말엔 파스타 한 접시가 어울려요. 차갑게, 꾸덕하게, 얼큰하게 세 가지로.',
-    ids: ['basic-haemul-oil-pasta', 'basic-onepan-cream-pasta', 'basic-ttukbaegi-pasta'],
+    ids: ['basic-haemul-oil-pasta', 'basic-ttukbaegi-pasta'],
   },
   // 📋 다음에 채울 곳 = **12/14 부터**. 아직 한 주도 없다.
   //    바닥 = docs/52주-제철표-2026-08-01.md (50 동태·명태 · 51 묵은지 · 52 연말 홈파티)

@@ -46,6 +46,7 @@ import { FAV_NAME } from '../favName'
 // 🏷 갈래 이름도 «한 곳»에서만 온다(`src/settingsGroups.js`) — 화면과 관문이 같은 목록을 본다.
 //    ⛔ 여기에 갈래 이름을 «다시 적지» 말 것. 2026-09-04 에 화면과 관문이 각각 적어서 실제로 갈렸다.
 import { 설정갈래, 설정섹션, 설정이름표스타일 } from '../settingsGroups'
+import { 진짜운영자, 유저눈인가, 유저눈설정 } from '../tidy'
 
 export default function ProfileScreen() {
   const store = useStore()
@@ -55,6 +56,8 @@ export default function ProfileScreen() {
   // (탭 이동은 인자를 못 넘겨서 nudges.js 쪽지로 받는다. 읽는 순간 지워져 한 번만 열린다.)
   const [backup, setBackup] = useState(() => takeOpenBackup())
   const [avatarSheet, setAvatarSheet] = useState(false)
+  // 👀 [2026-09-10] 유저 눈으로 보기 — 켜고 끄면 화면을 다시 그려야 해서 상태로 든다
+  const [유저눈, set유저눈] = useState(() => 유저눈인가())
   const [editSheet, setEditSheet] = useState(false)
   const [confirmAsk, setConfirmAsk] = useState(null) // { title, message, confirmLabel, danger, onConfirm }
   const [unlockAsk, setUnlockAsk] = useState(null) // 백업 안 잠긴 일기를 풀 때 { n, data }
@@ -428,6 +431,44 @@ export default function ProfileScreen() {
             ⭐ 가져오기와 «같은 부품»이다 — 모양도 숫자도 어긋날 수가 없다. */}
         <KeyBadge />
       </div>
+
+      {/* 👀👀 [창업자 확정 2026-09-10] **유저 눈으로 보기** — ⛔운영자 기기에만 뜬다.
+          📮 창업자 = *"이게 나랑 유저랑 보이는 화면이 다르니까 테스트하기가 너무 어렵네"*
+          ⛔ 그날 실제로 하루를 태웠다 — 창업자 폰에서 단추가 하나만 떠서 세 번을 버그로 의심했고,
+             진짜는 «창업자가 무제한이라» 그런 것이었다(시크릿 모드에선 멀쩡했다).
+          ⭐ 켜면 무제한 표시·운영자 배지가 «일반 유저»처럼 굴어서, 이 폰이 그대로 「유저 눈」이 된다.
+          ⛔⛔ **표시만 바뀐다 — 진짜 열쇠는 안 깎인다.** 「열쇠가 다 떨어져 막히는 화면」은 시크릿 모드로 본다.
+          ⛔ 판정은 `tidy.js` 한 곳이 갖는다(잣대를 늘리지 않는다). */}
+      {진짜운영자() && (
+        <div className="pad" style={{ paddingTop: 0 }}>
+          <button
+            className="press"
+            onClick={() => { 유저눈설정(!유저눈); set유저눈(!유저눈); location.reload() }}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px',
+              borderRadius: 14, textAlign: 'left',
+              border: `1px solid ${유저눈 ? 'var(--brown)' : 'var(--line)'}`,
+              background: 유저눈 ? 'var(--cream-deep)' : 'var(--card)',
+            }}
+          >
+            {/* ⛔ `eye` 아이콘은 우리 Icon 에 «없다» — 있는 것 중에 「사람」을 쓴다(유저 눈이니까) */}
+            <Icon name="user" size={18} color="var(--brown)" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: 15.5 }}>유저 눈으로 보기</div>
+              <div className="t-sub" style={{ fontSize: 13.5, marginTop: 2 }}>
+                {유저눈 ? '켜짐 · 지금 일반 유저 화면이에요 (열쇠는 안 깎여요)' : '꺼짐 · 지금 운영자 화면이에요'}
+              </div>
+            </div>
+            <div style={{
+              flex: '0 0 auto', width: 44, height: 26, borderRadius: 999, padding: 3,
+              background: 유저눈 ? 'var(--brown)' : 'var(--line)',
+              display: 'flex', justifyContent: 유저눈 ? 'flex-end' : 'flex-start',
+            }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
+            </div>
+          </button>
+        </div>
+      )}
 
       <div className="pad">
         {/* 프로필 — 아바타는 눌러서 이모지·사진으로 바꿀 수 있다 */}

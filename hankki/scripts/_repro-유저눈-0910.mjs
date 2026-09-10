@@ -103,7 +103,11 @@ console.log('\n👀 유저 눈으로 보기\n')
   //    ⛔ 화면은 유저처럼 보이지만 GA4 에는 traffic_type: 'internal' 이 그대로 나가야 한다.
   //       안 그러면 창업자가 눌러 보는 것이 «유저 행동»으로 쌓여 숫자가 망가진다(활성 19명 기준).
   const 보낸것 = await p.evaluate(() => [...(window.dataLayer || [])]
-    .map((a) => [...a])
+    // ⛔⛔ [2026-09-10] dataLayer 에는 «배열이 아닌 것»도 들어온다 — GTM 스니펫이
+  //    { 'gtm.start': … } 같은 평범한 객체를 밀어 넣는다. 그걸 펼치려 하면 not iterable 로 죽는다.
+  //    📌 내 폰(로컬)에선 안 걸리고 CI 에서만 죽어서 v13.11 배포가 통째로 막혔다.
+  .filter((a) => a && typeof a.length === 'number')
+  .map((a) => [...a])
     .filter((a) => a[0] === 'config')
     .map((a) => a[2]?.traffic_type || null))
   잰다(보낸것.length > 0, '④ 통계 설정이 나갔다', JSON.stringify(보낸것))

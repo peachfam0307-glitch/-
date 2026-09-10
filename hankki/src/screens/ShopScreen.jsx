@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { COACH } from '../coach'
 import { useStore, newId } from '../store'
 import { pantryExpiryCount } from '../pantryExpiry'
+import { 사러나감, 장보기담음 } from '../stats'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import Icon from '../components/Icon'
@@ -212,7 +213,7 @@ export default function ShopScreen() {
                   ⚠️ 이 줄이 없으면 `buyUrlFor()` 가 url 없는 줄을 **쿠팡·네이버 검색으로 보내서**
                      큐레이션에서 링크를 뺀 게 통째로 헛일이 된다(담은 뒤에 새는 구멍). */}
               {!noBuyRow(it) && (
-                <button className="press mini-buy" onClick={() => openUrl(buyUrlFor(it, shops), it.name)}>
+                <button className="press mini-buy" onClick={() => { 사러나감('cart'); openUrl(buyUrlFor(it, shops), it.name) }}>
                   사러가기
                 </button>
               )}
@@ -411,12 +412,14 @@ function Curation() {
   //   ⚠️ 폴백을 타면 한살림 제품을 네이버에서 찾게 되므로 «맨 먼저» 걸러 낸다.
   const linkFor = (it) =>
     isHansalim(it) ? '' : it.url || (MALL_SEARCH[it.mall] || MALL_SEARCH.naver).replace('{q}', encodeURIComponent(it.q))
-  const buy = (it) => openUrl(linkFor(it), [it.brand, it.name].filter(Boolean).join(" "))
+  // 🛒 [2026-09-10] 「주부의 장바구니」에서 «바로» 사러 나간 자리 — 레시피 상세의 픽과 «따로» 센다
+  const buy = (it) => { 사러나감('pick_shop'); openUrl(linkFor(it), [it.brand, it.name].filter(Boolean).join(" ")) }
   const add = (it) => {
     // ⭐ 담는 건 그대로 된다 — 매장에 갈 때 «적어두는 것»은 여전히 쓸모가 있다.
     //   다만 `noBuy` 를 같이 담아 **리스트에서도** 사러가기를 안 그린다.
     //   ⛔ 이게 없으면 `buyUrlFor()` 가 url 없는 줄을 쿠팡·네이버 검색으로 보낸다(＝링크 뺀 게 헛일).
     store.addShopItem({ name: it.name, url: linkFor(it), ...(isHansalim(it) ? { noBuy: true } : {}) })
+    장보기담음()   // 🛒 [2026-09-10] 담기까지 세야 「들어와서 담지도 않는가」가 갈린다
     nav.showToast('장보기 리스트에 담았어요')
   }
 

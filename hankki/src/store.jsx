@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, useCallback, useRef } from 'react'
-import { seedRecipes } from './data/seed'
+import { seedRecipes, 열린때 } from './data/seed'
 import { basicRecipes, BASICS_VERSION } from './data/basics'
 import { makeSampleDiary, SAMPLE_DIARY_ID, SAMPLE_READY } from './data/sampleDiary'
 // ⛔ `FOOD_ICON_GROUPS` 를 빠뜨리면 v96 패스가 ReferenceError 로 죽고
@@ -161,16 +161,27 @@ function migrateBasics(saved) {
   const opened = basicRecipes.filter((r) => !have.has(r.id) && !dead.has(r.id) && !haveTitles.has(r.title))
   if (v >= BASICS_VERSION) {
     return opened.length
-      ? { recipes: [...saved.recipes, ...opened.map((r, i) => ({ ...r, savedAt: Date.now() - i * 60000 }))], seedV: v }
+      ? { recipes: [...saved.recipes, ...opened.map((r, i) => ({ ...r, savedAt: 열린때(r, i) }))], seedV: v }
       : { recipes: saved.recipes, seedV: v }
   }
   const add = basicRecipes
     // 같은 제목의 레시피가 이미 있으면 넣지 않는다 (예전 예시의 김치볶음밥 등과 중복 방지)
     .filter((r) => !have.has(r.id) && !dead.has(r.id) && !haveTitles.has(r.title))
-    .map((r, i) => ({ ...r, savedAt: Date.now() - i * 60000 }))
+    .map((r, i) => ({ ...r, savedAt: 열린때(r, i) }))
+  // 🕘🕘 [창업자 제보 2026-09-10] 「최신 레시피가 제일 아래야」 — **이미 깔린 폰도 고친다**(규칙 18ⓙ).
+  //   ⛔ 새로 까는 사람만 고치면 «지금 쓰는 사람»은 영영 거꾸로 본다. 옛 savedAt 이 폰에 이미 저장돼 있다.
+  //   ✅ 기본 레시피(basic-*)의 savedAt 만 「열린 날짜」로 다시 찍는다.
+  //   ⛔⛔ 유저가 «직접 저장한» 레시피는 한 개도 안 건드린다 — 그 savedAt 은 진짜 저장 시각이다.
+  //   ⭐ 내용은 한 글자도 안 바뀐다(줄 세우는 값만 고친다) — 유저가 고쳐 둔 기본 레시피도 안전하다.
+  const 자리 = new Map(basicRecipes.map((r, i) => [r.id, i]))
+  const 시각고침 = saved.recipes.map((r) =>
+    r && String(r.id).startsWith('basic-') && 자리.has(r.id)
+      ? { ...r, savedAt: 열린때(r, 자리.get(r.id)) }
+      : r
+  )
   // 기존 기본 레시피에 새 표지 사진 입히기 — 아직 사진이 없는(기본 아이콘) 것만.
   // (사용자가 직접 넣은 사진/커스텀은 건드리지 않는다)
-  const withPhotos = saved.recipes.map((r) =>
+  const withPhotos = 시각고침.map((r) =>
     r && BASIC_PHOTOS[r.id] && r.thumb !== 'photo' && r.thumb !== 'none' && !r.image
       ? { ...r, thumb: 'photo', image: BASIC_PHOTOS[r.id] }
       : r

@@ -2,12 +2,14 @@
 //   ＋ 실제 사례 = *"오늘 만난친구가 애호박이랑 자투리재료가 있는데 추천레시피 있으면 좋겠다"*
 import { pantryScore, rankPantryRecipes, pantryRank } from '../src/pantryMatch.js'
 import { allBasicRecipes } from '../src/data/basics.js'
+// ⛔ 날짜를 여기서 만들지 않는다 — 「오늘(KST)」은 today.js 한 곳에서만 만든다(절대원칙 27).
+import { todayKST } from '../src/today.js'
 
 let 죽음 = 0
 const 칸 = (참, 이름, 말 = '') => { console.log(`${참 ? '✅' : '❌'} ${이름}${말 ? ' · ' + 말 : ''}`); if (!참) 죽음++ }
 
-const 오늘 = new Date(); 오늘.setHours(0,0,0,0)
-const 날 = (n) => n === null ? null : new Date(오늘.getTime() + n*86400000).toISOString().slice(0,10)
+const 오늘 = new Date(todayKST() + 'T00:00:00')
+const 날 = (n) => n === null ? null : todayKST(new Date(Date.now() + n*86400000))
 const 칸만들기 = (name, d) => ({ name, expiry: 날(d) })
 const 남은날 = (p) => { if (!p?.expiry) return null
   const d = new Date(p.expiry + 'T00:00:00'); d.setHours(0,0,0,0); return Math.round((d - 오늘)/86400000) }

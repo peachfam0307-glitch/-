@@ -31,9 +31,6 @@ import uiHandPoint from '../assets/ui/hand_point.png'
 //    ⛔ 옛 `ui/gom_thumbsup`·`ui/gom_clap` 은 «매끈 곰»이었다 — 창업자 판정 *"2.4번만 옛날곰이고 나머지는 물결곰이야."*
 //    ✅ `gom_shop`·`gom_heart` 는 **물결이 맞아서 그대로 둔다**(같은 판정).
 import uiGomThumb from '../assets/ui/wave/gom_thumbsup.png'
-import uiGomShop from '../assets/ui/gom_shop.png'
-import uiGomHeart from '../assets/ui/gom_heart.png'
-import uiGomClap from '../assets/ui/wave/gom_clap.png'
 // 🐻🐧 «물결 정본»(`gp_*`)만 쓴다 — 창업자 2026-08-13 *"한끼소식에 쟤 옛날 곰이야"*
 //    ⛔ `assets/ui/gom_*` 다섯(clap·thumbsup·heart·shop)은 **옛 매끈 그림체**다. 선이 굵고 얼굴이 크고 앞치마 무늬도 다르다.
 //       핀에 *"곰펭 = 무조건 물결 · 옛 매끈 곰펭은 앱 반영 금지"* 라고 박혀 있는데 내가 새 자리에 그걸 갖다 썼다.
@@ -51,7 +48,6 @@ import uiGomWow from '../assets/ui/wave/gom_wow.png' // 꼬르곰 감탄(별눈)
 import uiPengSearch from '../assets/ui/wave/pn_search.png'
 // 📔 일기 안내에 쓸 컷 — 꼬르곰·펭펭이 «둘 다» 하트를 만든다. 일기는 「그날의 마음을 남기는」 자리라 맞다.
 //    ⛔ ui 컷 다섯(hand_point·thumbsup·shop·heart·clap)은 이미 다른 단계가 다 쓰고 있어 정본 콤비에서 가져왔다.
-import gpDuoHeart from '../assets/stickers/photo/gp_duoht.png'
 import { needsOnboarding } from '../components/Onboarding'
 import { backupNudgeStep, dismissBackupNudge, askOpenBackup, myRecipeCount, myDiaryCount, needsCloudHome, markCloudHomeSeen, askOpenCloud, 클라우드보임 } from '../nudges'
 import { 로그인해뒀나 } from '../cloud'
@@ -157,11 +153,14 @@ const HOME_COACH_KEY = COACH.home
 const HOME_COACH_STEPS = [
   { sel: '[data-coach="import"]', img: uiHandPoint, label: '레시피 가져오기', desc: '캡처·붙여넣기로 레시피를 쏙 담아요 · 여기서 시작!' },
   { sel: '[data-coach="today"]', img: uiGomThumb, label: '오늘 뭐 해먹지?', desc: '냉장고 재료로 만들 수 있는 요리를 추천해요' },
-  // 📔 하단바 순서대로 짚는다(홈·가져오기·레시피·일기·장보기·레꾸자랑) — 화면과 안내가 어긋나면 못 찾는다
-  { sel: '[data-coach="nav-diary"]', img: gpDuoHeart, label: '한끼 일기', desc: '오늘 뭐 해먹었는지 사진·속지로 남기고 예쁘게 꾸며요 · 달력으로 한눈에' },
-  { sel: '[data-coach="nav-shop"]', img: uiGomShop, label: '장보기 · 쇼핑몰', desc: '18년차 주부가 엄선한 식재료를 담아 바로 사러 가고 · 냉장고 유통기한도 챙겨요' },
-  { sel: '[data-coach="nav-brag"]', img: uiGomHeart, label: '레꾸자랑', desc: '내가 꾸민 레시피를 예쁜 카드로 친구한테 자랑! 카톡·인스타로 쏙' },
-  { sel: '[data-coach="preview"]', img: uiGomClap, label: '한끼 소식', desc: '새로 열린 레시피·꾸미기와 곧 나올 것을 여기서 알려드려요' },
+  // 🚫🚫 [창업자 확정 2026-09-10] *"코치마크도 좀 줄일까?? … 최소화해서"* — **여섯 → 둘.**
+  //    🔢 2026-09-10 실측(첫사람 캡처판) = 앱을 처음 켠 사람이 홈에서만 **여섯 번**을 눌러야
+  //       비로소 아래 탭을 만질 수 있었다(코치는 화면 «전체»를 덮는다).
+  //    ⭐⭐ 뺀 넷은 **탭을 가리키는 것**이었는데, **그 탭에 가면 그 화면 코치가 «또» 뜬다** — 겹쳤다.
+  //       (일기·장보기·레꾸자랑 모두 자기 화면 코치가 따로 있다 · 2026-09-10 실측)
+  //    ✅ 남긴 둘은 «이 화면에서 지금 할 수 있는 것»이다 — 겹치는 안내가 없다.
+  //    ⛔ 열쇠(COACH.home)를 «올리지 않는다** — 올리면 이미 본 사람에게 또 뜬다. 줄이는 판이라 그럴 이유가 없다.
+  //    📌 그래서 「기능이 숨어 있어 모른다」(2026-07-17 창업자 딸이 낸 문제)는 여전히 각 화면 코치가 답한다.
 ]
 
 export default function HomeScreen() {
@@ -248,8 +247,15 @@ export default function HomeScreen() {
 
   // 🎉 새로 열린 날 «딱 한 번» — ⛔온보딩·코치마크와 겹치면 안 뜬다(한 화면에 둘이 겹치면 둘 다 못 읽는다).
   //    ⛔ 주간 레시피만 바뀐 주엔 안 뜬다 — 그건 홈 뱃지로 충분하다(매주 팝업 = 재촉).
+  //    🚫🚫 [창업자 확정 2026-09-10] **레시피가 하나도 없는 사람에겐 안 띄운다.**
+  //       🔢 2026-09-10 실측(첫사람 캡처판) = 앱을 깐 첫날, 아직 레시피 0개인 사람 앞에
+  //          「꾸미기에 가을이 왔어요 · 스티커 24종」 시트가 화면을 통째로 덮었다.
+  //       ⭐ **꾸밀 레시피가 없는 사람에게 꾸미기 소식은 아직 쓸 데가 없다.**
+  //       ⭐ 그리고 이 팝업은 «꺼도 아무것도 안 잃는다» — 소식 «페이지»는 그대로 있고
+  //          홈 카드로 언제든 열린다(NewsPopup 머리말에 적어둔 그대로다).
+  //       ⛔ 「본 것으로 친다」를 하지 «않는다» — 레시피가 생기면 그때 정상적으로 한 번 뜬다.
   const [newsPop, setNewsPop] = useState(
-    () => needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY)
+    () => needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY) && myN >= 1
   )
   // 🔵 「새로」 뱃지 — ✅창업자 확정 2026-08-31 (시안 넷 중 **㉣ 둘 다**)
   //   📮 창업자 = *"한끼소식에 알약은 색을 다르게 하거나, 새로 올라온게 있으면 표시가 있으면 좋겠어."* → 판정 *"ㄹ하자"*

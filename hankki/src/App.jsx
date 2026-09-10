@@ -23,6 +23,8 @@ import { useTimer } from './timer'
 import Onboarding, { needsOnboarding } from './components/Onboarding'
 import CloudGate from './components/CloudGate'
 import ConfirmSheet from './components/ConfirmSheet'
+import { 앱안인가 } from './nativeAuth'                       // 🍎 아이폰 앱 안 = 로그인 필수 스위치(§8 ⑥)
+import { 로그인해뒀나, 사람지켜보기 } from './cloud'
 import { askOpenBackup, needsCloudGate, askOpenCloud, 클라우드보임, 자동받기켤까, shouldAskReview, shouldAskReviewNow, myRecipeCount, 문머리글 } from './nudges'
 import ReviewAskSheet from './components/ReviewAskSheet'
 import HomeScreen from './screens/HomeScreen'
@@ -91,7 +93,18 @@ export default function App() {
   //   ⛔ 이미 쓰고 있던 사람에겐 안 띄운다 — 잘 쓰던 앱이 갑자기 로그인 화면으로 시작하면 그건 «벽»으로 읽힌다.
   //      그 사람들은 홈 한 줄에서 만난다(규칙 18 ⓙ — 이미 깔린 폰).
   //   🔀 ＋ 공개 스위치(`클라우드보임`) — 켜는 날까지 창업자 폰에서만. 근거는 `nudges.js` 머리주석.
-  const [cloudGate, setCloudGate] = useState(() => 클라우드보임() && needsCloudGate() && needsOnboarding())
+  //   🍎🔐 [2026-09-10 · 창업자 확정 «로그인 필수» · docs/로그인-필수로 §8·§10] **아이폰 앱 안에선 조건이 다르다** —
+  //      「처음 한 번」이 아니라 «로그인해 두지 않았으면 언제나» 문이다(로그아웃·계정 삭제 뒤도).
+  //      ⛔ 스위치는 `앱안인가()` 하나 — 웹·안드로이드는 아래 조건 그대로(A/B 판정 뒤에만 넓힌다 · §8 ⑥).
+  //      ⭐ 표식(`로그인해뒀나`)으로 «먼저» 그리고, 진짜 상태는 아래 `사람지켜보기` 가 «확정»으로 말할 때 바로잡는다(§8 ⑤).
+  const [cloudGate, setCloudGate] = useState(() => 클라우드보임() && (앱안인가() ? !로그인해뒀나() : (needsCloudGate() && needsOnboarding())))
+  // 🍎 «확정 null» 이면 문을 다시 띄운다 — 로그아웃 · 계정 삭제 · 다른 기기에서 지운 계정(토큰 취소) 모두 여기로 온다.
+  //    ⛔ `확정: false`(붙기 실패 = 인터넷 없음)로는 «안» 띄운다 — 멀쩡히 쓰던 사람을 느린 망에서 쫓아내지 않는다.
+  //    ⭐ 문은 «덮어» 뜬다(화면 스택을 안 지운다) → 다시 로그인하면 쓰던 자리 그대로.
+  useEffect(() => {
+    if (!앱안인가()) return undefined
+    return 사람지켜보기((사람, m) => { if (사람 === null && m && m.확정) setCloudGate(true) })
+  }, [])
   // 🙏 한마디 청하기 — 「레시피를 저장한 직후」 (창업자 확정 2026-09-03 · 내 레시피 2개부터)
   //   ⛔⛔ **왜 «화면»이 아니라 여기서 띄우나** — `EditorScreen` 은 저장에 성공하면 `nav.popAll()` 로
   //      스스로 사라진다. 거기서 시트를 그리면 같은 틱에 언마운트돼 **아무것도 안 뜬다.**

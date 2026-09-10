@@ -925,8 +925,12 @@ function reducer(state, action) {
     }
     case 'reset': {
       // 처음 상태로 — 기본 레시피를 다시 채우므로 삭제 기록도 초기화한다.
+      // 👪 `action.전부` = 일기·재료함·장보기·가게까지 «다» 처음으로 (2026-09-10 · 다른 계정 「비우고 시작」 · 로그인-필수로 §10)
+      //    ⛔ 설정의 「초기화」는 그대로(전부 없음) — 그 단추의 뜻(레시피만)을 안 바꾼다.
+      const 전부 = action.전부 ? { diary: [], pantry: [], shoppingList: [], wishlist: [], shops: DEFAULT_SHOPS, sampleGone: false } : null
       return {
         ...state,
+        ...전부,
         recipes: seedRecipes,
         seedV: BASICS_VERSION,
         removedSeedIds: [],
@@ -1246,7 +1250,7 @@ export function StoreProvider({ children }) {
     removeFolder: useCallback((name) => dispatch({ type: 'removeFolder', name }), []),
     setProfile: useCallback((patch) => dispatch({ type: 'setProfile', patch }), []),
     clearAll: useCallback(() => dispatch({ type: 'clear' }), []),
-    reset: useCallback(() => dispatch({ type: 'reset' }), []),
+    reset: useCallback((전부 = false) => dispatch({ type: 'reset', 전부: 전부 === true }), []),
     addShop: useCallback((shop) => dispatch({ type: 'addShop', shop }), []),
     updateShop: useCallback((id, patch) => dispatch({ type: 'updateShop', id, patch }), []),
     removeShop: useCallback((id) => dispatch({ type: 'removeShop', id }), []),

@@ -94,10 +94,7 @@ function WeekBox({ w, 기본, open, 요일, 줄컷 }) {
               <img src={줄컷} alt="" draggable={false}
                 // ⛔ maxWidth:'none' 이 «반드시» 있어야 한다 — 전역 「img{max-width:100%}」 가
                 //    기준을 «폭 0 인 껍데기»로 잡아 그림을 0×0 으로 만든다(2026-09-09 실제로 그랬다).
-                // 📮 [창업자 2026-09-10] 「월요일 옆에 곰돌이도 크기좀 키워야해」 — 62 → 80px.
-                //    ⭐ 껍데기가 폭·높이 0 이라 줄 높이는 한 픽셀도 안 늘어난다(위로만 더 나온다).
-                //    🔢 높이 = 300/360 × 80 = 66.7 → 위로 33 나가고 아래로 33.7 = 월 알약(26)과 가운데가 맞는다.
-                style={{ position: 'absolute', left: 4, top: -33, width: 80, maxWidth: 'none', opacity: 0.9, pointerEvents: 'none' }} />
+                style={{ position: 'absolute', left: 4, top: -26, width: 62, maxWidth: 'none', opacity: 0.9, pointerEvents: 'none' }} />
             </span>
           )}
         </div>

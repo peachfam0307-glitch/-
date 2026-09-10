@@ -8,8 +8,9 @@
 //    이번엔 창업자가 편마다 정한 값이다 — 내가 고른 것이 하나도 없다.
 import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = path.join(import.meta.dirname, '..')
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const 파일 = path.join(ROOT, 'src/data/basics.js')
 
 const 펴기 = { 국: '국간장', 참: '참치액', 백: '백간장', 액: '액젓', 까: '까나리액젓', 연: '연두', 멸: '멸치액젓', 굴: '굴소스' }

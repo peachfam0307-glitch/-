@@ -15,8 +15,9 @@
 //    ? = 표시가 없는데 창업자 백업에는 있다 → 「창」으로 봐야 하지만 확인 전이다
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = path.join(import.meta.dirname, '..')
+const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..')
 const 백업칸 = path.join(ROOT, 'docs/_내레시피-백업')
 
 // 창업자 폰 백업의 제목을 모은다 — 「표시만 빠진 것」을 갈라내는 잣대

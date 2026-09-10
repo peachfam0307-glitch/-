@@ -439,7 +439,8 @@ export default function ProfileScreen() {
           ⭐ 켜면 무제한 표시·운영자 배지가 «일반 유저»처럼 굴어서, 이 폰이 그대로 「유저 눈」이 된다.
           ⭐⭐ **[2026-09-10 저녁 · 바뀌었다] 이제 열쇠도 진짜로 깎인다** (창업자 = "a로가").
           유저 눈이면 두 워커(hankki-ocr · hankki-tidy)에 운영자 열쇠를 «안» 보낸다 →
-          개인 한도를 그대로 받고, 계기판의 「창업자」에도 안 실린다. 끄면 되돌아온다.
+          개인 한도를 그대로 받고, 계기판의 「창업자」에도 안 실린다.
+          ⛔ 끄면 «표시»만 무제한으로 돌아온다 — 그동안 쓴 열쇠는 «안» 돌아온다(워커가 쓴 수를 누적한다).
           ⛔ 판정은 `tidy.js` 한 곳이 갖는다(잣대를 늘리지 않는다). */}
       {진짜운영자() && (
         <div className="pad" style={{ paddingTop: 0 }}>
@@ -458,7 +459,7 @@ export default function ProfileScreen() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: 15.5 }}>유저 눈으로 보기</div>
               <div className="t-sub" style={{ fontSize: 13.5, marginTop: 2 }}>
-                {유저눈 ? '켜짐 · 지금 일반 유저 화면이에요 (열쇠도 진짜로 깎여요)' : '꺼짐 · 지금 운영자 화면이에요'}
+                {유저눈 ? '켜짐 · 일반 유저 화면이에요 · 열쇠가 진짜로 깎여요(안 돌아와요)' : '꺼짐 · 지금 운영자 화면이에요'}
               </div>
             </div>
             <div style={{

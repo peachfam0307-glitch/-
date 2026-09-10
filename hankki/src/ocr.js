@@ -216,6 +216,12 @@ function saveOcrLeft(left) {
       anon: 수(left.anon, null),
       acct: 수(left.acct, null),
       signed: left.signed === true,
+      // 🔓🔓 **[2026-09-10] 서버가 말한 「무제한」을 «담는다» — 그 전엔 통째로 버렸다.**
+      //   📮 창업자 확정 ⓐ(2026-09-02) = 「서버가 말해준다」 인데,
+      //      정작 이 함수가 이 칸을 안 담아서 getOcrLeft() 의 v.무제한 은 **늘 비어 있었다.**
+      //      ＝ 확정해 둔 길이 한 번도 안 돌고, 폰의 표식(tidyFounder)만 혼자 받치고 있었다.
+      //   ⛔ 적대적 검토가 잡았다(2026-09-10) — 「고쳤다」던 자리가 실은 죽은 코드였다.
+      무제한: left.무제한 === true,
     }))
     // 📢 값이 바뀌었다고 알린다 — 알약·가져오기 목록이 듣고 다시 그린다.
     try { window.dispatchEvent(new Event(LEFT_EVENT)) } catch { /* noop */ }

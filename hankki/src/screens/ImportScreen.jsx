@@ -120,6 +120,15 @@ const ALL_FLOWS = [...OPTIONS, ...HIDDEN]
 //    ⛔ 자리마다 따로 적으면 말이 갈라진다(같은 기능은 같은 이름 원칙).
 // 🔀 `홀로` = 자기 줄에 혼자 설 때(가운뎃점을 안 붙인다).
 //    ⛔ 「 · 」는 «앞 문장에 이어 붙일 때»의 이음표다. 줄 맨 앞에 남으면 글머리표처럼 보인다.
+// 🔑 안내 화면 제목 밑에 붙는 «값 한마디» — ⛔여기 한 곳이 잣대다(자리마다 다르게 적으면 또 갈린다)
+function 열쇠말(flow, meta) {
+  // ⛔ 무제한인 사람에게 「열쇠 1개」라고 적으면 거짓말이 된다
+  if (getOcrLeft().무제한) return `${KEY_NAME} 무제한`
+  if (flow === 'photo') return '열쇠를 쓸지 고를 수 있어요'
+  if (!meta?.paid) return `${KEY_NAME}를 안 써요`
+  return meta.costText
+}
+
 function 장수꼬리(costText, paid, 홀로 = false) {
   if (홀로) {
     return <b style={{ fontWeight: 800, fontSize: '0.88em', color: paid ? 'var(--danger)' : 'var(--text-sub)', whiteSpace: 'nowrap' }}>{costText}</b>
@@ -614,6 +623,27 @@ export default function ImportScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, marginBottom: 4 }}>
             <div className="opt-ico"><Icon name={flowMeta.icon} size={24} color={flowMeta.color} stroke={1.7} /></div>
             <div className="h-title" style={{ fontSize: 23, wordBreak: 'keep-all', textWrap: 'balance', lineHeight: 1.35 }}>{flowMeta.title}</div>
+          </div>
+          {/* 🔑🔑 [창업자 확정 2026-09-10] **값을 «누르기 전»에 말한다.**
+              📮 창업자 = *"각 가져오기 안내화면에 열쇠그림이랑 숫자를 표시하면 안돼? 소모되는"*
+                 ＋ *"열쇠는 너무 크지않게 제목앞이나 끝에 아님 아이콘옆에"*
+              ⛔⛔ 왜 필요했나 = 2026-09-10 에 **창업자가 기본 인식 화면을 보고 「이건 열쇠를 쓰는거잖아」로 읽었다.**
+                 안 쓰는 길인데도. **만든 나도 코드 세 파일을 따라가서야 확정했다** — 유저가 알 리가 없다.
+              ⭐ 자리 = 제목 «바로 아래» 왼쪽. 제목은 두 줄이 되는 게 정상이라(위 주석) 옆에 붙이면 배치가 흔들린다.
+              ⛔ 목록(네 갈래 줄)에는 안 붙인다 — 2026-08-28 창업자 판단(*"캡쳐하면 열쇠1개 다 빼자"*)을 안 뒤집는다.
+                 그건 «고르기 전»에 돈 걱정을 시키지 말자는 것이었고, 여기는 «고른 다음»이라 그 문제가 없다.
+              ⛔ 「한끼 앱에서 사진」은 열쇠를 «쓸 수도 안 쓸 수도» 있어서 한 값으로 못 적는다 →
+                 「고를 수 있어요」로 적고, 값은 아래 단추 둘이 각각 말한다. */}
+          <div style={{ display: 'flex', marginTop: 2 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 999,
+              background: 'var(--cream)', color: 'var(--brown)',
+              fontSize: 13.5, fontWeight: 800, whiteSpace: 'nowrap',
+            }}>
+              <img src={uiKeyOne} alt="" aria-hidden="true" draggable={false} style={{ width: 14, height: 14, objectFit: 'contain' }} />
+              {열쇠말(flow, flowMeta)}
+            </span>
           </div>
           <div className="t-sub" style={{ marginTop: 12, marginBottom: 18, fontSize: 16, lineHeight: 1.6, wordBreak: 'keep-all', textWrap: 'pretty' }}>
             {안내들[flow].lead}

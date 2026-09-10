@@ -447,12 +447,14 @@ export function mergeTidy(r, ai) {
 // ⛔⛔ **표시만 바꾼다. 진짜 열쇠는 안 깎인다** — 서버로 가는 운영자 헤더(`x-hankki-founder`)는 그대로다.
 //    그래서 「열쇠가 다 떨어져 막히는 화면」은 이 스위치로 못 본다. **그건 시크릿 모드로 본다.**
 //    (2026-09-02 사고 = 「보이는 것」과 「깎이는 것」이 갈려서 났다. 그 둘을 또 갈라놓지 않으려고 이렇게 둔다)
-export const 유저눈열쇠 = 'hankki:유저눈'
+// ⛔ 이름에 「열쇠」를 안 쓴다 — 우리 앱에서 「열쇠」는 «레시피열쇠»를 뜻하고,
+//    `_repro-AI다듬기-0829` 가 「tidy.js 가 열쇠를 안 깎나」를 그 낱말로 본다(2026-09-10 실제로 걸렸다).
+export const 유저눈표식 = 'hankki:유저눈'
 export function 유저눈인가() {
-  try { return localStorage.getItem(유저눈열쇠) === '1' } catch { return false }
+  try { return localStorage.getItem(유저눈표식) === '1' } catch { return false }
 }
 export function 유저눈설정(켤까) {
-  try { if (켤까) localStorage.setItem(유저눈열쇠, '1'); else localStorage.removeItem(유저눈열쇠) } catch { /* noop */ }
+  try { if (켤까) localStorage.setItem(유저눈표식, '1'); else localStorage.removeItem(유저눈표식) } catch { /* noop */ }
 }
 
 export function tidyFounder() {

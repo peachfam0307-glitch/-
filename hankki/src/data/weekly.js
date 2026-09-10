@@ -114,7 +114,7 @@ export const WEEKLY = [
   {
     from: '2026-09-14', title: '갈치',
     why: '가을 갈치는 기름이 올라 제일 고소해요. 조림·구이·맑은국이에요.',
-    ids: ['basic-galchi-jorim', 'basic-galchi-gui', 'basic-galchi-guk'],
+    ids: ['basic-galchi-jorim', 'basic-galchi-gui'],
   },
   // ⛔ 옛 「버섯 솥밥」(basic-beoseot-sotbap)을 여기서 뺐다 (창업자 2026-08-10).
   //    8/31 에 들어간 창업자 「버섯솥밥」과 이름이 거의 같아 3주 간격으로 두 번 나왔다.
@@ -122,35 +122,35 @@ export const WEEKLY = [
   {
     from: '2026-09-21', title: '버섯',
     why: '버섯이 가장 좋을 때예요. 끓이고 볶고 부치는 세 가지로.',
-    ids: ['basic-dubu-deulkkae-jeongol', 'basic-beoseot-bokkeum', 'basic-beoseot-jeon'],
+    ids: ['basic-dubu-deulkkae-jeongol', 'basic-beoseot-bokkeum'],
   },
   {
     // ⛔ 제철이 «아닌» 주라 기본값(「이번 주 제철」)을 쓰면 안 된다 — 명절 뒤 남은 음식이다.
     from: '2026-09-28', title: '추석 남은 음식', kicker: KICKER_SPECIAL,
     why: '연휴가 끝나면 전이랑 나물이 남죠. 데우기만 하면 물리니까 새 음식으로 바꿔요.',
-    ids: ['basic-jeon-jjigae', 'basic-namul-bibimbap', 'basic-namul-japchae'],
+    ids: ['basic-jeon-jjigae', 'basic-namul-bibimbap'],
   },
   {
     from: '2026-10-05', title: '고구마',
     why: '고구마가 제일 단 때예요. 튀기고 부치고 굽는 세 가지로.',
-    ids: ['basic-goguma-mattang', 'basic-goguma-jeon', 'basic-goguma-gratin'],
+    ids: ['basic-goguma-jeon', 'basic-goguma-gratin'],
   },
   {
     from: '2026-10-12', title: '대하',
     why: '가을 대하 철이에요. 굽고 담그고 튀기는 세 가지예요.',
-    ids: ['basic-daeha-sogeumgui', 'basic-saeujang', 'basic-saeu-twigim'],
+    ids: ['basic-saeujang', 'basic-saeu-twigim'],
   },
   {
     from: '2026-10-19', title: '고등어',
     why: '가을 고등어는 기름이 올라 제일 고소해요. 토막으로 팔아서 손질도 쉬워요.',
-    ids: ['basic-godeungeo-jorim', 'basic-godeungeo-gui', 'basic-godeungeo-kimchijjim'],
+    ids: ['basic-godeungeo-jorim', 'basic-godeungeo-kimchijjim'],
   },
   // ⚠️ 47주 「연근·우엉」을 10/26 으로 당겼다 — 버섯을 9/21 로 옮기면서 10월에 한 자리가 비었다.
   //    ⛔ 44주 배추(김장)를 당기지 않은 이유 = 김장은 11월이라 10월 말이면 이르다.
   {
     from: '2026-10-26', title: '연근·우엉',
     why: '땅속 뿌리채소가 나오는 때예요. 조려서 두고 먹기 좋아요.',
-    ids: ['basic-yeongeun-jorim', 'basic-ueong-jorim', 'basic-yeongeun-salad'],
+    ids: ['basic-yeongeun-jorim', 'basic-yeongeun-salad'],
   },
 
   // ⏰⏰ 11월치는 «10월에» 쓴다 (창업자 2026-08-10 *"10월꺼는 9월에 하자"* → *"10월까지만 하자 그럼"*).

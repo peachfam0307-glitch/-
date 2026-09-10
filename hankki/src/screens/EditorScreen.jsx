@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react'
 // 쓰던 내용이 날아가지 않게 한다. 저장 완료하면 지운다.
 const DRAFT_KEY = 'hankki:editorDraft'
 import { useStore, newId, 기본표지, 방금저장됐나 } from '../store'
+import { 레시피저장 } from '../stats'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import Icon from '../components/Icon'
@@ -767,6 +768,11 @@ export default function EditorScreen({ id, prefill }) {
     } else {
       const rec = { id: newId(), favorite: false, cooked: 0, savedAt: Date.now(), ...patch }
       addRecipe(rec)
+      // 🪜 [2026-09-10] 퍼널의 마지막 걸음 — «진짜로 저장됐나».
+      //    ⛔ 여기(새로 만든 쪽)에서«만» 보낸다 — 위쪽 `editing` 갈래(이미 있는 편을 고친 것)에서
+      //       같이 보내면 마지막 칸이 부풀어 «새는 자리»를 가린다.
+      //    ⛔ 단추를 두 번 눌러도 여기까지는 한 번만 온다(저장이 끝난 자리다).
+      레시피저장()
       나갈까(() => {
         // ⛔ 임시저장은 «성공한 뒤»에만 지운다 — 실패했는데 지우면 적던 것까지 잃는다
         try { localStorage.removeItem(DRAFT_KEY) } catch { /* noop */ }

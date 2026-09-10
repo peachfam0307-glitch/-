@@ -12,6 +12,7 @@ import { guessFoodIcon } from '../components/FoodIcon'
 import { getOcrLeft, KEY_NAME, KEY_SHORT, KEY_UNIT, keyCount } from '../ocr'
 import KeyBadge from '../components/KeyBadge'
 import EarnList from '../components/EarnList'
+import { 갈래고름 } from '../stats'
 import Icon from '../components/Icon'
 import Portal from '../components/Portal'
 // 🐻 [2026-08-28] 잔량 띠의 캐릭터(펭펭 돋보기 · 둘이 하트)를 **뺐다** — 창업자 *"그림 박스하나 없어져"*.
@@ -215,6 +216,9 @@ export default function ImportScreen() {
   //       «어떻게 쓰는지»를 말할 자리가 없어서, 안내가 전부 편집 화면 안으로 밀려 들어가 있었다.
   //    ⚠️ 직접 입력도 예외로 두지 않는다 — 한 갈래만 다르게 굴면 「이건 왜 바로 열리지」가 된다.
   const choose = (key) => {
+    // 🪜 [2026-09-10] 퍼널의 두 번째 걸음 — «어느 갈래를 눌렀나».
+    //    ⛔ 이 한 줄이 없어서 「SNS 캡처에서 샌다」를 짐작으로 말할 수밖에 없었다.
+    갈래고름(key)
     setFlow(key)
     setUrl('')
     setTitle('')

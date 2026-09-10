@@ -48,13 +48,21 @@ export default function SeasonDecor() {
       }
     }
     재기()
+    // ⛔⛔ [2026-09-10 검사 중에 잡았다 — 장식이 «아예 안 뜨는» 판이 있었다]
+    //    까닭 = 첫 바퀴엔 `통` 이 없어서 닻(`<div ref={닻}>`)이 아직 안 붙어 있다.
+    //    그래서 첫 `재기()` 는 닻자리를 못 재고 `null` 로 남는데, 그 뒤로 창 크기가 안 변하면
+    //    ResizeObserver 가 다시 안 불려 **닻자리가 영영 null → span 을 한 개도 안 그린다.**
+    //    (코치 팝업처럼 뭔가 열렸다 닫히는 폰에선 우연히 살아났다 — 조용한 폰에선 안 떴다)
+    //    ✅ 닻이 붙은 «다음 그림»에서 한 번 더 잰다. 값이 같으면 화면은 그대로다.
+    const 다음그림 = requestAnimationFrame(() => requestAnimationFrame(재기))
     const ro = new ResizeObserver(재기)
     ro.observe(el)
     // 📌 목록이 늘면 글이 길어진다 — 통 «안쪽»도 본다.
     if (el.firstElementChild) ro.observe(el.firstElementChild)
     window.addEventListener('resize', 재기)
-    return () => { ro.disconnect(); window.removeEventListener('resize', 재기) }
-  }, [철, 컷])
+    return () => { cancelAnimationFrame(다음그림); ro.disconnect(); window.removeEventListener('resize', 재기) }
+    // 📌 `통` 도 본다 — 통이 붙은 «다음 바퀴»에 다시 돌아 닻자리를 확실히 잡는다.
+  }, [철, 컷, 통])
 
   if (!철 || !컷 || !통) return null
   const 조각들 = 홈장식[철] || []

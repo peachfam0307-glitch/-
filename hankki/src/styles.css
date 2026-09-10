@@ -1767,7 +1767,10 @@ img {
   position: sticky;
   bottom: 0;
   padding: 14px 20px calc(14px + var(--safe-bottom));
-  background: linear-gradient(to top, var(--bg) 92%, transparent);
+  /* ⛔ 그라디언트 금지 — 위쪽 8%가 반투명이라 그 아래 본문 글자가 «비쳐» 보였다.
+     📮 창업자 2026-09-10 = "완성했어요 글자 비치는거 왜 다시 이렇게 됐어?"
+     ⭐ 배경과 «같은 값»으로 꽉 채운다. 비침 0%. */
+  background: var(--bg);
 }
 
 /* 상세 상단 원형 버튼 (이미지 위) */

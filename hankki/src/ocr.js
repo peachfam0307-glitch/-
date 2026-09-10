@@ -10,7 +10,7 @@ import { normalizeNumerals } from './ocrCorrect'
 import { 로그인해뒀나, 내구글번호 } from './cloud'
 // 🔓 운영자 표식 — 「무제한인가」의 잣대를 `getOcrLeft()` 한 곳에 모으려고 여기서 읽는다.
 //    ⛔ 순환 없음(확인) — `tidy.js` 는 `polish`·`parseRecipe` 만 부르고 `ocr.js` 를 안 부른다.
-import { tidyFounder } from './tidy'
+import { tidyFounder, 유저눈인가 } from './tidy'
 
 // ── Google Vision OCR 프록시 ──────────────────────────────────
 // 서버(Cloudflare Worker)가 API 키를 숨기고 Vision을 호출해 '텍스트'만 돌려준다.
@@ -18,6 +18,29 @@ import { tidyFounder } from './tidy'
 // 실패(오프라인·한도초과·오류)하면 아래 폰내장/tesseract로 '조용히' 폴백 → OCR은 늘 동작.
 const OCR_PROXY_URL = 'https://hankki-ocr.annyeong-hankki.workers.dev'
 const OCR_APP_TOKEN = '0VRNDSjHBhwniTzIDAbnRaJygyfGJ2K2'
+
+// 🔓👀 운영자 열쇠를 헤더에 싣는다 — 단, 「유저 눈」이면 «안 싣는다».
+//   📮 창업자 2026-09-10 = "유저 눈 스위치로 갈게" → "a로가"
+//   ⛔⛔ 그 전엔 네 곳이 각자 localStorage 를 «직접» 읽어서 유저 눈을 아예 안 봤다.
+//      그래서 유저 눈을 켜도 ⑴워커가 계속 「창업자」로 세고 ⑵서버가 「무제한」이라 답해
+//      **선택 창이 안 뜨는 그 버그가 그대로 남았다**(창업자가 실제로 겪은 그 자리).
+//   ⭐ 이 한 곳으로 모았다 — 다음에 또 갈리지 않게.
+//   ⚠️ 유저 눈이면 «진짜로» 개인 한도를 받는다. 그게 이 스위치의 목적이다.
+//   ⛔⛔ **[2026-09-10 · 실측으로 잡았다] 헤더 값에 ASCII 밖 글자가 있으면 fetch 가 «통째로» 죽는다.**
+//      HTTP 헤더는 ISO-8859-1 만 실을 수 있어서, 열쇠에 한글이 한 글자라도 있으면
+//      TypeError: String contains non ISO-8859-1 code point 가 나고
+//      **AI 읽기가 조용히 전부 먹통**이 된다.
+//      (주소로 들어가는 운영자 통로에 한글이 섞이면 그대로 그 상태가 된다 — 아무 말도 없다.)
+//      ⭐ 실패의 «모양»을 바꾼다(절대원칙 34) — 못 실을 열쇠면 **안 싣고 그냥 보낸다.**
+//         운영자 대접만 못 받을 뿐, 앱은 유저로서 멀쩡히 돈다.
+function 열쇠헤더(headers) {
+  try {
+    if (유저눈인가()) return headers
+    const f = localStorage.getItem('hankki:founder')
+    if (f && /^[\x20-\x7e]+$/.test(f)) headers['x-hankki-founder'] = f
+  } catch { /* noop */ }
+  return headers
+}
 
 // 마지막 프록시 호출의 안내 신호 — 'user_quota'(내 월 무료 소진)·'global_quota'·'rate_limited'.
 // 앱(EditorScreen)이 읽어 "무료 다 써서 기본 인식이에요" 안내를 띄운다. 읽으면 소비(초기화).
@@ -90,13 +113,7 @@ async function ocrViaProxy(dataUrl, onProgress, batch) {
   }
   const 그만기어 = () => { if (기어감) { clearInterval(기어감); 기어감 = null } }
   const headers = { 'Content-Type': 'application/json', 'x-hankki-token': OCR_APP_TOKEN }
-  // 운영자 무제한 모드(이 기기가 ?founder=…로 진입해 둔 경우)면 무제한 헤더를 실어 보낸다.
-  try {
-    const f = localStorage.getItem('hankki:founder')
-    if (f) headers['x-hankki-founder'] = f
-  } catch {
-    /* noop */
-  }
+  열쇠헤더(headers)   // 👀 유저 눈이면 안 실린다
   let resp
   try {
     resp = await fetch(OCR_PROXY_URL, {
@@ -221,7 +238,7 @@ const 큐쓰기 = (a) => { try { localStorage.setItem(큐칸, JSON.stringify(a.s
 
 async function 한번보내기(행동) {
   const headers = { 'Content-Type': 'application/json', 'x-hankki-token': OCR_APP_TOKEN }
-  try { const f = localStorage.getItem('hankki:founder'); if (f) headers['x-hankki-founder'] = f } catch { /* noop */ }
+  열쇠헤더(headers)   // 👀 유저 눈이면 안 실린다
   const resp = await fetch(OCR_PROXY_URL, {
     method: 'POST',
     headers,
@@ -270,7 +287,7 @@ export async function 밀린열쇠보내기() {
 export async function 열쇠새로고침() {
   try {
     const headers = { 'Content-Type': 'application/json', 'x-hankki-token': OCR_APP_TOKEN }
-    try { const f = localStorage.getItem('hankki:founder'); if (f) headers['x-hankki-founder'] = f } catch { /* noop */ }
+    열쇠헤더(headers)   // 👀 유저 눈이면 안 실린다
     const resp = await fetch(OCR_PROXY_URL, {
       method: 'POST',
       headers,
@@ -303,7 +320,7 @@ const 기본큐쓰기 = (a) => { try { localStorage.setItem(기본큐칸, JSON.s
 
 async function 기본한번(갈래) {
   const headers = { 'Content-Type': 'application/json', 'x-hankki-token': OCR_APP_TOKEN }
-  try { const f = localStorage.getItem('hankki:founder'); if (f) headers['x-hankki-founder'] = f } catch { /* noop */ }
+  열쇠헤더(headers)   // 👀 유저 눈이면 안 실린다
   const resp = await fetch(OCR_PROXY_URL, { method: 'POST', headers, body: JSON.stringify({ 기본: 갈래 }) })
   if (!resp.ok) throw new Error('base_http_' + resp.status)
 }
@@ -362,7 +379,7 @@ export function getOcrLeft() {
     //      로그인 안 한 사람에게 167KB 를 지우지 않는다(cloud.js:102 가 그 목적으로 만든 것).
     //   ⛔⛔ **표시에만 쓴다. 차감·한도 판정에는 절대 안 쓴다** — 그건 언제나 서버가 정한다.
     const 첫값 = 로그인해뒀나() ? WELCOME_ACCT : WELCOME_ANON
-    return { welcome: 첫값, month: MONTHLY_FREE, total: 첫값, 무제한: tidyFounder(), unknown: true }
+    return { welcome: 첫값, month: MONTHLY_FREE, total: 첫값, 무제한: 유저눈인가() ? false : tidyFounder(), unknown: true }
   }
   // 🔓🔓 **[2026-09-02 · 창업자 제보] 「무제한인가」의 잣대를 «여기 한 곳»으로 모은다.**
   //   📮 창업자 폰 = 토스트 「무료 레시피열쇠 **0개** 남았어요」 ＋ 임시보관함 🔒**0**
@@ -379,7 +396,11 @@ export function getOcrLeft() {
   return {
     ...v,
     total: v.welcome > 0 ? v.welcome : v.month,
-    무제한: !!v.무제한 || tidyFounder(),
+    // 👀 [2026-09-10] 유저 눈이면 «무조건» 거짓이다 — 서버 값도 무시한다.
+    //   ⛔ 스위치를 켠 직후엔 «켜기 전에 받아둔» 서버 답(무제한: true)이 아직 남아 있다.
+    //      그걸 그대로 믿으면 스위치를 켜도 한 박자 동안 ∞ 로 보인다.
+    //   ⭐ tidyFounder() 는 이미 유저 눈이면 false 를 준다 — 서버 값 쪽만 막으면 된다.
+    무제한: 유저눈인가() ? false : (!!v.무제한 || tidyFounder()),
     unknown: false,
   }
 }

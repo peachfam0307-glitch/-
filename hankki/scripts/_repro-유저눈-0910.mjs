@@ -112,6 +112,70 @@ console.log('\n👀 유저 눈으로 보기\n')
   await ctx.close()
 }
 
+// ── ⑤ ⭐⭐ 워커로 «운영자 열쇠»가 실려 나가나 (2026-09-10 저녁 · 창업자 "a로가")
+//    ⛔⛔ 여기가 반쪽으로 돌던 자리다 — 화면은 유저처럼 바뀌는데 서버로는 계속 운영자 열쇠가 갔다.
+//       그래서 ⑴계기판의 「창업자」가 계속 올라가고 ⑵서버가 「무제한」이라 답해 선택 창이 안 떴다.
+//    📌 워커가 «둘»이다(hankki-ocr · hankki-tidy) — 둘 다 본다.
+//    ⛔ 밖으로 한 건도 안 나간다 — route 로 가로채 가짜 답을 준다.
+async function 열쇠헤더실렸나(유저눈, 열쇠 = 'TESTKEY123') {
+  // ⛔⛔ serviceWorkers: 'block' 이 «없으면» 한 건도 안 잡힌다 — 우리 앱은 워크박스 SW 가
+  //    fetch 를 가로채는데, Playwright 의 ctx.route 는 «SW 안에서 나가는» 요청을 기본으론 못 본다.
+  //    (처음에 이걸 몰라서 「끔 0건 · 켬 0건」으로 잣대가 헛돌았다 · 규칙 18 ⓘ)
+  const ctx = await b.newContext({ viewport: { width: 390, height: 860 }, locale: 'ko-KR', serviceWorkers: 'block' })
+  const 본헤더 = []
+  await ctx.route('**://*.workers.dev/**', async (r) => {
+    본헤더.push(r.request().headers()['x-hankki-founder'] || null)
+    await r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ welcome: 5, month: 5, cap: 20, bonus: 0, 무제한: false }) })
+  })
+  await ctx.addInitScript(([유저눈, 열쇠]) => {
+    try {
+      localStorage.setItem('hankki:nudge:cloudgate', '1')
+      localStorage.setItem('hankki:onboarded', '1')
+      // ⛔ 기본은 ASCII — 헤더는 ISO-8859-1 만 실린다(한글 열쇠는 ⑥에서 «일부러» 넣어 본다)
+      localStorage.setItem('hankki:founder', 열쇠)
+      if (유저눈) localStorage.setItem('hankki:유저눈', '1')
+    } catch { /* noop */ }
+  }, [유저눈, 열쇠])
+  const p = await ctx.newPage()
+  await p.goto('http://127.0.0.1:4495/hankki/', { waitUntil: 'networkidle' })
+  await p.waitForTimeout(2600)
+  // ⛔ 「가져오기」 탭으로는 워커를 안 부른다 — 부르는 건 useKeyLeft(열쇠 배지)다.
+  //    그게 붙은 자리 = 설정(홈 오른쪽 위 톱니 · BottomNav 에 없다).
+  // ⛔⛔ 길막(코치마크·시트)을 «먼저» 치운다 — 안 치우면 톱니를 못 눌러 설정이 아예 안 열리고,
+  //    그러면 워커를 한 번도 안 불러서 잣대가 「0건」으로 헛돈다(내가 실제로 두 번 밟았다).
+  for (let i = 0; i < 10; i++) {
+    const 시트 = p.locator('.sheet-mask button', { hasText: /^(닫기|확인|알겠어요|나중에)/ }).first()
+    if (await 시트.count() > 0 && await 시트.isVisible().catch(() => false)) { await 시트.click(); await p.waitForTimeout(500); continue }
+    const 코치 = p.locator('[aria-label="다음 안내 보기"]').first()
+    if (await 코치.count() > 0 && await 코치.isVisible().catch(() => false)) { await 코치.click(); await p.waitForTimeout(500); continue }
+    break
+  }
+  await p.locator('[aria-label="설정"]').first().click().catch(() => {})
+  await p.waitForTimeout(2600)
+  const 열림 = await p.evaluate(() => /유저 눈으로 보기/.test(document.body.innerText))
+  if (!열림) console.log('    ⚠️ 설정이 안 열렸다 — 잣대가 헛돈다', (await p.evaluate(() => document.body.innerText.slice(0, 120))).replace(/\n/g, ' | '))
+  await ctx.close()
+  return 본헤더
+}
+{
+  const 끔 = await 열쇠헤더실렸나(false)
+  const 켬 = await 열쇠헤더실렸나(true)
+  잰다(끔.length > 0, '⑤ 워커를 실제로 불렀다 (0 이면 아무것도 못 잰 것이다)', `끔 ${끔.length}건 · 켬 ${켬.length}건`)
+  잰다(끔.some((h) => h === 'TESTKEY123'), '⑤ 유저 눈 «끄면» 운영자 열쇠가 실린다', JSON.stringify(끔))
+  잰다(켬.every((h) => h === null), '⑤ ⭐유저 눈 «켜면» 운영자 열쇠가 «안» 실린다', JSON.stringify(켬))
+}
+
+// ── ⑥ ⭐⭐ 한글 열쇠가 «AI 읽기를 통째로 죽이지» 않나 (2026-09-10 · 실측으로 물었다)
+//    ⛔ HTTP 헤더는 ISO-8859-1 만 싣는다. 한글이 한 글자라도 있으면 fetch 가
+//       TypeError 로 죽고 **아무 말 없이** AI 읽기가 전부 먹통이 된다.
+//       (내가 시험 열쇠를 「시험열쇠」로 뒀다가 ⑤가 「0건」으로 헛돌아서 잡았다)
+//    ✅ 지금은 못 실을 열쇠면 «안 싣고 그냥 보낸다» — 운영자 대접만 못 받고 앱은 돈다.
+{
+  const 한글 = await 열쇠헤더실렸나(false, '한글열쇠임')
+  잰다(한글.length > 0, '⑥ ⭐한글 열쇠여도 요청은 «나간다» (0 이면 AI 읽기가 통째로 죽은 것)', )
+  잰다(한글.every((h) => h === null), '⑥ 한글 열쇠는 «안» 실린다', JSON.stringify(한글))
+}
+
 await b.close(); srv.close()
 console.log(`\n📂 ${OUT}`)
 console.log(나쁨 ? `\n✗ ${나쁨}칸 실패` : '\n✅ 유저 눈 스위치 통과')

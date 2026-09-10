@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { COACH } from '../coach'
+import { 사러나감 } from '../stats'
 import { useStore, newId } from '../store'
 import { useNav } from '../App'
 import Icon from '../components/Icon'
@@ -986,7 +987,7 @@ export default function RecipeDetailScreen({ id }) {
                 {/* ⛔ 한살림은 사러가기를 안 그린다 (창업자 2026-08-17 *"링크안달면되고"*) */}
                 {isHansalim(p)
                   ? <span style={{ flex: '0 0 auto', fontSize: 16, fontWeight: 700, color: 'var(--text-sub)' }}>매장에서</span>
-                  : <button className="press" onClick={() => openUrl(productLink(p))} style={{ flex: '0 0 auto', padding: '6px 13px', borderRadius: 10, background: 'var(--cream-deep)', color: 'var(--brown)', fontWeight: 800, fontSize: 15.5 }}>사러가기</button>}
+                  : <button className="press" onClick={() => { 사러나감('pick_detail'); openUrl(productLink(p)) }} style={{ flex: '0 0 auto', padding: '6px 13px', borderRadius: 10, background: 'var(--cream-deep)', color: 'var(--brown)', fontWeight: 800, fontSize: 15.5 }}>사러가기</button>}
               </div>
             ))}
             {/* 🔽🔼 [2026-08-15] 창업자 *"4칸 넘어가면 접을 수 있게 해줘. 너무 길면 좀 그래."*

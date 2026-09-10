@@ -1446,6 +1446,10 @@ export default function EditorScreen({ id, prefill }) {
           //    ⭐ 읽는 중 안내(위)와 자르는 장(제목)이 다른 숫자라 둘 다 있어야 헷갈리지 않는다.
           index={ocrCropped.current}
           total={ocrTotal.current}
+          // 🔑 [창업자 확정 2026-09-10] 자르기 단추는 «누르는 마지막 자리»인데 값이 한 자도 없었다.
+          //    ⛔ 창업자가 이 화면을 보고 「이건 열쇠를 쓰는거잖아」로 읽었다 — 안 쓰는 길인데도.
+          //    ⛔⛔ 주석을 «속성 자리»에 JSX 주석으로 넣으면 빌드가 깨진다(DiaryEntrySheet.jsx:122 에 적혀 있다).
+          doneLabel={ocrNoVision.current ? `이 부분만 읽기 · ${KEY_NAME} 안 써요` : `이 부분만 읽기 · ${KEY_NAME} 1${KEY_UNIT}`}
           title={
             ocrTargetRef.current === 'ingredients' ? '재료 사진 자르기'
               : ocrTargetRef.current === 'steps' ? '만드는 법 사진 자르기'

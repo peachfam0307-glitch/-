@@ -10,6 +10,7 @@
 
 // ⏰ 절대원칙 27 — 「오늘」은 `today.js` 한 곳에서만 만든다
 import { todayKST } from './today.js'  // ⛔ 확장자를 붙인다 — 게이트가 «노드»로 이 파일을 열 수 있다
+import { 유저눈인가 } from './tidy.js'  // 👀 [2026-09-10] 유저 눈 스위치 — 잣대는 tidy.js 한 곳
 
 const K_BACKUP = 'hankki:nudge:backup' // 마지막으로 닫았거나 실제로 백업한 문턱
 // 🗓 [2026-08-28] **물어본 «날짜»(YYYY-MM-DD)** 를 담는다 — 30일 뒤 한 번 더 묻기 위해.
@@ -223,6 +224,7 @@ const 클라우드_전체공개 = true
 /** 이 기기에 클라우드 로그인 입구를 그릴까? — 첫 화면 · 홈 한 줄 · 설정 카드가 «같은 답»을 쓴다. */
 export function 클라우드보임 () {
   if (클라우드_전체공개) return true
+  if (유저눈인가()) return false   // 👀 [2026-09-10] 유저 눈으로 보는 중 — 운영자가 아닌 «척» 한다
   try { return !!localStorage.getItem('hankki:founder') } catch { return false }
 }
 
@@ -292,5 +294,6 @@ const 자동받기_전체공개 = false
 /** 이 기기에서 «자동 받기»를 돌릴까? — ⛔지금은 창업자 기기에서만. */
 export function 자동받기켤까 () {
   if (자동받기_전체공개) return true
+  if (유저눈인가()) return false   // 👀 [2026-09-10] 유저 눈으로 보는 중 — 운영자가 아닌 «척» 한다
   try { return !!localStorage.getItem('hankki:founder') } catch { return false }
 }

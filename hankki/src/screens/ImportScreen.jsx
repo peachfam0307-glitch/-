@@ -120,6 +120,15 @@ const ALL_FLOWS = [...OPTIONS, ...HIDDEN]
 //    ⛔ 자리마다 따로 적으면 말이 갈라진다(같은 기능은 같은 이름 원칙).
 // 🔀 `홀로` = 자기 줄에 혼자 설 때(가운뎃점을 안 붙인다).
 //    ⛔ 「 · 」는 «앞 문장에 이어 붙일 때»의 이음표다. 줄 맨 앞에 남으면 글머리표처럼 보인다.
+// 🔑 안내 화면 제목 밑에 붙는 «값 한마디» — ⛔여기 한 곳이 잣대다(자리마다 다르게 적으면 또 갈린다)
+function 열쇠말(flow, meta) {
+  // ⛔ 무제한인 사람에게 「열쇠 1개」라고 적으면 거짓말이 된다
+  if (getOcrLeft().무제한) return `${KEY_NAME} 무제한`
+  if (flow === 'photo') return '열쇠를 쓸지 고를 수 있어요'
+  if (!meta?.paid) return `${KEY_NAME}를 안 써요`
+  return meta.costText
+}
+
 function 장수꼬리(costText, paid, 홀로 = false) {
   if (홀로) {
     return <b style={{ fontWeight: 800, fontSize: '0.88em', color: paid ? 'var(--danger)' : 'var(--text-sub)', whiteSpace: 'nowrap' }}>{costText}</b>
@@ -400,7 +409,11 @@ export default function ImportScreen() {
       //      (「disabled 금지」 원칙과도 같은 결 — 눌러도 같은 일이 나면 먹통으로 읽힌다.)
       //   ⚠️ `unknown` = 서버가 아직 답한 적이 없다는 뜻이라 «있다» 쪽으로 본다
       //      (안 써 본 사람은 웰컴 20개가 있다). ⛔여기서 0으로 넘겨짚으면 열쇠 있는 사람이 길을 잃는다.
-      buttons: (ocrLeft.unknown || ocrLeft.total > 0
+      // 🔓 [2026-09-10 창업자 제보] **무제한을 조건에 넣는다.**
+      //    ⛔ 그 전엔 「남은 개수」만 봐서, 무제한인 운영자가 «열쇠 다 쓴 사람»으로 취급됐다 —
+      //       창업자 폰에서 「그냥 읽기」가 사라지고 「사진 고르기」 하나만 떴다(2026-09-10 실물 캡처).
+      //    📌 2026-09-02 사고와 같은 뿌리 = 「무제한인가」를 보는 자리와 안 보는 자리가 갈렸다.
+      buttons: (ocrLeft.무제한 || ocrLeft.unknown || ocrLeft.total > 0
         ? [
             { label: `AI로 정확하게 읽기 · ${keyCount(1)}`, onClick: () => 사진고르기(false) },
             // 📊 열쇠가 «있는데» 이걸 눌렀다 = 진짜 「고름」이다(값이 비싸게 느껴진다는 신호)
@@ -522,6 +535,15 @@ export default function ImportScreen() {
               ⛔ 자리만 바뀌었다 — 문구도 내용도 그대로다(창업자가 2026-08-29 에 직접 줄여 준 글).
               ⭐ 왜 그때는 위가 맞았나 = 그때 우리가 세운 사람은 «이미 쓰던 사람»이었다.
                  처음 온 사람은 갈래가 뭔지도 모르는 채로 설명부터 읽는다. 사람이 달랐다. */}
+          {/* ⬆️⬆️ [창업자 확정 2026-09-10 · ⓑ] 열쇠 안내를 초록 상자보다 «먼저» 세운다.
+              🔢 왜 = 2026-09-10 실측 = 그 칸이 880px 지점인데 폰 화면은 860px 이라 **20px 차이로 안 보였다.**
+                 📮 창업자 = *"아래까지 안 봐 사람들."*
+              ⛔ 오늘 아침 내가 그렇게 만들었다 — 갈래 넷을 위로 올리며 이 칸을 아래로 밀었다.
+                 하나를 얻고 하나를 잃은 것을 «내가 먼저» 못 봤고, 창업자가 폰에서 보고 짚었다. */}
+          {/* 🎁 [창업자 판정 2026-09-01] 행동 열쇠 다섯 — 「토스트 ＋ 가져오기 목록」 중 목록 쪽.
+              ⭐ 안 해본 기능이 눈에 보여야 「해볼까」가 된다 — 창업자가 열쇠를 주려는 이유가 그거였다. */}
+          <EarnList />
+
           {/* 🔔🔔 젤 윗단 알림 — [창업자 2026-08-28] *"(젤 윗단 박스하나 만들어서 —
               **열쇠를 다 사용하면 기본인식으로 전환 — 계속 무료로 사용할 수 있어요** 알림.)"*
               ⭐⭐ 이 박스는 **한 가지만** 말한다: 「끊기지 않는다」.
@@ -544,9 +566,6 @@ export default function ImportScreen() {
             </div>
           </div>
 
-          {/* 🎁 [창업자 판정 2026-09-01] 행동 열쇠 다섯 — 「토스트 ＋ 가져오기 목록」 중 목록 쪽.
-              ⭐ 안 해본 기능이 눈에 보여야 「해볼까」가 된다 — 창업자가 열쇠를 주려는 이유가 그거였다. */}
-          <EarnList />
 
           {/* AI 자동정리 — 이미 되는 기능(캡처 OCR·링크 읽기·텍스트). '이렇게 돼요' 안내로. */}
           <button
@@ -614,6 +633,27 @@ export default function ImportScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, marginBottom: 4 }}>
             <div className="opt-ico"><Icon name={flowMeta.icon} size={24} color={flowMeta.color} stroke={1.7} /></div>
             <div className="h-title" style={{ fontSize: 23, wordBreak: 'keep-all', textWrap: 'balance', lineHeight: 1.35 }}>{flowMeta.title}</div>
+          </div>
+          {/* 🔑🔑 [창업자 확정 2026-09-10] **값을 «누르기 전»에 말한다.**
+              📮 창업자 = *"각 가져오기 안내화면에 열쇠그림이랑 숫자를 표시하면 안돼? 소모되는"*
+                 ＋ *"열쇠는 너무 크지않게 제목앞이나 끝에 아님 아이콘옆에"*
+              ⛔⛔ 왜 필요했나 = 2026-09-10 에 **창업자가 기본 인식 화면을 보고 「이건 열쇠를 쓰는거잖아」로 읽었다.**
+                 안 쓰는 길인데도. **만든 나도 코드 세 파일을 따라가서야 확정했다** — 유저가 알 리가 없다.
+              ⭐ 자리 = 제목 «바로 아래» 왼쪽. 제목은 두 줄이 되는 게 정상이라(위 주석) 옆에 붙이면 배치가 흔들린다.
+              ⛔ 목록(네 갈래 줄)에는 안 붙인다 — 2026-08-28 창업자 판단(*"캡쳐하면 열쇠1개 다 빼자"*)을 안 뒤집는다.
+                 그건 «고르기 전»에 돈 걱정을 시키지 말자는 것이었고, 여기는 «고른 다음»이라 그 문제가 없다.
+              ⛔ 「한끼 앱에서 사진」은 열쇠를 «쓸 수도 안 쓸 수도» 있어서 한 값으로 못 적는다 →
+                 「고를 수 있어요」로 적고, 값은 아래 단추 둘이 각각 말한다. */}
+          <div style={{ display: 'flex', marginTop: 2 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 999,
+              background: 'var(--cream)', color: 'var(--brown)',
+              fontSize: 13.5, fontWeight: 800, whiteSpace: 'nowrap',
+            }}>
+              <img src={uiKeyOne} alt="" aria-hidden="true" draggable={false} style={{ width: 14, height: 14, objectFit: 'contain' }} />
+              {열쇠말(flow, flowMeta)}
+            </span>
           </div>
           <div className="t-sub" style={{ marginTop: 12, marginBottom: 18, fontSize: 16, lineHeight: 1.6, wordBreak: 'keep-all', textWrap: 'pretty' }}>
             {안내들[flow].lead}

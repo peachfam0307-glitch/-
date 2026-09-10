@@ -437,7 +437,38 @@ export function mergeTidy(r, ai) {
  *   운영자 통로(`hankki:founder`)가 이미 있으니 그걸 그대로 쓴다.
  *   ⛔ 유저에게 `http_429`·`timeout` 같은 말을 보이지 않는다.
  */
+// 👀👀 [창업자 확정 2026-09-10] **「유저 눈으로 보기」 스위치**
+//
+// 📮 창업자 = *"이게 나랑 유저랑 보이는 화면이 다르니까 테스트하기가 너무 어렵네"*
+//
+// ⛔⛔ 2026-09-10 에 실제로 이걸로 하루를 태웠다 — 창업자 폰에서 「사진 고르기」 단추가 «하나»만 떠서
+//    세 번을 버그로 의심했고, 그때마다 코드를 세 파일씩 따라가 확인해야 했다.
+//    진짜는 **창업자가 무제한이라 그런 것**이었고, 시크릿 모드에서는 멀쩡히 두 갈래가 떴다.
+//
+// ⭐ 스위치를 켜면 **이 한 함수가 false 를 돌려준다** → 무제한 표시·운영자 배지·다듬기 기록이
+//    전부 «일반 유저»처럼 굴어서, 창업자 폰이 그대로 「유저 눈」이 된다.
+//    📌 표식을 새로 만들되 «판정하는 자리»는 늘리지 않았다 — 여기 한 곳이 뿌리다.
+//
+// ⛔⛔ **표시만 바꾼다. 진짜 열쇠는 안 깎인다** — 서버로 가는 운영자 헤더(`x-hankki-founder`)는 그대로다.
+//    그래서 「열쇠가 다 떨어져 막히는 화면」은 이 스위치로 못 본다. **그건 시크릿 모드로 본다.**
+//    (2026-09-02 사고 = 「보이는 것」과 「깎이는 것」이 갈려서 났다. 그 둘을 또 갈라놓지 않으려고 이렇게 둔다)
+// ⛔ 이름에 「열쇠」를 안 쓴다 — 우리 앱에서 「열쇠」는 «레시피열쇠»를 뜻하고,
+//    `_repro-AI다듬기-0829` 가 「tidy.js 가 열쇠를 안 깎나」를 그 낱말로 본다(2026-09-10 실제로 걸렸다).
+export const 유저눈표식 = 'hankki:유저눈'
+export function 유저눈인가() {
+  try { return localStorage.getItem(유저눈표식) === '1' } catch { return false }
+}
+export function 유저눈설정(켤까) {
+  try { if (켤까) localStorage.setItem(유저눈표식, '1'); else localStorage.removeItem(유저눈표식) } catch { /* noop */ }
+}
+
 export function tidyFounder() {
+  if (유저눈인가()) return false   // 👀 유저 눈으로 보는 중 — 운영자가 아닌 «척» 한다
+  try { return !!localStorage.getItem('hankki:founder') } catch { return false }
+}
+// 🔑 진짜 운영자인가 — ⛔스위치와 «무관»하게 답한다.
+//    설정 화면이 「스위치를 보여줄지」를 이걸로 정한다(유저 눈을 켜면 스위치까지 사라지면 못 끈다).
+export function 진짜운영자() {
   try { return !!localStorage.getItem('hankki:founder') } catch { return false }
 }
 

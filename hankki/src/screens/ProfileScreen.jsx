@@ -4,7 +4,10 @@ import { useStore, 서랍한도, 서랍다시재기 } from '../store'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import { APP_VERSION, APP_TAGLINE, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL } from '../version'
-import { tidyFounder, 다듬기기록 } from '../tidy'   // 📒 최근 AI 다듬기 기록 — ⛔창업자 폰에만
+// 📒 tidy 에서 오는 것 «한 줄로» 모은다 — 2026-09-10 에 두 줄로 갈려 있었다.
+//    ⛔ 갈려 있으면 다음 사람이 한쪽만 보고 「유저 눈을 안 본다」고 착각한다(오늘 실제로 그런 사고를 냈다).
+//    tidyFounder = 유저 눈을 «따른다» · 진짜운영자 = 유저 눈과 «무관»(스위치를 그릴지 정한다)
+import { tidyFounder, 다듬기기록, 진짜운영자, 유저눈인가, 유저눈설정 } from '../tidy'
 import Icon from '../components/Icon'
 import KeyBadge from '../components/KeyBadge'
 import TabTips from '../components/TabTips'
@@ -46,7 +49,6 @@ import { FAV_NAME } from '../favName'
 // 🏷 갈래 이름도 «한 곳»에서만 온다(`src/settingsGroups.js`) — 화면과 관문이 같은 목록을 본다.
 //    ⛔ 여기에 갈래 이름을 «다시 적지» 말 것. 2026-09-04 에 화면과 관문이 각각 적어서 실제로 갈렸다.
 import { 설정갈래, 설정섹션, 설정이름표스타일 } from '../settingsGroups'
-import { 진짜운영자, 유저눈인가, 유저눈설정 } from '../tidy'
 
 export default function ProfileScreen() {
   const store = useStore()

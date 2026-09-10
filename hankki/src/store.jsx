@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, useCallback, useRef } from 'react'
-import { seedRecipes } from './data/seed'
+import { seedRecipes, 열린때 } from './data/seed'
 import { basicRecipes, BASICS_VERSION } from './data/basics'
 import { makeSampleDiary, SAMPLE_DIARY_ID, SAMPLE_READY } from './data/sampleDiary'
 // ⛔ `FOOD_ICON_GROUPS` 를 빠뜨리면 v96 패스가 ReferenceError 로 죽고
@@ -163,16 +163,27 @@ function migrateBasics(saved) {
   const opened = basicRecipes.filter((r) => !have.has(r.id) && !dead.has(r.id) && !haveTitles.has(r.title))
   if (v >= BASICS_VERSION) {
     return opened.length
-      ? { recipes: [...saved.recipes, ...opened.map((r, i) => ({ ...r, savedAt: Date.now() - i * 60000 }))], seedV: v }
+      ? { recipes: [...saved.recipes, ...opened.map((r, i) => ({ ...r, savedAt: 열린때(r, i) }))], seedV: v }
       : { recipes: saved.recipes, seedV: v }
   }
   const add = basicRecipes
     // 같은 제목의 레시피가 이미 있으면 넣지 않는다 (예전 예시의 김치볶음밥 등과 중복 방지)
     .filter((r) => !have.has(r.id) && !dead.has(r.id) && !haveTitles.has(r.title))
-    .map((r, i) => ({ ...r, savedAt: Date.now() - i * 60000 }))
+    .map((r, i) => ({ ...r, savedAt: 열린때(r, i) }))
+  // 🕘🕘 [창업자 제보 2026-09-10] 「최신 레시피가 제일 아래야」 — **이미 깔린 폰도 고친다**(규칙 18ⓙ).
+  //   ⛔ 새로 까는 사람만 고치면 «지금 쓰는 사람»은 영영 거꾸로 본다. 옛 savedAt 이 폰에 이미 저장돼 있다.
+  //   ✅ 기본 레시피(basic-*)의 savedAt 만 「열린 날짜」로 다시 찍는다.
+  //   ⛔⛔ 유저가 «직접 저장한» 레시피는 한 개도 안 건드린다 — 그 savedAt 은 진짜 저장 시각이다.
+  //   ⭐ 내용은 한 글자도 안 바뀐다(줄 세우는 값만 고친다) — 유저가 고쳐 둔 기본 레시피도 안전하다.
+  const 자리 = new Map(basicRecipes.map((r, i) => [r.id, i]))
+  const 시각고침 = saved.recipes.map((r) =>
+    r && String(r.id).startsWith('basic-') && 자리.has(r.id)
+      ? { ...r, savedAt: 열린때(r, 자리.get(r.id)) }
+      : r
+  )
   // 기존 기본 레시피에 새 표지 사진 입히기 — 아직 사진이 없는(기본 아이콘) 것만.
   // (사용자가 직접 넣은 사진/커스텀은 건드리지 않는다)
-  const withPhotos = saved.recipes.map((r) =>
+  const withPhotos = 시각고침.map((r) =>
     r && BASIC_PHOTOS[r.id] && r.thumb !== 'photo' && r.thumb !== 'none' && !r.image
       ? { ...r, thumb: 'photo', image: BASIC_PHOTOS[r.id] }
       : r
@@ -243,6 +254,9 @@ function migrateBasics(saved) {
     const merged = {
       ...s,
       favorite: r.favorite,
+      // 🔖 [2026-09-08] 핀의 «종»도 유저 것이다 — 안 실으면 시드가 갱신될 때마다 하트가 모자로 되돌아간다.
+      //    ⚠️ `favorite` 바로 옆에 둔다 — 둘은 «한 쌍»이라 떨어지면 한쪽만 실리는 사고가 난다.
+      favPin: r.favPin,
       cooked: r.cooked,
       cookedAt: r.cookedAt,
       savedAt: r.savedAt,
@@ -782,6 +796,23 @@ function withSample(saved) {
   return [makeSampleDiary(), ...diary]
 }
 
+// 🚑🚑 **[2026-09-08 저녁] 두 종 핀 사고로 «빠진» 핀을 도로 꽂는다.**
+//   📮 창업자 = *"하트누르니까 차례로 사라졌어"* — 실제로 지워진 건 레시피가 아니라 «핀»이다(전체 개수는 그대로).
+//   🔎 표가 남아 있다 = `favPin === 'heart'` 는 **오늘 두 종이 나간 뒤에만** 붙을 수 있는 값이다.
+//      그중 `favorite === false` 인 편 = 「모자 → 하트 → 빠짐」을 다 돈 것 ＝ 이 사고로 빠진 것.
+//   ✅ 그래서 그 편만 도로 꽂는다. ⛔ 종(`favPin`)은 지우지 않는다 — 두 종을 다시 켜는 날 하트로 돌아온다.
+//   ⚠️ 정직하게 = «일부러» 하트에서 뺀 사람도 도로 꽂힌다. 두 종이 나가 있던 시간이 반나절이라
+//      그 수는 매우 적고, **잘못 꽂힌 건 한 번 눌러 빼면 되지만 잃은 핀은 스스로 못 찾는다**(절대원칙 34).
+//   🔒 한 번만 돈다(`pinFixV`) — 그 뒤엔 유저가 뺀 것을 되살리지 않는다.
+const PIN_FIX_V = 1
+function migratePinLost(recipes, saved) {
+  if ((saved.pinFixV || 0) >= PIN_FIX_V) return { recipes, pinFixV: saved.pinFixV }
+  const out = recipes.map((r) =>
+    r && r.favPin === 'heart' && !r.favorite ? { ...r, favorite: true } : r
+  )
+  return { recipes: out, pinFixV: PIN_FIX_V }
+}
+
 function initialState() {
   const saved = load()
   if (saved) {
@@ -791,15 +822,17 @@ function initialState() {
     const qtyMig = migrateQtyOnly(politeMig.recipes, saved)
     const inboxMig = migrateInboxSorted(qtyMig.recipes, saved)
     const coverMig = migrateCoverThumb(inboxMig.recipes, saved)
+    const pinMig = migratePinLost(coverMig.recipes, saved)   // 🚑 두 종 사고로 빠진 핀 되살리기
     const diary = withSample(saved)
     return {
-      recipes: reconcileCooked(coverMig.recipes, diary),
+      recipes: reconcileCooked(pinMig.recipes, diary),
       seedV: mig.seedV,
       memoCleanV: memoMig.memoCleanV,
       politeV: politeMig.politeV,
       qtyOnlyV: qtyMig.qtyOnlyV,
       inboxV: inboxMig.inboxV,
       coverV: coverMig.coverV,
+      pinFixV: pinMig.pinFixV,
       removedSeedIds: saved.removedSeedIds || [],
       // 🗂 기본 폴더가 «늘어날 때» — 이미 깔린 폰에도 넣어 준다.
       //    ⛔⛔ 기본값(아래 `folders: [...]`)만 고치면 «새로 까는 사람»만 받는다.
@@ -885,10 +918,26 @@ function reducer(state, action) {
       return { ...state, removedSeedIds, recipes: state.recipes.filter((r) => r.id !== action.id) }
     }
     case 'toggleFav': {
+      // 🔖 [2026-09-08] 종(`favPin`)은 «건드리지 않는다» — 뺐다가 다시 꽂아도 하트는 하트다.
+      //    ⛔ 뺄 때 종을 지우면 유저가 잘못 눌러 뺀 뒤 다시 꽂았을 때 «모자로 되돌아간다».
       return {
         ...state,
         recipes: state.recipes.map((r) =>
           r.id === action.id ? { ...r, favorite: !r.favorite } : r
+        ),
+      }
+    }
+    // 🔖 종을 고른다 — 고르면 «꽂힌다». `pin` 이 `null` 이면 **뺀다**(종은 남겨 둔다).
+    //   📮 창업자 2026-09-08 = *"요리사모자는 해볼것, 하트는 최애 두 종으로 가자"*
+    //   ⭐ 「어느 종으로 갈 차례인가」는 여기서 정하지 않는다 — `favPin.js` 의 `nextPin()` 한 곳이 정한다.
+    //      ⛔ 순서를 화면과 저장소 두 곳에 적으면 하나만 고쳤을 때 갈린다(favName·favPin 을 한 곳에 둔 이유와 같다).
+    case 'setFavPin': {
+      return {
+        ...state,
+        recipes: state.recipes.map((r) =>
+          r.id === action.id
+            ? (action.pin ? { ...r, favorite: true, favPin: action.pin } : { ...r, favorite: false })
+            : r
         ),
       }
     }
@@ -1245,6 +1294,7 @@ export function StoreProvider({ children }) {
     updateRecipe: useCallback((id, patch) => dispatch({ type: 'update', id, patch }), []),
     removeRecipe: useCallback((id) => dispatch({ type: 'remove', id }), []),
     toggleFavorite: useCallback((id) => dispatch({ type: 'toggleFav', id }), []),
+    setFavPin: useCallback((id, pin) => dispatch({ type: 'setFavPin', id, pin }), []),
     cook: useCallback((id) => dispatch({ type: 'cook', id }), []),
     addFolder: useCallback((name) => dispatch({ type: 'addFolder', name }), []),
     removeFolder: useCallback((name) => dispatch({ type: 'removeFolder', name }), []),

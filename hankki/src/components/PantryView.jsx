@@ -12,7 +12,7 @@ import CropSheet from './CropSheet'
 import Portal from './Portal'
 import { useLayerBack } from '../useBackHandler'
 import { guessEmoji } from '../emoji'
-import { pantryScore, countPantryHits, pantryUrgent } from '../pantryMatch'
+import { pantryUrgent, rankPantryRecipes } from '../pantryMatch'
 import { 열쇠받기, EARN, KEY_NAME, KEY_UNIT } from '../ocr'
 // 🔑 열쇠 그림 — `KeyBadge`(가져오기·설정)가 쓰는 «바로 그 파일»이다.
 //    ⭐ 새로 만들지 않는다: 같은 것이 앱 안에서 두 모양이면 유저가 다른 것으로 읽는다.
@@ -148,11 +148,16 @@ export default function PantryView() {
   // 🚨 임박도를 점수에 싣는다 — 「오늘내일 상하는 것」을 먼저 쓰게 (창업자 2026-09-08 제보)
   const 남은날 = (p) => daysLeft(p?.expiry)
   const 추천상한 = 12
-  const matches = recipes
-    .map((r) => ({ r, n: countPantryHits(r, pantry), score: pantryScore(r, pantry, 남은날), 급함: pantryUrgent(r, pantry, 남은날) }))
-    .filter((m) => m.n > 0)
-    .sort((a, b) => b.score - a.score)
+  // 🏁 한 편당 «딱 한 번» 재고 그 값으로 줄 세운다.
+  //    ⛔ 비교마다 다시 재면 1680편에서 283ms — 재료를 담을 때마다 그만큼 버벅인다(실측).
+  //    ⭐ 급함 꼬리표는 «상한을 자른 뒤» 12편에만 만든다 — 안 보일 100편까지 만들 값이 없다.
+  const matches = rankPantryRecipes(recipes, pantry, 남은날)
+    // 🥇 [창업자 확정 2026-09-10] 「임박하는게 1순위 그다음 할게 많은 레시피가 2순위로 하자」
+    //    ⛔ 점수 하나(`pantryScore`)로 세우던 것을 «잣대 넷»으로 바꿨다 — 무게로 섞으면
+    //       「D-3 하나(2점)」가 「보통 셋(3점)」에 져서 급한 두부가 여전히 안 떴다.
+    //       ⭐ 이제 급한 게 있으면 «무조건» 위, 그 안에서 개수가 가른다(`comparePantry` 주석 참조).
     .slice(0, 추천상한)
+    .map((m) => ({ ...m, 급함: pantryUrgent(m.r, pantry, 남은날) }))
 
   // 🍳 「가진 재료로 만들 수 있는 것」 칸 — **화면 맨 위**에 놓으려고 여기서 만든다.
   //    ⚠️ JSX 로 미리 만들어 두는 이유 = 아래 재료 목록보다 «먼저» 그려야 하는데,

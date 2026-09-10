@@ -6,7 +6,8 @@ import Thumb from '../components/Thumb'
 import SourceBadge from '../components/SourceBadge'
 import ConfirmSheet from '../components/ConfirmSheet'
 import { timeAgo } from '../utils'
-import { getOcrLeft, KEY_NAME, KEY_UNIT } from '../ocr'
+import { getOcrLeft, KEY_NAME } from '../ocr'
+import { 남은열쇠말 } from '../안내말'
 import { tidyRecipe, 실패꼬리 } from '../tidy'
 import { AI동의받기 } from '../aiConsent'   // 🔐 AI 로 보내기 전 허락(큰 틀 6-② ⓑ)
 import { 만회값 } from '../retidy'
@@ -27,15 +28,18 @@ import uiKeyHole from '../assets/ui/key_hole.png'
 function 남은까닭(r) {
   const 재료 = Array.isArray(r?.ingredients) ? r.ingredients.length : 0
   const 걸음 = Array.isArray(r?.steps) ? r.steps.length : 0
+  // 🔵🔵 **[2026-09-09 창업자 실물] 「왜 아직 여기 있나」의 «진짜» 까닭이 맨 위다.**
+  //   📮 창업자 = "다되면 레시피로 가야하잖아 … 근데 계속 있고 완벽하게 안읽어놓고 안내는 없어지고
+  //      그냥 그대로 가만히 있으니까. 이렇게는 아니라는거지"
+  //   ⛔⛔ 옛 판 = 재료·순서 검사가 «위»에 있어서, AI 가 실패해 남은 편도 「재료를 덜 읽었어요」로만 보였다.
+  //      → 유저는 **다시 누르면 된다는 걸 알 길이 없다.** 안내가 있는데 «가려져» 못 읽힌 것이다.
+  //   ⭐ 여기 남은 편은 십중팔구 AI 가 안 된 것이다(졸업이 AI 성공에 걸려 있으므로) — 그 말을 «먼저» 한다.
+  if (r?.tidying) return 'AI가 다듬는 중이에요 · 20~60초 걸려요'
+  if (r?.tidyFail === 1 || r?.tidyFail === 2) return 'AI 다듬기가 안 됐어요 · 아래 단추로 한 번 더'
+  // ⛔ 「고장」이라고 말하지 않는다 — 단추 하나로 되는 일이다. 무엇을 누르면 되는지까지 같이 적는다.
   if (재료 < 2 && 걸음 < 2) return '재료·순서를 덜 읽었어요'
   if (재료 < 2) return '재료를 덜 읽었어요'
   if (걸음 < 2) return '순서를 덜 읽었어요'
-  // 🤖 [2026-09-05 · 창업자 "그건 좋을 것 같아"] **AI 가 못 다듬어서 남은 편은 «그렇다고» 말한다.**
-  //   📮 실물 = 15:13 공유 → 15:42 까지 28분 갇힘 · 줄엔 「저장만 하면 돼요」뿐이라 유저는 왜 안 옮겨지는지 알 길이 없었다.
-  //   ⭐ 2026-09-05 부터 졸업은 «AI 성공 때만»이라, 재료·순서가 넉넉한데 여기 있으면 십중팔구 AI 가 안 된 것이다.
-  //      `tidyFail` 1 = 시작했는데 답이 없었다(정리·끊김) · 2 = 시도했는데 못 했다 → 둘 다 «다시 누르면 된다»
-  //   ⛔ 「고장」이라고 말하지 않는다 — 단추 하나로 되는 일이다. 무엇을 누르면 되는지까지 같이 적는다.
-  if (r?.tidyFail === 1 || r?.tidyFail === 2) return 'AI 다듬기가 안 됐어요 · 아래 단추로 한 번 더'
   // 둘 다 넉넉한데 남아 있다 = 유저가 일부러 뒀거나 손으로 지운 것. 「고장」이 아니라고 말해준다.
   return '저장만 하면 돼요'
 }
@@ -132,7 +136,7 @@ export default function InboxScreen() {
           style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 40, justifyContent: 'flex-end' }}
           aria-label={ocrLeft.무제한
             ? `운영자 모드 · ${KEY_NAME} 무제한`
-            : `무료 ${KEY_NAME} ${ocrLeft.total}${KEY_UNIT} 남았어요`}
+            : 남은열쇠말(ocrLeft)}
         >
           {/* 🔓 [2026-09-02] 운영자면 「∞」 — 전엔 여기가 «서버가 준 0»을 그대로 그려서
               한도는 안 걸리는데 화면만 0 이었다(창업자 폰 실물). 잣대는 `getOcrLeft().무제한` 하나다. */}
@@ -185,7 +189,8 @@ export default function InboxScreen() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span className="t-sub">{timeAgo(r.savedAt)}</span>
                     {/* 🔎 왜 아직 여기 있나 — 저장된 값만 세서 만든다(⛔AI 안 부른다 · 열쇠 0개) */}
-                    <span className="t-sub" style={{ color: 'var(--brown)' }}>· {남은까닭(r)}</span>
+                    {/* ⛔ keep-all — 창업자 캡처에서 「아래 / 단추로 한 번 더」로 갈라졌다 [2026-09-09] */}
+                    <span className="t-sub" style={{ color: 'var(--brown)', wordBreak: 'keep-all' }}>· {남은까닭(r)}</span>
                   </div>
                 </div>
               </button>
@@ -210,14 +215,15 @@ export default function InboxScreen() {
                 <button
                   className="press"
                   onClick={() => 다듬기(r)}
-                  disabled={!!다듬는중}
+                  // ⛔ 저절로 도는 판(r.tidying)이 있을 때도 못 누르게 한다 — 두 판이 겹치면 뉴런이 두 배로 나간다 [2026-09-09]
+                  disabled={!!다듬는중 || !!r.tidying}
                   style={{
                     flex: 1, padding: '9px 10px', borderRadius: 'var(--r-md)', border: 'none',
-                    background: 다듬는중 === r.id ? 'var(--cream)' : 'var(--blue, #5b7aa8)',
-                    color: 다듬는중 === r.id ? 'var(--text-sub)' : '#fff', fontSize: 15.5, fontWeight: 700,
+                    background: 다듬는중 === r.id || r.tidying ? 'var(--cream)' : 'var(--blue, #5b7aa8)',
+                    color: 다듬는중 === r.id || r.tidying ? 'var(--text-sub)' : '#fff', fontSize: 15.5, fontWeight: 700,
                   }}
                 >
-                  {다듬는중 === r.id ? '다듬는 중…' : 'AI로 다듬기'}
+                  {다듬는중 === r.id || r.tidying ? '다듬는 중…' : 'AI로 다듬기'}
                 </button>
               )}
               {!다읽었나(r) && (

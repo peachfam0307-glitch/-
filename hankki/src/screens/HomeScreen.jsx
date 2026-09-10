@@ -31,9 +31,6 @@ import uiHandPoint from '../assets/ui/hand_point.png'
 //    ⛔ 옛 `ui/gom_thumbsup`·`ui/gom_clap` 은 «매끈 곰»이었다 — 창업자 판정 *"2.4번만 옛날곰이고 나머지는 물결곰이야."*
 //    ✅ `gom_shop`·`gom_heart` 는 **물결이 맞아서 그대로 둔다**(같은 판정).
 import uiGomThumb from '../assets/ui/wave/gom_thumbsup.png'
-import uiGomShop from '../assets/ui/gom_shop.png'
-import uiGomHeart from '../assets/ui/gom_heart.png'
-import uiGomClap from '../assets/ui/wave/gom_clap.png'
 // 🐻🐧 «물결 정본»(`gp_*`)만 쓴다 — 창업자 2026-08-13 *"한끼소식에 쟤 옛날 곰이야"*
 //    ⛔ `assets/ui/gom_*` 다섯(clap·thumbsup·heart·shop)은 **옛 매끈 그림체**다. 선이 굵고 얼굴이 크고 앞치마 무늬도 다르다.
 //       핀에 *"곰펭 = 무조건 물결 · 옛 매끈 곰펭은 앱 반영 금지"* 라고 박혀 있는데 내가 새 자리에 그걸 갖다 썼다.
@@ -51,13 +48,16 @@ import uiGomWow from '../assets/ui/wave/gom_wow.png' // 꼬르곰 감탄(별눈)
 import uiPengSearch from '../assets/ui/wave/pn_search.png'
 // 📔 일기 안내에 쓸 컷 — 꼬르곰·펭펭이 «둘 다» 하트를 만든다. 일기는 「그날의 마음을 남기는」 자리라 맞다.
 //    ⛔ ui 컷 다섯(hand_point·thumbsup·shop·heart·clap)은 이미 다른 단계가 다 쓰고 있어 정본 콤비에서 가져왔다.
-import gpDuoHeart from '../assets/stickers/photo/gp_duoht.png'
 import { needsOnboarding } from '../components/Onboarding'
 import { backupNudgeStep, dismissBackupNudge, askOpenBackup, myRecipeCount, myDiaryCount, needsCloudHome, markCloudHomeSeen, askOpenCloud, 클라우드보임 } from '../nudges'
 import { 로그인해뒀나 } from '../cloud'
 import { weeklyNow, homemadeNow, snsNow } from '../data/weekly'
 import { whatsNew } from '../data/whatsnew'
 import { pantryScore } from '../pantryMatch'
+import SeasonDecor from '../components/SeasonDecor.jsx'
+// 🇰🇷 명절엔 홈의 «우리 애» 둘도 한복을 입는다 — 📮창업자 2026-09-09 *"쟤들만 한복아니니까 이상해서.."*
+import { 홈컷, 줄장식 } from '../data/seasonDecor.js'
+import { useSeasonCuts } from '../season/useSeasonCuts.js'
 
 // 🗓🍳 「이번 주」 박스 — 제철 줄과 우리집레시피 줄이 «똑같이» 생겼다.
 //   ⛔ 마크업을 두 번 적지 않는다 — 그러면 한쪽만 고치는 사고가 난다(2026-08-11 신설).
@@ -65,7 +65,7 @@ import { pantryScore } from '../pantryMatch'
 // 📅 [창업자 2026-09-07 00:05] *"홈화면에 이번주제철 옆에 월요일 업뎃을 표시할까??"* · *"sns는 수요일 업뎃인거"* · *"월 배지를 옆에 달아도 좋고"*
 //    → 키커 옆 작은 동그라미 「월」·「수」. 🔢 실측 = 제철 19주·우리집 25주 `from` 전부 월요일 · SNS 20편 전부 수요일(weekly.js·basics.js).
 //    ⛔ 요일을 코드에서 «세지» 않는다 — 데이터가 그 요일에 열리게 우리가 맞춰 두는 것이라(check-weekly 가 월요일을 지킨다) 글자로 준다.
-function WeekBox({ w, 기본, open, 요일 }) {
+function WeekBox({ w, 기본, open, 요일, 줄컷 }) {
   return (
     <div className="weekly-box">
       <div className="weekly-text">
@@ -80,6 +80,22 @@ function WeekBox({ w, 기본, open, 요일 }) {
               (2026-09-28 「추석 남은 음식」이 실제로 그랬고, 52주 표 기준 17주가 제철이 아니다) */}
           <div className="weekly-kicker">{w.kicker || 기본}</div>
           {요일 && <span className="weekly-day" aria-label={`${요일}요일마다 새로 와요`}>{요일}</span>}
+          {/* 🧒🧒 [2026-09-09 창업자 확정] 명절 듀오는 «이 줄에 박는다» — 화면 고정이 아니다.
+              📮 *"월요일 옆에 있자나 애들이!!!"* ＋ *"고정해줘 스크롤하면 내려가는거이상해"*
+              ⛔ 아침엔 «화면 고정»으로 만들었다(*"홈을 내리면 안따라와"*). 그때는 「보름달」 얘기였고,
+                 듀오는 «글에 붙어야» 하는 것이었다 — 알약 옆이 제자리라 카드가 굴러가면 같이 가야 한다.
+              ⭐ 줄 높이는 «안 늘어난다» — `position: absolute` 로 줄 밖으로 나와 앉는다. */}
+          {줄컷 && (
+            <span aria-hidden style={{ position: 'relative', width: 0, height: 0, flex: '0 0 auto' }}>
+              <img src={줄컷} alt="" draggable={false}
+                // ⛔ maxWidth:'none' 이 «반드시» 있어야 한다 — 전역 「img{max-width:100%}」 가
+                //    기준을 «폭 0 인 껍데기»로 잡아 그림을 0×0 으로 만든다(2026-09-09 실제로 그랬다).
+                // 📮 [창업자 2026-09-10] 「월요일 옆에 곰돌이도 크기좀 키워야해」 — 62 → 80px.
+                //    ⭐ 껍데기가 폭·높이 0 이라 줄 높이는 한 픽셀도 안 늘어난다(위로만 더 나온다).
+                //    🔢 높이 = 300/360 × 80 = 66.7 → 위로 33 나가고 아래로 33.7 = 월 알약(26)과 가운데가 맞는다.
+                style={{ position: 'absolute', left: 4, top: -33, width: 80, maxWidth: 'none', opacity: 0.9, pointerEvents: 'none' }} />
+            </span>
+          )}
         </div>
         <div className="weekly-title">{w.title}</div>
         <div className="t-sub weekly-why">{w.why}</div>
@@ -137,11 +153,14 @@ const HOME_COACH_KEY = COACH.home
 const HOME_COACH_STEPS = [
   { sel: '[data-coach="import"]', img: uiHandPoint, label: '레시피 가져오기', desc: '캡처·붙여넣기로 레시피를 쏙 담아요 · 여기서 시작!' },
   { sel: '[data-coach="today"]', img: uiGomThumb, label: '오늘 뭐 해먹지?', desc: '냉장고 재료로 만들 수 있는 요리를 추천해요' },
-  // 📔 하단바 순서대로 짚는다(홈·가져오기·레시피·일기·장보기·레꾸자랑) — 화면과 안내가 어긋나면 못 찾는다
-  { sel: '[data-coach="nav-diary"]', img: gpDuoHeart, label: '한끼 일기', desc: '오늘 뭐 해먹었는지 사진·속지로 남기고 예쁘게 꾸며요 · 달력으로 한눈에' },
-  { sel: '[data-coach="nav-shop"]', img: uiGomShop, label: '장보기 · 쇼핑몰', desc: '18년차 주부가 엄선한 식재료를 담아 바로 사러 가고 · 냉장고 유통기한도 챙겨요' },
-  { sel: '[data-coach="nav-brag"]', img: uiGomHeart, label: '레꾸자랑', desc: '내가 꾸민 레시피를 예쁜 카드로 친구한테 자랑! 카톡·인스타로 쏙' },
-  { sel: '[data-coach="preview"]', img: uiGomClap, label: '한끼 소식', desc: '새로 열린 레시피·꾸미기와 곧 나올 것을 여기서 알려드려요' },
+  // 🚫🚫 [창업자 확정 2026-09-10] *"코치마크도 좀 줄일까?? … 최소화해서"* — **여섯 → 둘.**
+  //    🔢 2026-09-10 실측(첫사람 캡처판) = 앱을 처음 켠 사람이 홈에서만 **여섯 번**을 눌러야
+  //       비로소 아래 탭을 만질 수 있었다(코치는 화면 «전체»를 덮는다).
+  //    ⭐⭐ 뺀 넷은 **탭을 가리키는 것**이었는데, **그 탭에 가면 그 화면 코치가 «또» 뜬다** — 겹쳤다.
+  //       (일기·장보기·레꾸자랑 모두 자기 화면 코치가 따로 있다 · 2026-09-10 실측)
+  //    ✅ 남긴 둘은 «이 화면에서 지금 할 수 있는 것»이다 — 겹치는 안내가 없다.
+  //    ⛔ 열쇠(COACH.home)를 «올리지 않는다** — 올리면 이미 본 사람에게 또 뜬다. 줄이는 판이라 그럴 이유가 없다.
+  //    📌 그래서 「기능이 숨어 있어 모른다」(2026-07-17 창업자 딸이 낸 문제)는 여전히 각 화면 코치가 답한다.
 ]
 
 export default function HomeScreen() {
@@ -228,14 +247,26 @@ export default function HomeScreen() {
 
   // 🎉 새로 열린 날 «딱 한 번» — ⛔온보딩·코치마크와 겹치면 안 뜬다(한 화면에 둘이 겹치면 둘 다 못 읽는다).
   //    ⛔ 주간 레시피만 바뀐 주엔 안 뜬다 — 그건 홈 뱃지로 충분하다(매주 팝업 = 재촉).
+  //    🚫🚫 [창업자 확정 2026-09-10] **레시피가 하나도 없는 사람에겐 안 띄운다.**
+  //       🔢 2026-09-10 실측(첫사람 캡처판) = 앱을 깐 첫날, 아직 레시피 0개인 사람 앞에
+  //          「꾸미기에 가을이 왔어요 · 스티커 24종」 시트가 화면을 통째로 덮었다.
+  //       ⭐ **꾸밀 레시피가 없는 사람에게 꾸미기 소식은 아직 쓸 데가 없다.**
+  //       ⭐ 그리고 이 팝업은 «꺼도 아무것도 안 잃는다» — 소식 «페이지»는 그대로 있고
+  //          홈 카드로 언제든 열린다(NewsPopup 머리말에 적어둔 그대로다).
+  //       ⛔ 「본 것으로 친다」를 하지 «않는다» — 레시피가 생기면 그때 정상적으로 한 번 뜬다.
   const [newsPop, setNewsPop] = useState(
-    () => needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY)
+    () => needsNewsPopup(news) && !needsOnboarding() && !needsCoach(HOME_COACH_KEY) && myN >= 1
   )
   // 🔵 「새로」 뱃지 — ✅창업자 확정 2026-08-31 (시안 넷 중 **㉣ 둘 다**)
   //   📮 창업자 = *"한끼소식에 알약은 색을 다르게 하거나, 새로 올라온게 있으면 표시가 있으면 좋겠어."* → 판정 *"ㄹ하자"*
   //   ⭐ **읽으면 꺼지고, 새것이 오면 다시 뜬다** — 판정은 `isNewsUnread`(팝업과 같은 열쇠) 한 곳에서.
   //   ⛔ `useState` 로 «한 번만» 읽는다 — 그리는 중에 localStorage 를 매번 읽으면
   //      표시를 하고도 화면이 안 바뀐다(리액트는 저장소를 안 본다).
+  // 🇰🇷 명절이면 그림만 한복으로 바꿔치기한다 — 자리·크기·움직임은 손대지 않는다.
+  //    ⛔ 철이 아니거나 그 철에 한복 컷이 없으면 «원래 컷» 그대로 (없는 걸 억지로 끼우지 않는다).
+  const { 철: 명절, 컷: 명절컷 } = useSeasonCuts()
+  const 한복 = (자리, 원래) => (명절컷 && 명절컷[홈컷[명절]?.[자리]]) || 원래
+
   const [unread, setUnread] = useState(() => isNewsUnread(news))
   const 소식봤음 = () => { markNewsSeen(news); setUnread(false) }
   // ⚠️ 어떻게 닫든 «봤음»으로 친다 — 안 그러면 뒤로가기로 닫은 사람에게 매번 뜬다.
@@ -330,6 +361,9 @@ export default function HomeScreen() {
 
   return (
     <>
+      {/* 🎑🎃 명절 장식 — 철이 아니면 아무것도 안 그리고 그림도 «안 받는다»(useSeasonCuts).
+          ⛔ 반드시 «맨 앞»에 둔다 — 담는 칸의 자리가 통 맨 위여야 창업자가 놓은 y 가 맞는다. */}
+      <SeasonDecor />
       <div className="topbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
           {/* 곰 자리에 내 아바타를 넣었다(창업자 2026-07-29). 인사하는 곰은 '레시피' 탭으로 옮김.
@@ -499,7 +533,7 @@ export default function HomeScreen() {
                 ⛔⛔ 크기가 `width={26}` «인라인»이라 CSS 로는 못 이긴다(v10.08 에 당했다).
                    ✅ 그래서 크기를 **CSS 변수**로 읽게 한다 — 폰은 26px 그대로, 패드에서만 `.news-gom` 이 키운다.
                    ⭐ 「한끼 소식」 글자 크기를 클래스로 뺀 것과 «같은 처방»이다(바로 아래 주석). */}
-            <img src={uiGomWow} alt="" draggable={false} className="hk-m-tongtong news-gom"
+            <img src={한복('소식', uiGomWow)} alt="" draggable={false} className="hk-m-tongtong news-gom"
               style={{ flex: '0 0 auto', display: 'block', objectFit: 'contain', margin: '-9px 0',
                 width: 'var(--news-gom, 26px)', height: 'auto' }} />
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -551,7 +585,7 @@ export default function HomeScreen() {
                     {/* 🐧 펭펭은 갈래와 무관하게 «한 컷»이다 — 이 카드가 한 장뿐이라 갈래마다 바꿀 이유가 없고,
                         찾는 포즈(`pn_search`)가 「다음에 뭐 할까」와 뜻이 맞는다.
                         ⛔ 펭펭을 웃기지 않는다(정본 규칙) — `pn_search` 는 무표정이라 그대로 쓴다. */}
-                    <img src={uiPengSearch} alt="" draggable={false} className="next-peng hk-m-tongtong" />
+                    <img src={한복('다음', uiPengSearch)} alt="" draggable={false} className="next-peng hk-m-tongtong" />
                     {/* 🖼 [창업자 확정 2026-08-26] **패드에서만** 그 요리 «표지»를 왼쪽에 세운다.
                         📮 창업자 = *"D에서 표지랑 펭펭 알약까지 들어가니까 정신없어보여"* →
                            *"오늘 뭐해먹지랑 똑같이 만들되 제목을 아직 안해봤어요를 알약으로"* · *"펭펭은 빼자"*
@@ -626,7 +660,7 @@ export default function HomeScreen() {
             ⛔ `two` 는 «둘 다 있을 때만» 붙는다 — 하나뿐이면 지금 모양(박스 안이 좌우로) 그대로다. */}
         {(weekly || homemade) && (
           <div className={`week-pair${weekly && homemade ? ' two' : ''}`}>
-            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} 요일="월" />}
+            {weekly && <WeekBox w={weekly} 기본="이번 주 제철" open={open} 요일="월" 줄컷={명절컷 && 명절컷[줄장식[명절]]} />}
             {homemade && <WeekBox w={homemade} 기본="우리집레시피" open={open} 요일="월" />}
           </div>
         )}

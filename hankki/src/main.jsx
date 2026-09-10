@@ -54,6 +54,11 @@ Promise.resolve()
   .catch(() => 'skip')
   .then((결과) => { if (결과 !== 'restored') { 그리기(); try { 거울귀기울이기() } catch { /* noop */ } } })
 
+// 📊 [2026-09-08] 이용 통계 — ⛔ 화면을 «그린 뒤에» 켠다(첫 화면을 늦추지 않는다 · 절대원칙 32).
+//   ⭐ 안에서 requestIdleCallback 으로 한 번 더 미룬다. measurementId 가 비어 있으면 아무 일도 안 한다.
+//   ⛔ 여기서 await 하거나 오류를 위로 던지지 않는다 — 통계가 죽어도 앱은 그대로 돌아야 한다.
+import('./stats').then((m) => m.통계시작()).catch(() => {})
+
 // 새 버전 자동 반영 — 새 서비스워커가 활성화되면 페이지를 한 번 새로고침하고,
 // 앱을 다시 열 때마다 업데이트를 확인한다. (앱 껐다 켜면 최신으로)
 if ('serviceWorker' in navigator) {

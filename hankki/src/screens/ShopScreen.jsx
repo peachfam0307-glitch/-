@@ -38,6 +38,7 @@ import ConfirmSheet from '../components/ConfirmSheet'
 import { openExternal, matchKo } from '../utils'
 import { CURATION, curIcon, weeklyPicks, isHansalim } from '../data/curation'
 import { weeklyNow, todayKST } from '../data/weekly'
+import SeasonHeadCut from '../components/SeasonHeadCut.jsx'
 
 // 외부 쇼핑몰 열기 — 정식 새 탭(설치된 앱 있으면 App Link 로 앱)으로 연다.
 // (features 문자열을 주면 팝업 창으로 열려 모바일에서 세로로 깨지고 두 번 열린 듯 보였음)
@@ -111,8 +112,9 @@ export default function ShopScreen() {
               ⭐ 여기만 펭펭인 이유 = 이 화면 «아래» 「주부의 장바구니」에 이미 장바구니 든 꼬르곰이 있다.
                  상단바까지 꼬르곰이면 한 화면에 같은 애가 둘 → 펭펭을 올려 둘 다 나오게 했다.
               🧍‍♀️ [2026-08-14 확정] 캐릭터는 **글자 «왼쪽»** — 창업자 *"캐릭터는 같은방향에넣자.왼쪽으로"* */}
-          <img src={uiPengShop} alt="" draggable={false} width={34} height={45} className="hk-m-tongtong"
-            style={{ display: 'block', objectFit: 'contain', margin: '-6px 0' }} />
+          {/* 🎑🎃 명절엔 명절 컷으로 바뀐다. ⭐장보기와 냉장고는 «다른 컷»이다(같은 화면이지만 보는 게 다르다). */}
+          <SeasonHeadCut 탭={view === 'pantry' ? 'fridge' : 'shop'} 기본={uiPengShop}
+            폭={34} 높이={45} 여백={-6} 모션="hk-m-tongtong" />
           <div className="h-title">장보기</div>
           <TabTips tab="shop" />
         </div>
@@ -427,7 +429,13 @@ function Curation() {
   // '사러가기' 버튼에 붙는 구매처 배지 라벨
   const mallLabel = (it) => {
     if (it.mall === 'coupang') return '쿠팡'
-    if (it.brand === '자연드림') return '자연드림'
+    // ⛔⛔ [2026-09-10] 여기가 «브랜드 이름»만 봤다 — 그런데 자연드림 제품 11개 중
+    //    `brand: '자연드림'` 이라고 적힌 건 **올리고당 하나뿐**이었다. 나머지 10개는
+    //    `mall: 'icoop'` 만 있어서 **배지가 조용히 빠졌다**(낫또를 검수판으로 열어보고 잡았다).
+    //    ⭐ 바로 위 주석의 하바티치즈 사고와 «똑같은 모양»이다 — 손으로 적어야만 붙는 구조.
+    //    ✅ `curation.js` 의 `productMall()` 은 진작 `mall === 'icoop'` 으로 보고 있었다.
+    //       두 곳이 갈려 있던 것이라 **여기를 그쪽에 맞춘다**(잣대를 하나로).
+    if (it.mall === 'icoop' || it.brand === '자연드림') return '자연드림'
     if (it.mall === 'oasis') return '오아시스'
     const u = it.url || ''
     // ⭐ 한살림만 「조합원만」을 덧붙인다 — 창업자 2026-08-03
@@ -450,6 +458,7 @@ function Curation() {
     if (u.includes('coupang.com')) return '쿠팡'
     if (u.includes('oasis.co.kr')) return '오아시스'
     if (u.includes('kurly.com')) return '컬리'
+    if (u.includes('icoop.or.kr')) return '자연드림'   // 링크만 봐도 알아채게(표식이 빠져도)
     return ''
   }
   // 🏷 딱지는 이제 **둘**이다 — 분류tag(모래) · 쇼핑몰mall(크림).

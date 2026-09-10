@@ -54,6 +54,37 @@ const TIMEOUT_MS = 60000
 
 // 🔢 마지막 결과 — 앱이 「AI가 정리했어요」를 보여줄 때 쓴다
 let _마지막 = null
+
+// 🧺🧺 **[2026-09-10 · 창업자 실물 녹화] 지금 돌고 있는 «번호표»를 밖에서 볼 수 있게 한다.**
+//   📮 창업자 = 20초에 다른 앱으로 나갔고 42초에 돌아오니 「AI 다듬기가 안 됐어요」
+//   ⛔⛔ 뿌리 = 번호가 이 파일 «안»에만(const) 있었다. 폰이 앱을 얼리면 물어보는 루프가 죽고,
+//      깨어나도 **물어볼 번호가 없어서** 선반에 놓인 답을 통째로 버렸다.
+//      📌 창은 「앱을 닫아도 계속 다듬어요」라고 약속하는데 **못 지키고 있었다.**
+//   ⭐ 그래서 번호를 밖(레시피 한 줄)에 적어 두게 «알려준다». 적는 건 부르는 쪽이 한다.
+let _번호알림 = null
+export function 번호알림받기(fn) { _번호알림 = fn }
+
+// 📒📒 **[2026-09-10 · 창업자 요청] 「최근 AI 다듬기 다섯 번」을 남긴다 — ⛔창업자 폰에만 보인다.**
+//
+//   📮 창업자 = *"갈색띠가 안떠 성공해도"* ＋ *"계속남게할순없어?"*
+//   ⛔⛔ 왜 안 보였나 = 띠는 최대 4.8초다. 게다가 성공이 «나가 있는 동안» 나면 떴다 사라져
+//      **볼 수가 없다.** 오늘 아침 창업자가 겪은 게 정확히 그것이다.
+//   ⭐ 그래서 «지나가는 말»이 아니라 «쌓이는 기록»으로 바꾼다 — 설정 맨 아래에서 언제든 다시 본다.
+//   ⭐⭐ 이게 있으면 아직 못 푼 「왜 2분을 넘겼나」도 저절로 풀린다 — 걸린 시간이 쌓이니까.
+//   ⛔ 개인정보를 안 남긴다 — 레시피 «글자»는 한 자도 안 적는다(모델·걸린 시간·까닭만).
+const 기록칸 = 'hankki:tidylog'
+const 기록수 = 5
+function 기록하기(v) {
+  try {
+    if (!tidyFounder()) return                      // ⛔ 창업자 폰이 아니면 아예 안 쌓는다
+    const 줄 = { 때: Date.now(), ok: !!(v && v.ok), why: (v && v.why) || '', model: (v && v.model) || '', ms: (v && v.ms) || 0 }
+    const 옛 = JSON.parse(localStorage.getItem(기록칸) || '[]')
+    localStorage.setItem(기록칸, JSON.stringify([줄, ...(Array.isArray(옛) ? 옛 : [])].slice(0, 기록수)))
+  } catch { /* 기록이 말썽이어도 다듬기는 계속 */ }
+}
+export function 다듬기기록() {
+  try { const v = JSON.parse(localStorage.getItem(기록칸) || '[]'); return Array.isArray(v) ? v : [] } catch { return [] }
+}
 // 📷 마지막 판에서 «사진을 실었나» — 창업자 화면에만 붙는다(`tidyTail`)
 let _사진 = ''
 
@@ -105,7 +136,35 @@ async function 선반기다리기(번호, headers) {
 // 🤖🔐 [2026-09-08 · 큰 틀 6-② ⓑ] 보내기 «전에» 허락 — 애플 5.1.2(i) "obtain explicit permission before doing so"
 import { AI동의받기 } from './aiConsent.js'
 
+// 🧺🧺 **선반에 놓인 답을 «집어온다»** — 앱이 깨어났을 때 부른다 [2026-09-10]
+//   ⭐ AI 를 «안» 부른다 — 워커가 이미 만들어 둔 답을 가져올 뿐이라 뉴런 0.
+//   ⛔ 기다리지 않는다. 한 번 물어보고 없으면 그냥 없는 것이다(그때는 지금처럼 「한 번 더」가 뜬다).
+//   ⭐ 돌려주는 값 셋 = 답(있으면) · '아직'(워커가 일하는 중) · null(선반이 비었다 = 1시간 지났거나 실패)
+export async function 선반집기(번호) {
+  if (!TIDY_URL || !번호) return null
+  try {
+    const resp = await fetch(TIDY_URL + '?job=' + encodeURIComponent(번호), {
+      method: 'GET', headers: { 'x-hankki-token': APP_TOKEN },
+    })
+    if (!resp.ok) return '아직'                       // ⛔ 한 번 안 됐다고 「없다」로 단정하지 않는다
+    const 답 = await resp.json()
+    if (!답) return '아직'
+    if (답.상태 === '하는중') return '아직'
+    if (답.상태 === '됐음') return 답.몸 || null
+    return null                                        // '없음'(만료) · '실패'
+  } catch { return '아직' }                            // 인터넷이 잠깐 끊긴 것 — 없다고 말하지 않는다
+}
+
+// 📒 **기록은 «한 겹 감싸서» 남긴다** — `_마지막` 이 정해지는 자리가 열 곳이라
+//    하나씩 고치면 «반드시» 빠뜨린다. 어느 길로 끝나든 여기를 지나간다. [2026-09-10]
 export async function tidyRecipe(text, 사진) {
+  const 잰때 = Date.now()
+  const 답 = await 다듬기속(text, 사진)
+  기록하기({ ...(_마지막 || {}), ms: (_마지막 && _마지막.ms) || (Date.now() - 잰때) })
+  return 답
+}
+
+async function 다듬기속(text, 사진) {
   _마지막 = null
   _사진 = ''
   const t = String(text || '').trim()
@@ -216,6 +275,8 @@ export async function tidyRecipe(text, 사진) {
       r = await 한판()
       // 🧺 워커가 「맡았다」고 하면 — 여기서부터는 «기다리는 게 아니라 물어보는» 것이다
       if (r.data && r.data.맡음 && r.data.job) {
+        // 🧺 워커가 맡았다 = 이제 번호가 «진짜»다. 밖에 적어 둔다(앱이 얼어도 살아남게)
+        try { if (_번호알림) _번호알림(r.data.job) } catch { /* 적는 쪽이 말썽이어도 다듬기는 계속 */ }
         const 받은것 = await 선반기다리기(r.data.job, headers)
         if (받은것) { r = { data: 받은것 } } else { _마지막 = { ok: false, why: '안옴' }; return null }
       }

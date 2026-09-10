@@ -52,7 +52,11 @@ for (const f of files) {
   // ⛔ 이름이 `_판-` 이어도 HTML 을 «안 만드는» 것이 섞여 있다 — 앱을 띄워 찍는 캡처 도구다.
   //    거기엔 «고를 것»이 없으니 기억할 것도 없다. 건너뛰되 **왜 건너뛰었는지 적는다.**
   if (!blocks.length) { skip.push([f, 'HTML 을 안 만든다(앱 캡처 도구)']); continue }
-  const html = blocks.join('\n')
+  // ⛔ 2026-09-09 거짓빨간불 — 판 HTML 안에 «중첩 백틱»(`${n}편`)이 있으면 위 정규식이 덩어리를 앞조각에서
+  //    잘라먹어 <script> 가 통째로 검사 밖으로 밀린다. _판-표지그림체-0909 가 그래서 배포를 막았다(저장은 «있었다»).
+  //    ✅ 그래서 파일 안의 <script>…</script> 구간도 같이 본다. addInitScript 시드주입은 <script> 태그를
+  //       안 쓰므로 이 저장소가 막으려던 «거짓 통과»는 그대로 막힌다.
+  const html = blocks.join('\n') + '\n' + (t.match(/<script[\s\S]*?<\/script>/gi) || []).join('\n')
   if (!PICKABLE.test(html)) { skip.push([f, '고를 것이 없다(보여주기만)']); continue }
   if (MEMORY.test(html)) ok.push(f)
   else bad.push(f)

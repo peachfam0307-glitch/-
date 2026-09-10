@@ -26,6 +26,7 @@ import uiGomProud from '../assets/ui/wave/gom_proud.png' // 🐻 꼬르곰(뿌�
 import TabTips from '../components/TabTips'
 import TabTalk from '../components/TabTalk'
 import { 열쇠받기, EARN, KEY_NAME, KEY_UNIT } from '../ocr'
+import SeasonHeadCut from '../components/SeasonHeadCut.jsx'
 
 // 🎴 카드자랑 탭 — 바이럴 진입점. 내 레시피를 골라 자랑한다.
 // ⭐ 창업자 방향: 주인공은 '내가 꾸민 표지', 랜덤 카드는 옵션(메인 아님).
@@ -218,8 +219,8 @@ export default function BragScreen() {
               ⭐ 컷 이름 그대로 «뿌듯한» 꼬르곰 — 자랑 탭에 뜻이 딱 맞는다(별 두 개도 붙어 있다).
               🧍‍♀️ [2026-08-14 확정] 캐릭터는 **글자 «왼쪽»** — 창업자 *"캐릭터는 같은방향에넣자.왼쪽으로"*
                  ⛔ 전엔 여기만 제목 «뒤»였다(레시피·일기·홈은 앞). 의도가 아니라 「글씨옆에」를 뒤로 읽은 것. */}
-          <img src={uiGomProud} alt="" draggable={false} width={29} height={44} className="hk-m-tongtong"
-            style={{ display: 'block', objectFit: 'contain', margin: '-5px 0' }} />
+          {/* 🎑🎃 명절엔 명절 컷으로 바뀐다. */}
+          <SeasonHeadCut 탭="brag" 기본={uiGomProud} 폭={29} 높이={44} 여백={-5} 모션="hk-m-tongtong" />
           <div className="h-title">레꾸자랑</div>
         </div>
         {/* 🎀 [2026-08-18 창업자 제보] *"레꾸자랑은 도움말이 없네?"* — 여섯 탭 중 여기만 없었다. */}

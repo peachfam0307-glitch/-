@@ -81,7 +81,7 @@ window.addEventListener(A.동의이벤트, (e) => { 뜬횟수++; e.detail.받았
   잰다(/무엇을/.test(s) && /어디로/.test(s) && /왜/.test(s) && /보관/.test(s) && /Cloudflare Workers AI/.test(s) && /사용할게요/.test(s) && /사용 안 함/.test(s), '⑥ 시트 = 무엇을·어디로·왜·보관 ＋ 공급자 이름 ＋ 단추 둘')
   잰다(!/llama|glm|gemma/i.test(s), '  ⑥-b 시트에 모델 이름을 박지 않았다(바뀐다)')
   const p = 읽기('public/privacy.html')
-  잰다(/id="ai"/.test(p) && /4-1\. AI 다듬기/.test(p) && /다\. AI 다듬기/.test(p) && /Cloudflare Workers AI/.test(p) && /최대 1시간/.test(p) && /설정 → AI 다듬기 사용/.test(p), '  ⑥-c 방침 4-1(설명)·8-다(위탁·국외) ＋ 보관 1시간 ＋ 바꾸는 곳')
+  잰다(/id="ai"/.test(p) && /4-1\. AI 다듬기/.test(p) && /라\. AI 다듬기/.test(p)   /* 8-라 — 8-다 는 이용 통계(배포 갈래 2026-09-08)가 먼저 차지했다 · 2026-09-10 합치며 옮김 */ && /Cloudflare Workers AI/.test(p) && /최대 1시간/.test(p) && /설정 → AI 다듬기 사용/.test(p), '  ⑥-c 방침 4-1(설명)·8-다(위탁·국외) ＋ 보관 1시간 ＋ 바꾸는 곳')
   잰다(/2026년 9월 8일/.test(p), '  ⑥-d 방침 시행일 갱신')
   const prof = 읽기('src/screens/ProfileScreen.jsx'); const g = 읽기('src/settingsGroups.js')
   잰다(/label: 'AI 다듬기 사용'/.test(prof) && /'AI 다듬기 사용'/.test(g), '  ⑥-e 설정 줄 「AI 다듬기 사용」 ＋ 갈래 등록')

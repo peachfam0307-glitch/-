@@ -19,7 +19,10 @@ import { chromium } from 'playwright'
 import { readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { extname, join } from 'node:path'
-import { FAV_NAME, FAV_ADD, FAV_REMOVE } from '../src/favName.js'
+import { FAV_NAME, FAV_ADD } from '../src/favName.js'
+// 🔖 핀 종 이름도 «코드에서» 읽는다 — 여기 박으면 종 이름이 바뀔 때 이 판이 애먼 데서 죽는다
+import { FAV_PINS } from '../src/favPin.js'
+const PIN_NEXT_NAME = FAV_PINS[FAV_PINS.length - 1].name   // 지금 = 「최애」(모자 다음이자 마지막 종)
 
 const 옛이름 = '책갈피'
 const ROOT = new URL('..', import.meta.url).pathname
@@ -76,10 +79,30 @@ console.log(`🔖 이름 = 「${FAV_NAME}」 (src/favName.js 에서 읽었다) �
   const 꽂기 = p.locator(`[aria-label*="${FAV_ADD}"]`)
   const 꽂을수 = await 꽂기.count()
   칸('① 카드 「꽂기」 이름표가 새 이름이다', 꽂을수 > 0, `${꽂을수}개 찾음 («${FAV_ADD}»)`)
-  for (let i = 0; i < Math.min(꽂을수, 2); i++) { await 꽂기.nth(0).click().catch(() => {}); await p.waitForTimeout(350) }
+  await 꽂기.nth(0).click().catch(() => {})   // 비어 있음 → 요리사모자(해볼 것)
+  await p.waitForTimeout(450)
 
-  const 뺀이름표 = await p.locator(`[aria-label*="${FAV_REMOVE}"]`).count()
-  칸('② 꽂힌 카드 「빼기」 이름표가 새 이름이다', 뺀이름표 > 0, `${뺀이름표}개 («${FAV_REMOVE}»)`)
+  // 🔁🔁 [2026-09-08] **핀이 두 종이 되면서 이 칸의 뜻이 바뀌었다.**
+  //   📮 창업자 = *"요리사모자는 해볼것, 하트는 최애 두 종으로 가자"* ＋ *"길게 눌러야 핀을 바꿀 수 있어?/"*
+  //   ⭐ 도는 차례 = 비어 있음 → 모자(해볼 것) → 하트(최애) → 비어 있음 (`src/favPin.js`)
+  //   ⛔ 그래서 **한 번 누른 카드에는 「빼기」가 안 뜬다** — 다음이 「최애에 꽂기」이기 때문이다.
+  //      옛 판은 여기서 두 번 누르고 「해볼 것에서 빼기」를 찾다가 0개로 죽었다(run 2278).
+  //   ⭐⭐ 검사를 «없애지 않고» 순환까지 재도록 넓혔다 — 이름은 여전히 코드에서 읽어 온다.
+  const 두번째 = await p.locator('.fav-dot').first().getAttribute('aria-label')
+  // 🔀 종이 «하나»면(2026-09-08 사고로 두 종을 껐다) 꽂힌 카드는 곧바로 「빼기」를 말한다.
+  //    ⛔ 검사를 지우지 않는다 — 종 수에 맞는 «맞는 말»을 검사한다.
+  const 한종 = FAV_PINS.length === 1
+  칸(한종 ? '② 꽂힌 카드는 「빼기」를 말한다(종 하나)' : '② 모자에 꽂힌 카드는 「다음 종에 꽂기」를 말한다',
+    !!두번째 && 두번째.includes(한종 ? `${PIN_NEXT_NAME}에서 빼기` : `${PIN_NEXT_NAME}에 꽂기`), `«${두번째}»`)
+
+  // ⛔⛔ **끝까지 도는 검사는 «다른 카드»로 한다.** 첫 카드를 계속 누르면 하트까지 가버려서
+  //    「해볼 것」에 꽂힌 것이 0개가 되고 → ③ 칩이 안 서서 «애먼 칸»이 죽는다(실제로 죽였다).
+  //    ⭐ 첫 카드는 모자에 둔 채로, 둘째 카드를 두 번 눌러 마지막 종까지 간다.
+  const 둘째 = p.locator('.fav-dot').nth(1)
+  for (let i = 0; i < 2; i++) { await 둘째.click().catch(() => {}); await p.waitForTimeout(450) }
+  const 마지막 = await 둘째.getAttribute('aria-label')
+  칸('②-2 마지막 종에서는 「빼기」를 말한다',
+    !!마지막 && 마지막.includes(한종 ? `${PIN_NEXT_NAME}에 꽂기` : `${PIN_NEXT_NAME}에서 빼기`), `«${마지막}»`)
 
   // 칩 — favCount>0 이라야 뜬다. 먼저 «있나»를 재고 그 다음 «이름»을 본다
   const 칩글 = await p.evaluate(() => [...document.querySelectorAll('.pill')].map((e) => e.innerText.trim()))

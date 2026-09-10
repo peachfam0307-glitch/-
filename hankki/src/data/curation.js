@@ -264,7 +264,7 @@ const CURATION_ALL = [
     items: [
       { name: '우리밀 유기농국수', brand: '오월햇살', matches: ['소면', '국수'], benefit: '성분 좋고 쫄깃해서 잔치국수·비빔국수 어디든 편하게 써요. 급할 땐 삶아서 냉면육수만 부어도 시원한 한 그릇 완성!', q: '오월햇살 우리밀 유기농 국수', mall: 'coupang', url: 'https://link.coupang.com/a/gRYSmcGuu4' },
       { name: '보리면', brand: '보보리쿡시', matches: ['보리면'], benefit: '밀가루 0%라 속이 편해요. 삶지 않고 익혀내는 방식이라 쫄깃하고 씹을수록 향이 올라와요. 쯔유와 특히 잘 어울려요', q: '보보리쿡시 보리면', mall: 'coupang', url: 'https://link.coupang.com/a/gR0xUdOyWq' },
-      { name: '들기름막국수', brand: '샐러드판다', icon: 'cu_makguksu', matches: ['막국수'], benefit: '다이어트 할 때 많이 사먹었던 들기름막국수예요. 간단하고 소스도 짜지 않고 맛있어서 추천해요', q: '샐러드판다 들기름막국수', mall: 'kurly', from: '2026-09-12' },
+      { name: '들기름막국수', brand: '샐러드판다', icon: 'cu_makguksu', matches: ['막국수'], benefit: '다이어트 할 때 많이 사먹었던 들기름막국수예요. 간단하고 소스도 짜지 않고 맛있어서 추천해요', q: '샐러드판다 들기름막국수', mall: 'coupang', from: '2026-09-12', url: 'https://link.coupang.com/a/gVL13OXv5g' },
       { name: '우리콩 두부면 넓은면', brand: '농협식품', matches: ['두부면'], benefit: '우리콩면이라 성분도 좋고, 식감도 좋아서 자주 이용해요. 추천템', q: '농협식품 우리콩 두부면 넓은면', mall: 'coupang', from: '2026-09-26' },
       { name: '어묵탕맛', brand: '누들핏', benefit: '누들핏이라 다이어트에 도움될까 해서 샀더니 이거 먹고 입이 터졌어요. 누들핏이 다 맛이 괜찮은데 어묵탕맛이 제일 맛있는 것 같아요. 강추합니다', q: '누들핏 어묵탕맛', mall: 'coupang', from: '2026-10-03' },
       { name: '건자른당면', icon: 'cu_dangmyeon', matches: ['당면'], benefit: '당면 자를 때 다 튀고 불편했는데 자른당면이 정말 편했어요. 국산 고구마 전분 100%예요', q: '건자른당면', mall: 'icoop', from: '2026-09-19' },
@@ -311,7 +311,7 @@ const CURATION_ALL = [
       // ⭐ 창업자 2026-08-03 제공. **쿠팡이라 조합원 아니어도 산다** — 도토리묵 자리에 한살림밖에 없던 걸 메운다.
       { name: '국내산 도토리로 만든 도토리묵', brand: '친정엄마', matches: ['도토리묵'], benefit: '국산 도토리앙금·천일염, 성분이 심플해요. 작은 사이즈로 소분돼 있어 하나 까서 혼자 먹기 딱이에요', q: '친정엄마 국내산 도토리묵', mall: 'coupang', url: 'https://link.coupang.com/a/gRZnjMvfJA' },
       { name: '오리엔탈연두부', brand: '빠르게한끼', icon: 'cu_yeondubu', matches: ['연두부'], benefit: '국산콩에 소스도 들어있어서 입맛 없을 때나 바쁜 아침에 휘리릭 먹기 좋아요', q: '빠르게한끼 오리엔탈 연두부', mall: 'kurly', from: '2026-09-19' },
-      { name: '낫또', icon: 'cu_natto', matches: ['낫또'], benefit: '낫또를 썩 좋아하진 않는데 몸에 좋다고 해서 브랜드별로 거의 먹어봤어요. 그중에 자연드림 낫또가 제 입맛에는 제일 괜찮았어요. 저같은 낫또 초심자 추천', q: '낫또', mall: 'icoop', from: '2026-09-12' },
+      { name: '낫또', icon: 'cu_natto', matches: ['낫또'], benefit: '낫또를 썩 좋아하진 않는데 몸에 좋다고 해서 브랜드별로 거의 먹어봤어요. 그중에 자연드림 낫또가 제 입맛에는 제일 괜찮았어요. 저같은 낫또 초심자 추천', q: '낫또', mall: 'icoop', from: '2026-09-12', url: 'http://icoop.or.kr/coopmall/goodsmall.phtm?act=find&key=%EB%82%AB%EB%98%90&x=0&y=0' },
     ],
   },
   {

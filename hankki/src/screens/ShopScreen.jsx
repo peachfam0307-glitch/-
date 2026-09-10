@@ -429,7 +429,13 @@ function Curation() {
   // '사러가기' 버튼에 붙는 구매처 배지 라벨
   const mallLabel = (it) => {
     if (it.mall === 'coupang') return '쿠팡'
-    if (it.brand === '자연드림') return '자연드림'
+    // ⛔⛔ [2026-09-10] 여기가 «브랜드 이름»만 봤다 — 그런데 자연드림 제품 11개 중
+    //    `brand: '자연드림'` 이라고 적힌 건 **올리고당 하나뿐**이었다. 나머지 10개는
+    //    `mall: 'icoop'` 만 있어서 **배지가 조용히 빠졌다**(낫또를 검수판으로 열어보고 잡았다).
+    //    ⭐ 바로 위 주석의 하바티치즈 사고와 «똑같은 모양»이다 — 손으로 적어야만 붙는 구조.
+    //    ✅ `curation.js` 의 `productMall()` 은 진작 `mall === 'icoop'` 으로 보고 있었다.
+    //       두 곳이 갈려 있던 것이라 **여기를 그쪽에 맞춘다**(잣대를 하나로).
+    if (it.mall === 'icoop' || it.brand === '자연드림') return '자연드림'
     if (it.mall === 'oasis') return '오아시스'
     const u = it.url || ''
     // ⭐ 한살림만 「조합원만」을 덧붙인다 — 창업자 2026-08-03
@@ -452,6 +458,7 @@ function Curation() {
     if (u.includes('coupang.com')) return '쿠팡'
     if (u.includes('oasis.co.kr')) return '오아시스'
     if (u.includes('kurly.com')) return '컬리'
+    if (u.includes('icoop.or.kr')) return '자연드림'   // 링크만 봐도 알아채게(표식이 빠져도)
     return ''
   }
   // 🏷 딱지는 이제 **둘**이다 — 분류tag(모래) · 쇼핑몰mall(크림).

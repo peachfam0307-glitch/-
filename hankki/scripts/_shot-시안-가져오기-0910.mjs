@@ -155,6 +155,37 @@ await p.evaluate(() => {
   fig.parentElement.insertBefore(새단추, fig.nextElementSibling)
 })
 await 찍기(p, 순번++, 'D-시안', 폭)
+
+// ── ⓔ [창업자 2026-09-10] 「이거 해보면 열쇠 1개씩」 다섯 줄을 «접어» 제목만 보이게
+await p.reload({ waitUntil: 'networkidle' }); await p.waitForTimeout(1800)
+순번 = await 길막치우기(p, 순번, 폭)
+await p.locator('.nav-item', { hasText: '가져오기' }).first().click()
+await p.waitForTimeout(1200)
+순번 = await 길막치우기(p, 순번, 폭)
+await p.evaluate(() => {
+  const el = document.querySelector('.earn-list')
+  if (!el) return
+  el.querySelector('ul')?.setAttribute('style', 'display:none')
+  el.querySelector('.earn-foot')?.setAttribute('style', 'display:none')
+  const head = el.querySelector('.earn-head')
+  if (head) {
+    head.style.cssText = 'display:flex;align-items:center;gap:8px'
+    const 화살 = document.createElement('span')
+    화살.textContent = '⌄'
+    화살.style.cssText = 'margin-left:auto;font-size:20px;opacity:.55'
+    head.appendChild(화살)
+  }
+})
+await 찍기(p, 순번++, 'E-시안-접음', 폭)
+// ＋ 1번(안내 내리기)까지 같이 걸면 어떻게 보이나
+await p.evaluate(() => {
+  const opts = document.querySelector('.imp-opts')
+  const notice = document.querySelector('.imp-notice')
+  const earn = document.querySelector('.earn-list')
+  if (opts && notice) opts.after(notice)
+  if (opts && earn) opts.after(earn)
+})
+await 찍기(p, 순번++, 'E-시안-접음+내림', 폭)
 await ctx.close()
 console.log(`\n📂 시안 = ${OUT}`)
 await b.close(); srv.close()

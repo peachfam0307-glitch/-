@@ -57,18 +57,31 @@ let 나쁨 = 0
 const 말 = (ok, s, 덤 = '') => { if (!ok) 나쁨++; console.log(`${ok ? '✅' : '⛔'} ${s}${덤 ? ' — ' + 덤 : ''}`) }
 
 // 🎯 이번 주 셋 — `curation.js` 의 from:'2026-09-12' 그대로
-const 찾을것 = [
-  { 키: 'ghee', 말머리: '기버터' },
-  { 키: 'makguksu', 말머리: '들기름막국수' },
-  { 키: 'natto', 말머리: '낫또' },
-]
+// 📮 창업자 확정 2026-09-11 = *"김치콩비지 기버터 피자 넣자. 이번주"*
+//    ⭐ 1:1 로 자리를 바꿨다(들기름막국수·낫또는 뒤로) — 한 주도 비지 않는다.
+// 📮 ＋ 창업자가 콕 집은 것 = *"초피액젓, 진간장, 맛간장, 고추장 … 어묵. 햄 이런 것도"*
+//    ⛔ 고추장은 큐레이션에 한 개도 없다(실측) → 창업자 = *"고추장은 우선 패스하자"*
+//    🔒 조합원 전용(한살림)·올리브오일은 뺀다 — *"일반인들이 쉽게 살수있는 것 위주로"* · *"오일이런거 빼고"*
+const 목록 = {
+  // 🚨 내일(2026-09-12 토) 열리는 셋 — «전수 검수» 대상
+  ghee: '기버터', kimchibiji: '김치콩비지찌개', pizza: '버섯피자',
+  // 🛒 릴스에 같이 보여줄 것 (이미 열려 있다)
+  jinganjang: '우리콩 진간장', matganjang: '맛간장', chopi: '초피액젓',
+  eomuk: '바른어묵', ham: '슬라이스햄', bienna: '문어 비엔나',
+  daepa: '대파소금', ori: '자연누리 훈제오리', gochu: '고춧가루',
+  makguksu: '들기름막국수', natto: '낫또',
+}
+const 찾을것 = (process.env.CARDS || 'ghee,kimchibiji,pizza').split(',')
+  .map((k) => (목록[k.trim()] ? { 키: k.trim(), 말머리: 목록[k.trim()] } : null)).filter(Boolean)
 
 for (const { 키, 말머리 } of 찾을것) {
   const 카드 = p.locator('.cur-card', { hasText: 말머리 }).first()
   말(await 카드.count() > 0, `「${말머리}」 카드를 찾았다`)
   if (!(await 카드.count())) continue
-  await 카드.scrollIntoViewIfNeeded()
-  await p.waitForTimeout(300)
+  // ⬆️ **화면 «가운데»로 올리고 찍는다** — ⛔`scrollIntoViewIfNeeded` 는 «보이기만 하면» 안 움직인다.
+  //    그래서 카드가 화면 맨 아래에 걸린 채로 찍혀 **「담기·사러가기」가 탭바에 잘렸다**(1판 실측).
+  await 카드.evaluate((el) => el.scrollIntoView({ block: 'center' }))
+  await p.waitForTimeout(400)
   // ⛔ 접혀 있으면 찍지 않는다 — 「접기」가 보여야 펼쳐진 것이다
   const 펼침 = await 카드.locator('text=접기').count()
   말(펼침 > 0, `「${말머리}」 설명이 펼쳐져 있다`, 펼침 ? '' : '아직 「더보기」 상태다')

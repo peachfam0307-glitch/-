@@ -25,6 +25,12 @@ const srv = createServer((q, s) => {
 await new Promise((r) => srv.listen(4422, r))
 
 const { SEED_COACH_SEEN } = await import('../src/coach.js')
+// ⭐ 앱과 «같은 모듈»로 답을 구한다 — 흉내를 내면 어긋난다(절대원칙 30)
+const { allBasicRecipes } = await import('../src/data/basics.js')
+const { rankPantryRecipes } = await import('../src/pantryMatch.js')
+const { todayKST } = await import('../src/today.js')
+const 오늘문자 = todayKST()
+const 열린레시피 = allBasicRecipes.filter((r) => !r.from || r.from <= 오늘문자)
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 const D = (n) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10)
 
@@ -113,7 +119,13 @@ for (const [W] of [[360], [390]]) {
       말(!!윗, '윗줄이 뜬다')
       말(!!아랫, '아랫줄이 뜬다')
       말(윗 ? 윗.전체 <= 12 : true, '윗줄은 12장 이하', 윗 ? `${윗.전체}장` : '')
-      말(아랫 ? 아랫.전체 >= 10 : false, '아랫줄이 안 마른다', 아랫 ? `${아랫.전체}장` : '')
+      // ⛔⛔ 첫 판은 「아랫줄 10장 이상」이라 박았다 — **재료가 많은 냉장고에서 뽑은 문턱**이라
+      //    고기만 다섯 칸 넣은 판에서 «앱이 멀쩡한데» 빨간불이 났다(걸린 편이 원래 13편뿐).
+      //    📌 규칙 18 ⓘ — 검사가 «무엇을» 보는지. 봐야 할 건 장수가 아니라 **한 편도 안 잃나**다.
+      // ✅ 그래서 앱과 «같은 셈»으로 걸린 편 전부를 구해 «두 줄의 합»과 맞춰 본다.
+      const 전부 = rankPantryRecipes(열린레시피, 칸들.map(([name, expiry]) => ({ name, expiry })), (p) => (p?.expiry ? Math.round((Date.parse(p.expiry) - Date.parse(오늘문자 + 'T00:00:00Z')) / 86400000) : null)).length
+      말(윗.전체 + 아랫.전체 === 전부, '두 줄을 합치면 «걸린 편 전부» — 한 편도 안 잃는다', `${윗.전체} ＋ ${아랫.전체} = ${전부}`)
+      말(아랫.전체 > 0, '아랫줄이 비지 않는다', `${아랫.전체}장`)
       const 겹 = 윗 && 아랫 ? 윗.보임.filter((t) => 아랫.보임.includes(t)) : []
       말(겹.length === 0, '보이는 칸에서 두 줄이 «안 겹친다»', 겹.join(','))
     }

@@ -264,7 +264,7 @@ const CURATION_ALL = [
     items: [
       { name: '우리밀 유기농국수', brand: '오월햇살', matches: ['소면', '국수'], benefit: '성분 좋고 쫄깃해서 잔치국수·비빔국수 어디든 편하게 써요. 급할 땐 삶아서 냉면육수만 부어도 시원한 한 그릇 완성!', q: '오월햇살 우리밀 유기농 국수', mall: 'coupang', url: 'https://link.coupang.com/a/gRYSmcGuu4' },
       { name: '보리면', brand: '보보리쿡시', matches: ['보리면'], benefit: '밀가루 0%라 속이 편해요. 삶지 않고 익혀내는 방식이라 쫄깃하고 씹을수록 향이 올라와요. 쯔유와 특히 잘 어울려요', q: '보보리쿡시 보리면', mall: 'coupang', url: 'https://link.coupang.com/a/gR0xUdOyWq' },
-      { name: '들기름막국수', brand: '샐러드판다', icon: 'cu_makguksu', matches: ['막국수'], benefit: '다이어트 할 때 많이 사먹었던 들기름막국수예요. 간단하고 소스도 짜지 않고 맛있어서 추천해요', q: '샐러드판다 들기름막국수', mall: 'coupang', from: '2026-09-12', url: 'https://link.coupang.com/a/gVL13OXv5g' },
+      { name: '들기름막국수', brand: '샐러드판다', icon: 'cu_makguksu', matches: ['막국수'], benefit: '다이어트 할 때 많이 사먹었던 들기름막국수예요. 간단하고 소스도 짜지 않고 맛있어서 추천해요', q: '샐러드판다 들기름막국수', mall: 'coupang', from: '2027-01-30', url: 'https://link.coupang.com/a/gVL13OXv5g' },
       { name: '우리콩 두부면 넓은면', brand: '농협식품', matches: ['두부면'], benefit: '우리콩면이라 성분도 좋고, 식감도 좋아서 자주 이용해요. 추천템', q: '농협식품 우리콩 두부면 넓은면', mall: 'coupang', from: '2026-09-26' },
       { name: '어묵탕맛', brand: '누들핏', benefit: '누들핏이라 다이어트에 도움될까 해서 샀더니 이거 먹고 입이 터졌어요. 누들핏이 다 맛이 괜찮은데 어묵탕맛이 제일 맛있는 것 같아요. 강추합니다', q: '누들핏 어묵탕맛', mall: 'coupang', from: '2026-10-03' },
       { name: '건자른당면', icon: 'cu_dangmyeon', matches: ['당면'], benefit: '당면 자를 때 다 튀고 불편했는데 자른당면이 정말 편했어요. 국산 고구마 전분 100%예요', q: '건자른당면', mall: 'icoop', from: '2026-09-19' },
@@ -311,7 +311,7 @@ const CURATION_ALL = [
       // ⭐ 창업자 2026-08-03 제공. **쿠팡이라 조합원 아니어도 산다** — 도토리묵 자리에 한살림밖에 없던 걸 메운다.
       { name: '국내산 도토리로 만든 도토리묵', brand: '친정엄마', matches: ['도토리묵'], benefit: '국산 도토리앙금·천일염, 성분이 심플해요. 작은 사이즈로 소분돼 있어 하나 까서 혼자 먹기 딱이에요', q: '친정엄마 국내산 도토리묵', mall: 'coupang', url: 'https://link.coupang.com/a/gRZnjMvfJA' },
       { name: '오리엔탈연두부', brand: '빠르게한끼', icon: 'cu_yeondubu', matches: ['연두부'], benefit: '국산콩에 소스도 들어있어서 입맛 없을 때나 바쁜 아침에 휘리릭 먹기 좋아요', q: '빠르게한끼 오리엔탈 연두부', mall: 'kurly', from: '2026-09-19' },
-      { name: '낫또', icon: 'cu_natto', matches: ['낫또'], benefit: '낫또를 썩 좋아하진 않는데 몸에 좋다고 해서 브랜드별로 거의 먹어봤어요. 그중에 자연드림 낫또가 제 입맛에는 제일 괜찮았어요. 저같은 낫또 초심자 추천', q: '낫또', mall: 'icoop', from: '2026-09-12', url: 'http://icoop.or.kr/coopmall/goodsmall.phtm?act=find&key=%EB%82%AB%EB%98%90&x=0&y=0' },
+      { name: '낫또', icon: 'cu_natto', matches: ['낫또'], benefit: '낫또를 썩 좋아하진 않는데 몸에 좋다고 해서 브랜드별로 거의 먹어봤어요. 그중에 자연드림 낫또가 제 입맛에는 제일 괜찮았어요. 저같은 낫또 초심자 추천', q: '낫또', mall: 'icoop', from: '2027-02-06', url: 'http://icoop.or.kr/coopmall/goodsmall.phtm?act=find&key=%EB%82%AB%EB%98%90&x=0&y=0' },
     ],
   },
   {
@@ -446,7 +446,7 @@ const CURATION_ALL = [
       { name: '이혜정의 꽉찬 수제 영양밥', brand: '빅마마', benefit: '국산재료 사용해 성분도 좋고, 내용물도 실해요. 추천템', q: '빅마마 이혜정 꽉찬 수제 영양밥 전복', mall: 'coupang', from: '2027-01-23', url: 'https://link.coupang.com/a/gR1cAvlyqi' },
       { name: '초밥왕 유부초밥', brand: 'CJ주부', matches: ['유부초밥'], benefit: '국산콩으로 만든 유부고, 소스 맛이 괜찮아서 자주 구입해요', q: 'CJ 주부초밥왕 유부초밥', mall: 'kurly', from: '2027-01-02' },
       { name: '섬진강재첩국', matches: ['재첩'], benefit: '재첩은 쉽게 구하기 어려우니까 시원한 국물이 먹고 싶을 때 구비해놓고 먹어요. 냉동이라 보관도 편하고 아이도 잘 먹어서 좋아요', q: '한살림 섬진강 재첩국', mall: 'hansalim', from: '2026-12-12' },
-      { name: '김치콩비지찌개', brand: '더오담', matches: ['콩비지'], benefit: '냉동실에 2개씩은 꼭 있어요. 아침대용으로도 좋고, 맛있어서 추천합니다', q: '더오담 김치콩비지찌개', mall: 'coupang', from: '2027-01-30', url: 'https://link.coupang.com/a/gR1d0H64iW' },
+      { name: '김치콩비지찌개', brand: '더오담', matches: ['콩비지'], benefit: '냉동실에 2개씩은 꼭 있어요. 아침대용으로도 좋고, 맛있어서 추천합니다', q: '더오담 김치콩비지찌개', mall: 'coupang', from: '2026-09-12', url: 'https://link.coupang.com/a/gR1d0H64iW' },
       { name: '수제 김치찌개', brand: '오모가리', benefit: '내가 끓이는 김치찌개가 제일 맛있지만, 또 남이 끓여주는 것도 먹고 싶잖아요. 한 팩 뜯어서 두부나 돼지고기 추가해서 끓이면 간편식으로 괜찮아요. 자주 사는 템', q: '오모가리 수제 김치찌개', mall: 'coupang', from: '2027-02-06', url: 'https://link.coupang.com/a/gR1fjRGFYz' },
       { name: '물만두', matches: ['물만두', '만두'], benefit: '떡국에도 넣고 만둣국 끓일 때도 좋고, 물만두로 간단히 조리해 먹기도 좋아요. 첨가물 거의 없고 전 재료 국산이라 자극적인 맛은 아니지만 냉동실에 꾸준히 있는 아이템', q: '한살림 물만두', mall: 'hansalim', from: '2026-12-19' },
       { name: '닭가슴살 만두', brand: '굽네', matches: ['만두'], benefit: '전자레인지에 간단하게 돌려먹는 만두인데, 피가 라이스페이퍼처럼 쫄깃하고 소도 맛있어요. 기본 맛이 제일 맛있었어요. 매콤한 거 좋아하시면 청양고추맛도 추천', q: '굽네 닭가슴살 만두', mall: 'coupang', from: '2027-02-13', url: 'https://link.coupang.com/a/gRZRPRtxsq' },
@@ -514,7 +514,7 @@ const CURATION_ALL = [
   {
     cat: '피자', group: '간편식·간식', emoji: '🍕', icon: 'cu_pizza4',
     items: [
-      { name: '버섯피자', brand: '톰볼라', matches: ['피자'], benefit: '어른 피자맛. 짭짤하고 자극적인데 맛있어요. 피맥은 이걸로 추천합니다', q: '톰볼라 버섯피자', mall: 'kurly', from: '2027-02-06' },
+      { name: '버섯피자', brand: '톰볼라', matches: ['피자'], benefit: '어른 피자맛. 짭짤하고 자극적인데 맛있어요. 피맥은 이걸로 추천합니다', q: '톰볼라 버섯피자', mall: 'kurly', from: '2026-09-12' },
       { name: '작은사이즈 고르곤졸라 · 불고기피자', brand: '우리별피자', matches: ['피자'], benefit: '가끔 인스타에서 공구할 때 사봤는데 토핑도 실하고 사이즈도 딱 좋더라구요. 모짜렐라 치즈 듬뿍 추가해서 굽는 거 추천해요. 저는 고르곤졸라·불고기피자가 제일 맛있었어요', q: '우리별피자 고르곤졸라 불고기피자', url: 'https://smartstore.naver.com/wooristar/products/6626404795', from: '2027-01-09' },
     ],
   },

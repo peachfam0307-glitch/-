@@ -50,6 +50,16 @@ const 재기 = async (W, H) => {
   const ctx = await b.newContext({ viewport: { width: W, height: H } })
   await ctx.addInitScript(SEED_COACH_SEEN)
   await ctx.addInitScript(() => { try { localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1') } catch {} })
+  // 📅 유저가 «직접 저장한» 레시피 한 편 — 이게 있어야 `.grid-card .date` 가 화면에 나온다(위 표 주석 참고).
+  await ctx.addInitScript(() => {
+    try {
+      const K = 'hankki:v1'
+      const 있던것 = JSON.parse(localStorage.getItem(K) || 'null') || {}
+      const 한편 = { id: 'u-패드글씨-시험', title: '저장한 레시피', status: 'sorted', favorite: false, cooked: 0, savedAt: Date.parse('2026-09-01T09:00:00Z'), ingredients: ['재료 1'], steps: ['한 걸음이에요.'] }
+      있던것.recipes = [한편, ...(있던것.recipes || [])]
+      localStorage.setItem(K, JSON.stringify(있던것))
+    } catch { /* 못 심어도 나머지 칸은 잰다 */ }
+  })
   const 결과 = {}
   for (const t of 탭) {
     const p = await ctx.newPage()
@@ -128,6 +138,9 @@ const 클래스 = [
   { sel: '.weekly-kicker', 폰: 15, 패드: 17.5, 탭: null },
   { sel: '.seg', 폰: 16.5, 패드: 18, 탭: '레시피' },
   { sel: '.pill', 폰: 16, 패드: 17.5, 탭: '레시피' },
+  // 📅 [2026-09-12] 이 칸은 이제 «유저가 저장한 레시피»에만 뜬다 — 기본 레시피는 저장 날짜를 안 보여준다
+  //    (창업자 확정 「a」 · 바닥값 2020-01-01 이 날짜로 새어 나온 사고). 그래서 아래 `씨앗레시피` 를 심고 잰다.
+  //    ⛔ 이 줄을 지워서 통과시키지 말 것 — 그러면 「패드에서 글자가 커지나」를 영영 안 보게 된다.
   { sel: '.grid-card .date', 폰: 15, 패드: 16.5, 탭: '레시피' },
   { sel: '.shop-chip .nm', 폰: 15, 패드: 17.5, 탭: '장보기' },
   // ⛔ 일기 달력 숫자(cal-num)는 뺐다 — 가로 블록에 같은 이름 규칙이 «둘» 더 있어(877·893줄)
@@ -138,6 +151,16 @@ const px재기 = async (W, H, 어느탭) => {
   const ctx = await b.newContext({ viewport: { width: W, height: H } })
   await ctx.addInitScript(SEED_COACH_SEEN)
   await ctx.addInitScript(() => { try { localStorage.setItem('hankki:onboarded', '1'); localStorage.setItem('hankki:news:off', '1') } catch {} })
+  // 📅 유저가 «직접 저장한» 레시피 한 편 — 이게 있어야 `.grid-card .date` 가 화면에 나온다(위 표 주석 참고).
+  await ctx.addInitScript(() => {
+    try {
+      const K = 'hankki:v1'
+      const 있던것 = JSON.parse(localStorage.getItem(K) || 'null') || {}
+      const 한편 = { id: 'u-패드글씨-시험', title: '저장한 레시피', status: 'sorted', favorite: false, cooked: 0, savedAt: Date.parse('2026-09-01T09:00:00Z'), ingredients: ['재료 1'], steps: ['한 걸음이에요.'] }
+      있던것.recipes = [한편, ...(있던것.recipes || [])]
+      localStorage.setItem(K, JSON.stringify(있던것))
+    } catch { /* 못 심어도 나머지 칸은 잰다 */ }
+  })
   const p = await ctx.newPage()
   await p.goto(BASE, { waitUntil: 'networkidle' })
   await p.evaluate(() => document.fonts.ready)

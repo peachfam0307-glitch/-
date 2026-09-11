@@ -94,6 +94,17 @@ export const countPantryHits = (recipe, pantry = []) => {
 //   📌 날짜는 여기서 만들지 않는다 — 부르는 쪽이 「오늘」을 넘긴다(절대원칙 27).
 const 무게 = (남은날) => (남은날 === null ||남은날 === undefined ? 1 : 남은날 <= 3 ? 2 : 남은날 <= 7 ? 1.5 : 1)
 
+// 🗓🗓 [창업자 확정 2026-09-11] **유통기한이 «이틀» 지나면 그 재료는 아예 안 센다.**
+//   📮 창업자 = *"디데이 끝나고 하루지나면 빼고"*
+//   ⛔⛔ 그 전엔 **바닥이 없었다** — `d <= 3` 만 봐서 1일 지나도, 30일 지나도 똑같이 「급함」이었다.
+//      🔢 창업자 폰 실측(2026-09-11 캡처) = 「1일 지남 두부」가 맨 앞 4장을 통째로 잡고 있었다.
+//      ⭐ **이미 상한 것을 먹으라고 미는 셈**이다. 그리고 그게 영영 안 풀린다.
+//   ⭐ 잣대 = **당일(0)과 하루 지남(-1)까지는 「급하다」 · 이틀 지남(-2)부터는 「없는 재료」**.
+//      📌 「하루는 봐준다」가 창업자 말 그대로다 — 유통기한은 «맛이 가는 날»이 아니라 «파는 기한»이라
+//         하루쯤은 보통 먹는다. 이틀부터는 우리가 권할 자리가 아니다.
+export const 상했나 = (남은날) => 남은날 !== null && 남은날 !== undefined && 남은날 < -1
+export const 급하다 = (남은날) => 남은날 !== null && 남은날 !== undefined && 남은날 <= 3 && !상했나(남은날)
+
 // 레시피가 쓰는 «내 재료»를 무게까지 실어 센다. `남은날()` 은 냉장고 칸 → 남은 날수(모르면 null).
 export const countPantryHitsWeighted = (recipe, pantry = [], 남은날) => {
   const tokens = ingredientTokens(recipe?.ingredients)
@@ -101,7 +112,11 @@ export const countPantryHitsWeighted = (recipe, pantry = [], 남은날) => {
   for (const p of pantry || []) {
     const k = pantryKey(p?.name)
     if (!k || seen.has(k) || !hasIngredient(tokens, k)) continue
-    seen.set(k, 남은날 ? 남은날(p) : null)
+    const d = 남은날 ? 남은날(p) : null
+    // ⛔ 이틀 넘게 지난 것은 «없는 재료»로 친다 — 여기 한 곳에서 걸러야
+    //    개수·급함·줄 세우기가 전부 같은 말을 한다(따로 거르면 어긋난다).
+    if (상했나(d)) continue
+    seen.set(k, d)
   }
   return { n: seen.size, w: [...seen.values()].reduce((a, d) => a + 무게(d), 0), 칸: seen }
 }
@@ -111,7 +126,7 @@ export const countPantryHitsWeighted = (recipe, pantry = [], 남은날) => {
 //       그래서 «줄을 새로 늘리지 않고» 이미 있는 카드에 작은 글자만 얹는다.
 export const pantryUrgent = (recipe, pantry = [], 남은날, 안쪽 = 3) => {
   const { 칸 } = countPantryHitsWeighted(recipe, pantry, 남은날)
-  return [...칸.entries()].filter(([, d]) => d !== null && d !== undefined && d <= 안쪽)
+  return [...칸.entries()].filter(([, d]) => 급하다(d) && d <= 안쪽)
     .sort((a, b) => a[1] - b[1]).map(([k, d]) => ({ 이름: k, 남은날: d }))
 }
 
@@ -145,7 +160,7 @@ export const pantryScore = (recipe, pantry = [], 남은날) => {
 //    ④ 이름                       (⛔여기까지 같으면 «순서가 흔들리지 않게» 이름으로 고정)
 export const pantryRank = (recipe, pantry = [], 남은날) => {
   const { n, 칸 } = countPantryHitsWeighted(recipe, pantry, 남은날)
-  const 급함 = [...칸.values()].filter((d) => d !== null && d !== undefined && d <= 3).length
+  const 급함 = [...칸.values()].filter(급하다).length
   const total = (recipe?.ingredients || []).length || 1
   return { 급함, n, 비율: n / total, 이름: recipe?.title || recipe?.name || '' }
 }

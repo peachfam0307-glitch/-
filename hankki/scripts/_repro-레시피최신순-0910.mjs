@@ -60,6 +60,24 @@ console.log('\n── ⑥ from 없는 42편은 «바닥»에 모인다 ──')
 // 🕘🕘 [2026-09-12 창업자 폰 제보] *"15개레시피 또 거꾸로들어가있어 역순으로"*
 //   ⛔ 뿌리 = 15편에 `from` 을 «안» 달고 넣었다 → 통째로 바닥에 깔리고 배열 뒤가 위로 섰다(원본 차례의 정반대).
 //   ⭐ 그래서 basics.js 의 15편 배열은 **역순(015 → 001)** 이다 — 「보기 좋게」 되돌리면 그 순간 또 거꾸로 선다.
+// 🕘🕘 [2026-09-12 창업자] *"역순으로 올라가는거 고쳐"* — 15편만의 일이 아니었다.
+//   ⛔ `열린때` 가 `+ i * 1000` 이던 때는 **같은 날 열린 묶음이 전부 거꾸로** 섰다
+//      (8/17 묶음 = basics 차례 「스무디 → … → 브로콜리 구이」인데 화면엔 브로콜리가 맨 위).
+//   ✅ 지금은 `- i * 1000` — **basics.js 에 적은 차례가 곧 화면 차례**다.
+console.log('\n── ⑨ 같은 날 열린 묶음이 «basics.js 에 적은 차례»대로 선다 ──')
+{
+  const 묶음 = new Map()
+  for (const r of basicRecipes) { const k = r.from || '(없음)'; if (!묶음.has(k)) 묶음.set(k, []); 묶음.get(k).push(r.title) }
+  let 어긋난날 = []
+  for (const [날, 적힌차례] of 묶음) {
+    if (적힌차례.length < 2) continue
+    const 선차례 = 세운것.filter((r) => (r.from || '(없음)') === 날 && r.id !== 맨위고정).map((r) => r.title)
+    const 적힌것 = 적힌차례.filter((t) => 선차례.includes(t))
+    if (JSON.stringify(적힌것) !== JSON.stringify(선차례)) 어긋난날.push(날)
+  }
+  칸(어긋난날.length === 0, '묶음 전부가 적힌 차례대로', 어긋난날.length ? `어긋난 날 ${어긋난날.join(', ')}` : `묶음 ${[...묶음.values()].filter((v) => v.length > 1).length}개`)
+}
+
 console.log('\n── ⑧ 창업자 저장 15편이 «창업자 원본 차례»대로 선다 ──')
 {
   const 원본차례 = [

@@ -1749,13 +1749,16 @@ export const FOOD_ICON_GROUPS_SORTED = FOOD_ICON_GROUPS.map((g) => {
   }
 })
 
-// 🥕 재료를 먼저 — 냉장고 「재료 담기」처럼 «넣어둘 것»을 고르는 자리에서 쓴다.
-//   ⭐ 갈래 «순서»만 바꾼다. 안에 든 컷도, 요리 갈래도 하나도 안 없앤다(밑에 그대로 이어진다).
+// 🥕🥕 재료«만» — 냉장고 「재료 담기」처럼 «넣어둘 것»을 고르는 자리에서 쓴다.
+//   📮 창업자 폰 제보 2026-09-11 *"냉장고재료아이콘에 음식이 있을필요없어 다빼고 재료만남기자"*
+//   ⛔ 전엔 `ING_FIRST` 였다 — 재료를 위로 올리기만 하고 **요리 갈래 400여 컷이 밑에 그대로 이어졌다.**
+//      그래서 「최근에 쓴 것」에 가지볶음·치킨부리또·봉골레 같은 «완성된 요리»가 떴다(창업자 캡처).
+//      냉장고에 담는 건 재료지 요리가 아니다. 있을 이유가 없다.
 //   📌 `kind` 를 보고 가르므로 라벨을 다듬어도 안 깨진다.
-export const FOOD_ICON_GROUPS_ING_FIRST = [
-  ...FOOD_ICON_GROUPS_SORTED.filter((g) => g.kind === 'ing'),
-  ...FOOD_ICON_GROUPS_SORTED.filter((g) => g.kind !== 'ing'),
-]
+export const FOOD_ICON_GROUPS_ING_ONLY = FOOD_ICON_GROUPS_SORTED.filter((g) => g.kind === 'ing')
+
+// 🥕 재료 아이콘 키 — 「최근에 쓴 것」과 검색 결과를 거를 때 쓴다(갈래만 걸러선 둘이 안 막힌다).
+export const ING_ICON_KEYS = new Set(FOOD_ICON_GROUPS_ING_ONLY.flatMap((g) => g.items))
 
 // 📊📊 [2026-08-12] 「이번 달 뭘 해먹었나」 — 아이콘 키로 «갈래»를 되찾는다.
 //   📮 창업자 폰 제보 *"통계는 저게다야? 우리얘기했던거있었는데"*

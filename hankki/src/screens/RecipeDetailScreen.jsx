@@ -25,7 +25,7 @@ import { dateLabel, openExternal as openUrl, ingredientName, fitImage } from '..
 import { photoPanStart } from '../photoPan'
 import { shouldAskReviewNow } from '../nudges'
 import ReviewAskSheet from '../components/ReviewAskSheet'
-import { SOURCES } from '../data/seed'
+import { SOURCES, 저장날짜보임 } from '../data/seed'
 // 🔁 AI 정리 실패 만회(아래 「만회한적」 절) — 잣대는 앱이 쓰는 그 모듈 그대로다(절대원칙 30).
 import { tidyRecipe, 실패꼬리 } from '../tidy'
 import { picksForIngredients, productLink, productMall, curIcon, isHansalim } from '../data/curation'
@@ -663,8 +663,9 @@ export default function RecipeDetailScreen({ id }) {
         <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
           <SourceBadge source={r.source} size={16} showLabel={false} />
           <span className="t-sub" style={{ marginLeft: 2 }}>{SOURCES[r.source]?.line || '링크에서 가져옴'}</span>
-          {/* 저장 날짜 — 자동 기록(savedAt) */}
-          {r.savedAt && <span className="t-sub">· {dateLabel(r.savedAt)} 저장</span>}
+          {/* 📅 저장 날짜 — ⛔«유저가 저장한 것»만. 기본 레시피는 저장한 적이 없다(창업자 확정 2026-09-12).
+              판정은 seed.js 의 저장날짜보임 한 곳에서 — 여기서 따로 재지 않는다. */}
+          {저장날짜보임(r) && <span className="t-sub">· {dateLabel(r.savedAt)} 저장</span>}
         </div>
 
         {info.length > 0 && (

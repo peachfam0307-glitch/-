@@ -1,6 +1,6 @@
 // 🧊 냉털 줄 세우기 재현판 — 📮창업자 2026-09-10 「임박하는게 1순위 그다음 할게 많은 레시피가 2순위로 하자」
 //   ＋ 실제 사례 = *"오늘 만난친구가 애호박이랑 자투리재료가 있는데 추천레시피 있으면 좋겠다"*
-import { pantryScore, rankPantryRecipes, pantryRank, 급하다, 상했나 } from '../src/pantryMatch.js'
+import { pantryScore, rankPantryRecipes, pantryRank, 급하다, 상했나, hasIngredient, ingredientTokens, pantryKey } from '../src/pantryMatch.js'
 import { allBasicRecipes } from '../src/data/basics.js'
 // ⛔ 날짜를 여기서 만들지 않는다 — 「오늘(KST)」은 today.js 한 곳에서만 만든다(절대원칙 27).
 import { todayKST } from '../src/today.js'
@@ -138,6 +138,36 @@ console.log('\n── ⑨ 🔁 돌리기 — 뒤에 있던 것이 앞으로 오�
   칸(돌린다([], 3).length === 0 && 돌린다(줄.slice(0,1), 3).length === 1, '빈 줄·한 장짜리도 안 죽는다')
 }
 
+console.log('\n── ⑩ 🥩 [창업자 2026-09-11] 정육 이름 — 좁게 쓰면 좁게, 넓게 쓰면 넓게 ──')
+{
+  // 📮 창업자 = "갈비살하면 소,돼지 레시피 다보여주면돼" ＋ "직접소갈비살 쓰면 소만보여주면되고"
+  const 셈 = (이름) => allBasicRecipes.filter((r) => hasIngredient(ingredientTokens(r.ingredients), pantryKey(이름))).length
+  const 소 = 셈('소고기'), 돼 = 셈('돼지고기')
+  칸(소 > 0 && 돼 > 0, '바탕값 — 소고기·돼지고기가 걸린다', `소 ${소} · 돼 ${돼}`)
+  // ⛔ 괄호가 붙어도 걸린다 (영수증이 실제로 만드는 모양)
+  for (const [이름, 바람] of [['소고기(채끝)', 소], ['소고기(구이용)', 소], ['돼지고기(찌개용)', 돼]])
+    칸(셈(이름) === 바람, `괄호 — 「${이름}」`, `${셈(이름)}편`)
+  // ⭐ 부위만 쓰면 «둘 다»
+  for (const 부위 of ['갈비살', '등심', '사태'])
+    칸(셈(부위) >= 소 && 셈(부위) >= 돼, `부위만 — 「${부위}」는 소·돼지 둘 다`, `${셈(부위)}편`)
+  // 🎯 고기를 직접 쓰면 «그 고기만»
+  칸(셈('소갈비살') === 소, '직접 — 「소갈비살」은 소고기만', `${셈('소갈비살')}편 (소 ${소})`)
+  칸(셈('돼지갈비살') === 돼, '직접 — 「돼지갈비살」은 돼지고기만', `${셈('돼지갈비살')}편 (돼 ${돼})`)
+  칸(셈('소갈비살') !== 셈('돼지갈비살'), '⭐ 소·돼지가 «갈린다»')
+  칸(셈('한우갈비살') === 소, '한우도 소고기로 좁힌다')
+  칸(셈('흑돼지목살') === 돼 || 셈('흑돼지목살') > 0, '흑돼지도 돼지고기로 좁힌다', `${셈('흑돼지목살')}편`)
+  // 🏷 부위 이름만 적어도 걸린다
+  for (const 부위 of ['채끝', '부채살', '토시살', '항정살', '오리로스', '생닭'])
+    칸(셈(부위) > 0, `부위 사전 — 「${부위}」`, `${셈(부위)}편`)
+  // ⚠️ 「소」 한 글자가 엉뚱한 데 안 걸리나 — 접두 규칙이 «부위일 때만» 발동해야 한다
+  //    ⛔ 소금·소면·소시지는 그 재료가 «실제로 들어간» 편만 나와야지, 소고기 편이 나오면 안 된다
+  const 소고기편 = new Set(allBasicRecipes.filter((r) => hasIngredient(ingredientTokens(r.ingredients), '소고기')).map((r) => r.id))
+  for (const 말 of ['소금', '소면', '소시지', '소스', '소주']) {
+    const 걸린것 = allBasicRecipes.filter((r) => hasIngredient(ingredientTokens(r.ingredients), pantryKey(말)))
+    const 진짜 = 걸린것.every((r) => ingredientTokens(r.ingredients).some((t) => t === 말 || t.endsWith(말) || 말.endsWith(t)))
+    칸(진짜, `⚠️ 「${말}」이 소고기로 안 샌다`, `${걸린것.length}편`)
+  }
+}
 console.log(죽음 ? `\n❌ ${죽음}칸 실패` : '\n✅ 전부 통과')
 
 process.exit(죽음 ? 1 : 0)

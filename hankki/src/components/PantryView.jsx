@@ -280,7 +280,15 @@ export default function PantryView() {
   //      · 360폰·긴 이름은 **두 줄로 가지런히** 선다(줄간격을 정해서 어중간함을 없앤다)
   //      · `line-clamp: 2` = **세 줄로는 절대 안 터진다** — 카드마다 키가 들쭉날쭉해지는 걸 막는다
   //   ⛔ `.grid-card .date` 를 전역으로 고치지 않는다 — 홈·레시피가 같은 클래스를 쓴다(절대원칙 35 ②).
-  const 꼬리말 = { fontSize: 13, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }
+  //   ⛔⛔ **[같은 날 창업자] 「설명 2줄이 끊어지자나」 — 두 줄로 만든 것까지는 맞았는데 «아무 데서나» 끊겼다.**
+  //      🔢 실제로 이렇게 갈라졌다 = 「1일 지남 두부 · 재료」 / **「3개」**. 「재료 3개」가 두 동강 났다.
+  //      📌 줄이 두 개인 게 문제가 아니라 **말이 끊어진 게 문제**였다. 글자 크기로는 영영 못 고친다 —
+  //         재료 이름 길이에 따라 «끊기는 자리»가 매번 달라지기 때문이다.
+  //      ✅ **뜻 덩이마다 한 줄**로 못 박는다 — 「1일 지남 두부」 / 「재료 3개」.
+  //         각 덩이는 `nowrap` 이라 «안에서는» 절대 안 끊기고, 덩이가 칸보다 길면 그 줄만 「…」로 준다.
+  //         ⭐ 줄 수를 내가 정하지 않는다 — 짧으면 한 줄, 길면 두 줄. **끊기는 자리만 정한다.**
+  const 꼬리말 = { fontSize: 13, lineHeight: 1.35 }
+  const 한덩이 = { display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }
 
   const 카드줄 = (목록, 칸) => (
     <div className="hscroll inset" ref={칸} style={{ marginBottom: 4 }}>
@@ -290,7 +298,16 @@ export default function PantryView() {
           <div className="name">{r.title}</div>
           {/* 🚨 왜 이게 떴는지 «한 줄 안에서» 보이게 — ⛔줄을 새로 늘리지 않는다
               (2026-08-12 창업자 *"재료 하나만 담아도 큰 이미지가 생겨서 재료가 안보였어"*) */}
-          <div className="date" style={꼬리말}>{급함표?.length ? `${expiryChip(급함표[0].남은날).text} ${급함표[0].이름} · 재료 ${n}개` : `가진 재료 ${n}개`}</div>
+          <div className="date" style={꼬리말}>
+            {급함표?.length ? (
+              <>
+                <span style={한덩이}>{expiryChip(급함표[0].남은날).text} {급함표[0].이름}</span>
+                <span style={한덩이}>재료 {n}개</span>
+              </>
+            ) : (
+              <span style={한덩이}>가진 재료 {n}개</span>
+            )}
+          </div>
         </button>
       ))}
     </div>

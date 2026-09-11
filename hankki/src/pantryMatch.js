@@ -207,6 +207,30 @@ const 무게 = (남은날) => (남은날 === null ||남은날 === undefined ? 1 
 //      📌 「하루는 봐준다」가 창업자 말 그대로다 — 유통기한은 «맛이 가는 날»이 아니라 «파는 기한»이라
 //         하루쯤은 보통 먹는다. 이틀부터는 우리가 권할 자리가 아니다.
 export const 상했나 = (남은날) => 남은날 !== null && 남은날 !== undefined && 남은날 < -1
+// 🗓🗓 **유통기한을 «읽고 말하는» 방식 — 여기 한 곳에서만.**
+//   ⛔⛔ [2026-09-11] 홈 「오늘 뭐 해먹지」에 임박 딱지를 붙이려는데 `daysLeft`·`expiryChip` 이
+//      `PantryView.jsx` 안에만 있었다. **그대로 복사하면 두 곳이 갈린다** —
+//      오늘 하루에 그 사고를 두 번 겪었다(괄호 자르기 · 「검사가 무엇을 보나」).
+//   ⭐ 「D-1」·「1일 지남」·「오늘까지」는 **유저가 유통기한을 읽는 말**이다.
+//      두 화면이 다른 말을 쓰면 «다른 앱»으로 읽힌다. 그래서 여기로 옮긴다.
+//   📌 날짜를 «만들지»는 않는다 — 있는 날짜끼리 빼기만 한다(절대원칙 27과 어긋나지 않는다).
+export const 남은날수 = (expiry) => {
+  if (!expiry) return null
+  const 오늘 = new Date(); 오늘.setHours(0, 0, 0, 0)
+  const d = new Date(expiry + 'T00:00:00'); d.setHours(0, 0, 0, 0)
+  const n = Math.round((d - 오늘) / 86400000)
+  return Number.isNaN(n) ? null : n
+}
+
+// 🏷 남은 날 → 화면에 쓸 말. ⛔ 이 말을 화면마다 새로 짓지 말 것.
+export const 기한말 = (n) => {
+  if (n === null || n === undefined) return null
+  if (n < 0) return { text: `${-n}일 지남`, cls: 'exp-over' }
+  if (n === 0) return { text: '오늘까지', cls: 'exp-soon' }
+  if (n <= 3) return { text: `D-${n}`, cls: 'exp-soon' }
+  if (n <= 7) return { text: `D-${n}`, cls: 'exp-mid' }
+  return { text: `D-${n}`, cls: 'exp-ok' }
+}
 export const 급하다 = (남은날) => 남은날 !== null && 남은날 !== undefined && 남은날 <= 3 && !상했나(남은날)
 
 // 레시피가 쓰는 «내 재료»를 무게까지 실어 센다. `남은날()` 은 냉장고 칸 → 남은 날수(모르면 null).

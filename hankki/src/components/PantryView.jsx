@@ -260,11 +260,20 @@ export default function PantryView() {
   //       (캡처로 봤다 — 「돼지고기 김치찌개」의 첫 글자가 잘렸다 · 규칙 21).
   //    📐 폭 41% — 48%(＝격자와 같은 157px)면 두 장이 칸을 꽉 채워 세 번째가 2px 만 남는다.
   //       41% 면 세 번째가 ~36px 걸쳐서 **글자 없이도 「더 있다」가 전해진다.**
+  //    📐📐 **[2026-09-11 창업자] 「이거 자리를 많이차지하는데 조금 줄이고」**
+  //       ⛔⛔ **처음에 폭을 41% → 34% 로 줄였다가 «찍어서 눈으로 보고» 되돌렸다**(규칙 21).
+  //          카드가 좁아지니 **이름이 두 줄로 접혔다**(「돼지고기 김치찌개」) — 아낀 만큼 도로 늘었다.
+  //          🔢 실측 = 41% **415px** → 34% **407px**. **8px.** 자리를 줄인 게 아니라 글자만 망가뜨렸다.
+  //       ✅ **답은 폭이 아니라 «썸네일 비율»이었다** — 폭은 그대로라 이름이 안 접힌다.
+  //          🔢 실측(390폰 · 두 줄 합) = 1/1 **415px** → **5/4 357px(-58)** → 4/3 343 → 3/2 319
+  //          ⭐ 5/4 를 골랐다 — 4/3·3/2 는 더 줄지만 요리 그림이 납작한 띠로 읽히기 시작한다.
+  //          ⭐ 그림 자체는 안 잘린다 — `Thumb` 의 `ratio` 는 «칸»의 비율만 바꾸고 그림은 가운데 정사각이다.
+  //       ⛔ 더 줄이려고 폭을 건드리지 말 것. 다음으로 자리를 먹는 건 **윗줄 꼬리말 두 줄 접힘**(38px)이다.
   const 카드줄 = (목록, 칸) => (
     <div className="hscroll inset" ref={칸} style={{ marginBottom: 4 }}>
       {목록.map(({ r, n, 급함표 }) => (
         <button key={r.id} className="grid-card press" style={{ flex: '0 0 41%', textAlign: 'left' }} onClick={() => nav.push({ name: 'detail', id: r.id })}>
-          <Thumb recipe={r} ratio="1/1" radius={16} showDecor />
+          <Thumb recipe={r} ratio="5/4" radius={16} showDecor />
           <div className="name">{r.title}</div>
           {/* 🚨 왜 이게 떴는지 «한 줄 안에서» 보이게 — ⛔줄을 새로 늘리지 않는다
               (2026-08-12 창업자 *"재료 하나만 담아도 큰 이미지가 생겨서 재료가 안보였어"*) */}
@@ -287,6 +296,13 @@ export default function PantryView() {
   //       ✅ **단추에서 글자를 뺀다(60px → 22px)** — 그러면 «모든 폭»에서 제목이 한 줄이다.
   //          ⭐ 그림만으로도 「돌린다」가 전해지게 **테두리 있는 동그란 단추**로 만든다(누르는 것으로 읽히게).
   //          ⭐ 눈으로 못 읽는 사람에겐 `aria-label` 이 「다른 요리 보기」를 읽어 준다.
+  //    🎨🎨 **[2026-09-11 창업자] 「섞기를 색알약으로 바꿔줄래?」 → 글자가 돌아왔다.**
+  //       ⛔ 위 실측(352px)은 **옛 긴 제목**(「가진 재료로 만들 수 있어요」) ＋ 「돌리기」 때의 값이다.
+  //          그날 창업자가 제목을 「가진 재료로 만들기」로 줄여서 **전제가 달라졌다** — 다시 쟀다.
+  //       🔢 실측(2026-09-11) = 제목 208.7 ＋ 틈 10 ＋ 알약 60 = **278.7px** · 360폰 쓸 폭 **320px**
+  //          → **41px 남는다.** 360·390·412 세 폭 모두 한 줄.
+  //       ⭐ 새 클래스를 안 만들었다 — `.pill.active`(크림 바탕 ＋ 갈색 글자)가 이미 우리 색 알약이다.
+  //       ⭐ 아이콘은 남긴다 — 글자 없이도 「다시 섞는다」가 읽히던 그림이라 둘이 같이 있으면 더 분명하다.
   //    ⚠️ 단추는 «안 줄인다»(`flex: 0 0 auto`) — 줄어들면 동그라미가 찌그러진다.
   //    ⛔⛔ **[2026-09-11 창업자] 「가진재료로 만들기가 두부레시피쪽으로 너무 붙어있어」**
   //       뿌리 = `marginTop: 2` 를 «두 줄에 똑같이» 줬다. 그 2px 는 원래 «화면 맨 위» 줄을 위한 값이라
@@ -296,13 +312,10 @@ export default function PantryView() {
     <div className="sec-head" style={{ marginTop: 맨위 ? 2 : undefined, gap: 10 }}>
       <div className="h-section">{제목}</div>
       {목록.length > 3 && (
-        <button className="press" onClick={돌리기} aria-label={`${제목} — 다른 요리 보기`}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto',
-            width: 30, height: 30, borderRadius: 15,
-            background: 'var(--card, #fff)', border: '1px solid var(--line, #e6ddd3)', padding: 0,
-          }}>
-          <Icon name="refresh" size={16} color="var(--brown)" stroke={2} />
+        <button className="pill active press" onClick={돌리기} aria-label={`${제목} — 다른 요리 보기`}
+          style={{ flex: '0 0 auto', padding: '6px 13px', fontSize: 15 }}>
+          <Icon name="refresh" size={14} color="var(--brown)" stroke={2} />
+          섞기
         </button>
       )}
     </div>

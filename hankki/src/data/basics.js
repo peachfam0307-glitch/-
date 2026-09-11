@@ -6430,6 +6430,7 @@ const RAW_BASICS = [
     id: 'basic-own-001',
     title: '가지 소고기 덮밥',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3001',
     category: '한식', folder: '밥', tags: ['한그릇', '간단한 요리'],
     time: 20, servings: 2, difficulty: '쉬움',
@@ -6465,6 +6466,7 @@ const RAW_BASICS = [
     id: 'basic-own-002',
     title: '닭가슴살 피자 브리또',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n2801',
     category: '양식', folder: '양식', tags: ['한그릇', '손님 요리'],
     time: 40, servings: 3, difficulty: '보통',
@@ -6498,6 +6500,7 @@ const RAW_BASICS = [
     id: 'basic-own-003',
     title: '보쌈 무김치',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n2704',
     category: '한식', folder: '반찬', tags: ['밑반찬', '밥반찬'],
     time: 150, servings: 4, difficulty: '쉬움',
@@ -6524,6 +6527,7 @@ const RAW_BASICS = [
     id: 'basic-own-004',
     title: '닭가슴살 오이 샐러드',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3002',
     category: '한식', folder: '반찬', tags: ['간단한 요리', '여름'],
     time: 35, servings: 2, difficulty: '쉬움',
@@ -6551,6 +6555,7 @@ const RAW_BASICS = [
     id: 'basic-own-005',
     title: '파기름 간장국수',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'gr_231',
     category: '한식', folder: '한식', tags: ['면', '한그릇'],
     time: 25, servings: 2, difficulty: '쉬움',
@@ -6579,6 +6584,7 @@ const RAW_BASICS = [
     id: 'basic-own-006',
     title: '우삼겹 두부조림',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3007',
     category: '한식', folder: '한식', tags: ['밥반찬', '간단한 요리'],
     time: 25, servings: 2, difficulty: '쉬움',
@@ -6610,6 +6616,7 @@ const RAW_BASICS = [
     id: 'basic-own-007',
     title: '대파 소스 목살 덮밥',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3003',
     category: '한식', folder: '밥', tags: ['한그릇', '간단한 요리'],
     time: 20, servings: 1, difficulty: '쉬움',
@@ -6635,6 +6642,7 @@ const RAW_BASICS = [
     id: 'basic-own-008',
     title: '닭목살 불고기',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3004',
     category: '한식', folder: '한식', tags: ['밥반찬', '술안주', '매콤'],
     time: 30, servings: 2, difficulty: '보통',
@@ -6666,6 +6674,7 @@ const RAW_BASICS = [
     id: 'basic-own-009',
     title: '달래 대패삼겹 덮밥',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3005',
     category: '한식', folder: '밥', tags: ['한그릇', '제철', '봄'],
     time: 20, servings: 2, difficulty: '쉬움',
@@ -6695,6 +6704,7 @@ const RAW_BASICS = [
     id: 'basic-own-010',
     title: '새송이버섯 들깨무침',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'fe_156',
     category: '한식', folder: '반찬', tags: ['밑반찬', '간단한 요리', '초간단'],
     time: 10, servings: 2, difficulty: '쉬움',
@@ -6719,6 +6729,7 @@ const RAW_BASICS = [
     id: 'basic-own-011',
     title: '들깨 궁채나물',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3008',
     category: '한식', folder: '반찬', tags: ['밑반찬', '밥반찬'],
     time: 90, servings: 4, difficulty: '보통',
@@ -6749,6 +6760,7 @@ const RAW_BASICS = [
     id: 'basic-own-012',
     title: '미나리 오징어무침',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'gr_448',
     category: '한식', folder: '반찬', tags: ['제철', '봄', '술안주', '매콤'],
     time: 45, servings: 3, difficulty: '보통',
@@ -6784,6 +6796,7 @@ const RAW_BASICS = [
     id: 'basic-own-013',
     title: '간장 목살스테이크',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'gr_101',
     category: '한식', folder: '한식', tags: ['밥반찬', '간단한 요리', '간장'],
     time: 25, servings: 3, difficulty: '쉬움',
@@ -6809,6 +6822,7 @@ const RAW_BASICS = [
     id: 'basic-own-014',
     title: '육회 깻잎무침',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'n3006',
     category: '한식', folder: '반찬', tags: ['술안주', '별미'],
     time: 15, servings: 2, difficulty: '쉬움',
@@ -6835,6 +6849,7 @@ const RAW_BASICS = [
     id: 'basic-own-015',
     title: '구움찰떡',
     origin: '창업자',
+    review: '창업자', // ✅ 2026-09-11 검수판 15편 전수 → 13편 「괜찮아」 · 우삼겹은 창업자 "잘못눌렀어 패스야" · 대파소스는 치킨스톡 「포」로 고침
     icon: 'gr_007',
     category: '간식', folder: '간식', tags: ['간식', '초간단'],
     time: 45, servings: 4, difficulty: '쉬움',

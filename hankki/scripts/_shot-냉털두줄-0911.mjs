@@ -58,17 +58,28 @@ const 열기 = async (칸들) => {
   return q
 }
 
-// 화면에 «실제로 그려진» 줄 제목과 카드 제목을 읽는다 (⛔소스가 아니라 화면 · 절대원칙 30)
+// 👁 **화면에 «보이는» 카드를 읽는다 — ⛔DOM 순서가 아니다.**
+//    ⛔⛔ 첫 판은 `querySelectorAll` 차례를 읽었다. 그런데 2026-09-11 에 그게 «거짓 초록불»을 냈다 —
+//       돌리기를 눌러 DOM 은 바뀌었는데 크롬이 가로 스크롤을 밀어(scrollLeft 4976) **화면은 그대로**였다.
+//       재현판은 통과했고 **캡처를 눈으로 열어서야** 잡혔다(규칙 18 ⓘ · 21).
+//    ✅ 그래서 «그 자리에 실제로 있는 것»을 브라우저에게 묻는다(`elementFromPoint`) ＋ `scrollLeft` 도 같이 잰다.
 const 읽기 = (p) => p.evaluate(() => {
   const 줄 = []
   for (const h of document.querySelectorAll('.sec-head')) {
     const 이름 = h.querySelector('.h-section')?.textContent || ''
     const 돌리기 = !!h.querySelector('button')
     const next = h.nextElementSibling
-    const 카드 = next && next.classList.contains('hscroll')
-      ? [...next.querySelectorAll('.grid-card')].map((c) => ({ 제목: c.querySelector('.name')?.textContent || '', 꼬리: c.querySelector('.date')?.textContent || '' }))
-      : null
-    if (카드) 줄.push({ 이름, 돌리기, 카드 })
+    if (!next || !next.classList.contains('hscroll')) continue
+    const 카드 = [...next.querySelectorAll('.grid-card')].map((c) => ({ 제목: c.querySelector('.name')?.textContent || '', 꼬리: c.querySelector('.date')?.textContent || '' }))
+    // 👁 그 줄에서 «눈에 보이는» 카드 = 가로로 훑으며 그 자리에 실제로 있는 것을 묻는다
+    const r = next.getBoundingClientRect()
+    const 보임 = []
+    for (let x = r.left + 30; x < r.right - 10; x += 40) {
+      const el = document.elementFromPoint(x, r.top + 20)?.closest('.grid-card')
+      const t = el?.querySelector('.name')?.textContent
+      if (t && !보임.includes(t)) 보임.push(t)
+    }
+    줄.push({ 이름, 돌리기, 카드, 보임, 가로스크롤: Math.round(next.scrollLeft) })
   }
   return 줄
 })
@@ -82,7 +93,7 @@ a.forEach((줄) => console.log(`   ${줄.돌리기 ? '🔁' : '  '} 「${줄.이
 await 찍기(p1, '1-담기전.png')
 말(a.length === 2, `줄이 «둘»이다 (지금 ${a.length}줄)`)
 말(a[0]?.이름?.includes('두부'), `윗줄 제목에 급한 재료 이름이 있다 — 「${a[0]?.이름}」`)
-말(a[1]?.이름 === '가진 재료로 만들 수 있어요', `아랫줄 제목 = 「${a[1]?.이름}」`)
+말(a[1]?.이름 === '가진 재료로 만들기', `아랫줄 제목 = 「${a[1]?.이름}」`)
 const 겹 = a[0]?.카드.filter((c) => a[1]?.카드.some((x) => x.제목 === c.제목)) || []
 말(겹.length === 0, `두 줄이 안 겹친다 (겹침 ${겹.length}장)`)
 말(a[0]?.카드.every((c) => /지남|오늘까지|D-/.test(c.꼬리)), '윗줄 카드마다 «왜 급한지»가 적혀 있다')
@@ -97,18 +108,24 @@ await 찍기(p2, '2-담은뒤.png')
 말(a[0]?.카드.map((x) => x.제목).join('|') === c[0]?.카드.map((x) => x.제목).join('|'), '⭐ 윗줄(급한 것)은 흔들리지 않는다 — 두부는 여전히 급하다')
 
 console.log('\n【③ 아랫줄 「돌리기」를 눌렀을 때】')
-const 전 = c[1].카드.slice(0, 3).map((x) => x.제목)
+const 전 = c[1].보임.slice(0, 3)
 const 단추 = p2.locator('.sec-head button')
 말(await 단추.count() >= 1, `돌리기 단추가 그려졌다 (${await 단추.count()}개)`)
 await 단추.last().click()
 await p2.waitForTimeout(350)
 const d = await 읽기(p2)
-const 후 = d[1].카드.slice(0, 3).map((x) => x.제목)
+const 후 = d[1].보임.slice(0, 3)
 console.log(`   전 = ${전.join(' / ')}`)
 console.log(`   후 = ${후.join(' / ')}`)
 await 찍기(p2, '3-돌린뒤.png')
-말(전.join('|') !== 후.join('|'), '⭐ 돌리기를 누르면 보이는 3장이 바뀐다')
-말(d[0].카드.map((x) => x.제목).join('|') === c[0].카드.map((x) => x.제목).join('|'), '⭐ 아랫줄을 돌려도 «윗줄은 그대로» (창업자: 각줄끼리만)')
+// ⛔ 캡처와 DOM 이 어긋나면 «내가 창업자에게 보여주는 것»이 실물이 아니다(규칙 21).
+//    그래서 찍은 «뒤»에 한 번 더 읽어서 같은지 본다.
+const d2 = await 읽기(p2)
+const 찍은뒤 = d2[1].보임.slice(0, 3)
+말(찍은뒤.join('|') === 후.join('|'), '📸 캡처 시점과 읽은 값이 같다', `찍은뒤 = ${찍은뒤.join(' / ')}`)
+말(전.join('|') !== 후.join('|'), '⭐ 돌리기를 누르면 «눈에 보이는» 3장이 바뀐다')
+말(d[1].가로스크롤 === 0, '⛔ 돌린 뒤 가로 스크롤이 맨 앞이다 (크롬 앵커링 방지)', `scrollLeft = ${d[1].가로스크롤}`)
+말(d[0].보임.join('|') === c[0].보임.join('|'), '⭐ 아랫줄을 돌려도 «윗줄은 그대로» (창업자: 각줄끼리만)')
 await p2.close()
 
 console.log('\n【④ 유통기한을 하나도 안 적었을 때 — 윗줄이 안 떠야 한다】')
@@ -116,7 +133,7 @@ const p3 = await 열기(처음.map(([n]) => [n, null]))
 const e = await 읽기(p3)
 e.forEach((줄) => console.log(`   ${줄.돌리기 ? '🔁' : '  '} 「${줄.이름}」 ${줄.카드.length}장`))
 await 찍기(p3, '4-임박없음.png')
-말(e.length === 1 && e[0].이름 === '가진 재료로 만들 수 있어요', `줄이 하나만 뜬다 (지금 ${e.length}줄)`)
+말(e.length === 1 && e[0].이름 === '가진 재료로 만들기', `줄이 하나만 뜬다 (지금 ${e.length}줄)`)
 await p3.close()
 
 await ctx.close(); await b.close(); srv.close()

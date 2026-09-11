@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useStore, newId } from '../store'
 import { useNav } from '../App'
 import { ocrImage, keyCount } from '../ocr'
@@ -226,6 +226,26 @@ export default function PantryView() {
 
   const 돌린다 = (목록, 자리) => (자리 % (목록.length || 1) === 0 ? 목록 : [...목록.slice(자리 % 목록.length), ...목록.slice(0, 자리 % 목록.length)])
 
+  // ⛔⛔⛔ **[2026-09-11 · 캡처를 눈으로 봐서 잡았다] 돌려도 «화면»이 안 바뀌던 진짜 이유**
+  //    🔢 실측 = 돌린 «뒤» DOM 첫 카드는 「엄마표 김밥」인데 화면 그 자리엔 「떡국」이 있었다.
+  //       그 줄의 `scrollLeft` 를 재니 **4976px** — 첫 카드가 x = −4956 으로 화면 왼쪽 밖이었다.
+  //    ⭐⭐ 범인 = **크롬의 「스크롤 앵커링」**. 앞 3장을 맨 뒤로 보내면 브라우저가
+  //       «보던 카드를 그 자리에 그대로 두려고» 가로 스크롤을 스스로 밀어준다.
+  //       → 목록은 바뀌었는데 **눈에는 똑같은 카드가 계속 보인다.** 창업자 폰에서도 똑같았을 것이다.
+  //    ⛔ 내 재현판도 이걸 못 잡았다 — **«DOM 순서»만 보고 «보이는 것»을 안 봤다**(규칙 18 ⓘ).
+  //    ✅ 그래서 돌릴 때 **그 줄을 맨 앞으로 되돌린다.** 땜빵이 아니라 뜻이 맞는 동작이다 —
+  //       「다른 걸 보여줘」를 눌렀으면 **처음부터** 보여주는 게 맞다.
+  //    ⛔ `.hscroll` 에 `overflow-anchor: none` 을 거는 길도 있지만 **안 쓴다** —
+  //       홈·장보기·레시피의 모든 가로 줄에 같이 걸려서 무엇이 흔들릴지 모른다(절대원칙 35 ②).
+  //    ⛔ 누를 때 바로 `scrollLeft = 0` 을 하면 «소용없다» — 그 순간엔 아직 옛 카드가 그려져 있고,
+  //       리액트가 다시 그린 «뒤»에 크롬이 앵커링으로 또 민다. 재현판이 실제로 그걸 잡았다.
+  //    ✅ `useLayoutEffect` 로 **다시 그린 직후·화면에 칠하기 «전»** 에 되돌린다(깜빡임 없음).
+  const 윗줄칸 = useRef(null)
+  const 아랫줄칸 = useRef(null)
+  useLayoutEffect(() => { if (윗줄칸.current) 윗줄칸.current.scrollLeft = 0 }, [윗돌림])
+  useLayoutEffect(() => { if (아랫줄칸.current) 아랫줄칸.current.scrollLeft = 0 }, [아랫돌림])
+  const 돌리기 = (set) => () => set((v) => v + 3)
+
   // 🃏 가로 카드 한 줄 — 두 줄이 «같은 모양»이라야 유저가 같은 것으로 읽는다.
   //    ⛔ 새 클래스를 안 만든다 — `.hscroll` 이 이미 홈·장보기에서 쓰는 가로 줄이다.
   //    ⛔⛔ `inset` 이 «반드시» 있어야 한다 — 맨 `.hscroll` 은 `margin: 0 -20px` 로 화면 padding 을
@@ -233,8 +253,8 @@ export default function PantryView() {
   //       (캡처로 봤다 — 「돼지고기 김치찌개」의 첫 글자가 잘렸다 · 규칙 21).
   //    📐 폭 41% — 48%(＝격자와 같은 157px)면 두 장이 칸을 꽉 채워 세 번째가 2px 만 남는다.
   //       41% 면 세 번째가 ~36px 걸쳐서 **글자 없이도 「더 있다」가 전해진다.**
-  const 카드줄 = (목록) => (
-    <div className="hscroll inset" style={{ marginBottom: 4 }}>
+  const 카드줄 = (목록, 칸) => (
+    <div className="hscroll inset" ref={칸} style={{ marginBottom: 4 }}>
       {목록.map(({ r, n, 급함표 }) => (
         <button key={r.id} className="grid-card press" style={{ flex: '0 0 41%', textAlign: 'left' }} onClick={() => nav.push({ name: 'detail', id: r.id })}>
           <Thumb recipe={r} ratio="1/1" radius={16} showDecor />
@@ -261,8 +281,12 @@ export default function PantryView() {
   //          ⭐ 그림만으로도 「돌린다」가 전해지게 **테두리 있는 동그란 단추**로 만든다(누르는 것으로 읽히게).
   //          ⭐ 눈으로 못 읽는 사람에겐 `aria-label` 이 「다른 요리 보기」를 읽어 준다.
   //    ⚠️ 단추는 «안 줄인다»(`flex: 0 0 auto`) — 줄어들면 동그라미가 찌그러진다.
-  const 줄머리 = (제목, 목록, 돌리기) => (
-    <div className="sec-head" style={{ marginTop: 2, gap: 10 }}>
+  //    ⛔⛔ **[2026-09-11 창업자] 「가진재료로 만들기가 두부레시피쪽으로 너무 붙어있어」**
+  //       뿌리 = `marginTop: 2` 를 «두 줄에 똑같이» 줬다. 그 2px 는 원래 «화면 맨 위» 줄을 위한 값이라
+  //       (제목이 안내문에 붙어야 한다) 아랫줄에 그대로 쓰니 윗줄 카드에 딱 붙었다.
+  //       ✅ 맨 위 줄만 2px, 그 아래 줄은 `.sec-head` 본래 값(26px)을 쓴다.
+  const 줄머리 = (제목, 목록, 돌리기, 맨위 = false) => (
+    <div className="sec-head" style={{ marginTop: 맨위 ? 2 : undefined, gap: 10 }}>
       <div className="h-section">{제목}</div>
       {목록.length > 3 && (
         <button className="press" onClick={돌리기} aria-label={`${제목} — 다른 요리 보기`}
@@ -285,14 +309,18 @@ export default function PantryView() {
     <>
       {급한줄.length > 0 && (
         <>
-          {줄머리(급한줄제목, 급한줄, () => set윗돌림((v) => v + 3))}
-          {카드줄(돌린다(급한줄, 윗돌림))}
+          {줄머리(급한줄제목, 급한줄, 돌리기(set윗돌림), true)}
+          {카드줄(돌린다(급한줄, 윗돌림), 윗줄칸)}
         </>
       )}
       {보통줄.length > 0 && (
         <>
-          {줄머리('가진 재료로 만들 수 있어요', 보통줄, () => set아랫돌림((v) => v + 3))}
-          {카드줄(돌린다(보통줄, 아랫돌림))}
+          {/* 📝 [창업자 확정 2026-09-11 ⓐ] 「가진 재료로 만들 수 있어요」 → 「가진 재료로 만들기」
+              ⛔ 긴 제목은 360px 폰에서 «한 줄에 안 들어간다» — 실측 322px 필요 · 쓸 수 있는 폭 320px.
+                 틈을 2px 줄이는 건 숫자 땜빵이고(절대원칙 34) 폰마다 글꼴이 달라 또 터진다.
+              ✅ 창업자가 «글자를 줄이는 쪽»으로 정했다 — 뜻은 그대로고 모든 폭에서 한 줄이 된다. */}
+          {줄머리('가진 재료로 만들기', 보통줄, 돌리기(set아랫돌림), 급한줄.length === 0)}
+          {카드줄(돌린다(보통줄, 아랫돌림), 아랫줄칸)}
         </>
       )}
     </>

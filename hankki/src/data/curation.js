@@ -446,7 +446,7 @@ const CURATION_ALL = [
       { name: '이혜정의 꽉찬 수제 영양밥', brand: '빅마마', benefit: '국산재료 사용해 성분도 좋고, 내용물도 실해요. 추천템', q: '빅마마 이혜정 꽉찬 수제 영양밥 전복', mall: 'coupang', from: '2027-01-23', url: 'https://link.coupang.com/a/gR1cAvlyqi' },
       { name: '초밥왕 유부초밥', brand: 'CJ주부', matches: ['유부초밥'], benefit: '국산콩으로 만든 유부고, 소스 맛이 괜찮아서 자주 구입해요', q: 'CJ 주부초밥왕 유부초밥', mall: 'kurly', from: '2027-01-02' },
       { name: '섬진강재첩국', matches: ['재첩'], benefit: '재첩은 쉽게 구하기 어려우니까 시원한 국물이 먹고 싶을 때 구비해놓고 먹어요. 냉동이라 보관도 편하고 아이도 잘 먹어서 좋아요', q: '한살림 섬진강 재첩국', mall: 'hansalim', from: '2026-12-12' },
-      { name: '김치콩비지찌개', brand: '더오담', matches: ['콩비지'], benefit: '냉동실에 2개씩은 꼭 있어요. 아침대용으로도 좋고, 맛있어서 추천합니다', q: '더오담 김치콩비지찌개', mall: 'coupang', from: '2026-09-12', url: 'https://link.coupang.com/a/gR1d0H64iW' },
+      { name: '김치콩비지찌개', brand: '더오담', matches: ['콩비지'], benefit: '냉동실에 꼭 있는 아이템. 아침대용으로도 고소하고 맛있어요. 저는 슴슴하게 먹는 걸 좋아해서 물을 살짝 추가해요', q: '더오담 김치콩비지찌개', mall: 'coupang', from: '2026-09-12', url: 'https://link.coupang.com/a/gR1d0H64iW' },
       { name: '수제 김치찌개', brand: '오모가리', benefit: '내가 끓이는 김치찌개가 제일 맛있지만, 또 남이 끓여주는 것도 먹고 싶잖아요. 한 팩 뜯어서 두부나 돼지고기 추가해서 끓이면 간편식으로 괜찮아요. 자주 사는 템', q: '오모가리 수제 김치찌개', mall: 'coupang', from: '2027-02-06', url: 'https://link.coupang.com/a/gR1fjRGFYz' },
       { name: '물만두', matches: ['물만두', '만두'], benefit: '떡국에도 넣고 만둣국 끓일 때도 좋고, 물만두로 간단히 조리해 먹기도 좋아요. 첨가물 거의 없고 전 재료 국산이라 자극적인 맛은 아니지만 냉동실에 꾸준히 있는 아이템', q: '한살림 물만두', mall: 'hansalim', from: '2026-12-19' },
       { name: '닭가슴살 만두', brand: '굽네', matches: ['만두'], benefit: '전자레인지에 간단하게 돌려먹는 만두인데, 피가 라이스페이퍼처럼 쫄깃하고 소도 맛있어요. 기본 맛이 제일 맛있었어요. 매콤한 거 좋아하시면 청양고추맛도 추천', q: '굽네 닭가슴살 만두', mall: 'coupang', from: '2027-02-13', url: 'https://link.coupang.com/a/gRZRPRtxsq' },

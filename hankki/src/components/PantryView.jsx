@@ -301,7 +301,9 @@ export default function PantryView() {
           <div className="date" style={꼬리말}>
             {급함표?.length ? (
               <>
-                <span style={한덩이}>{expiryChip(급함표[0].남은날).text} {급함표[0].이름}</span>
+                {/* 📮 [창업자 확정 2026-09-11] 「1일 지남 두부가 아니라 두부 1일 지남으로하자」
+                    ⭐ 재료가 «주어»다 — 유저가 찾는 건 「무엇을 써야 하나」이고 날짜는 그 다음이다. */}
+                <span style={한덩이}>{급함표[0].이름} {expiryChip(급함표[0].남은날).text}</span>
                 <span style={한덩이}>재료 {n}개</span>
               </>
             ) : (

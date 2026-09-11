@@ -53,7 +53,7 @@ import { backupNudgeStep, dismissBackupNudge, askOpenBackup, myRecipeCount, myDi
 import { 로그인해뒀나 } from '../cloud'
 import { weeklyNow, homemadeNow, snsNow } from '../data/weekly'
 import { whatsNew } from '../data/whatsnew'
-import { pantryScore } from '../pantryMatch'
+import { pantryScore, pantryUrgent, 남은날수, 기한말 } from '../pantryMatch'
 import SeasonDecor from '../components/SeasonDecor.jsx'
 // 🇰🇷 명절엔 홈의 «우리 애» 둘도 한복을 입는다 — 📮창업자 2026-09-09 *"쟤들만 한복아니니까 이상해서.."*
 import { 홈컷, 줄장식 } from '../data/seasonDecor.js'
@@ -294,10 +294,19 @@ export default function HomeScreen() {
   //    「냉장고 파먹기」(`PantryView`)와 «같은 판단»이라야 두 화면이 딴소리를 안 한다.
   //    (2026-08-10 창업자 *"오늘뭐해먹지는 뭘 기반으로 추천해주는거야?"* → 코드를 읽다 두 곳이
   //     따로 적혀 있고 둘 다 「글자 포함」이라 「무」가 «풀무원·단무지»에 걸리는 걸 찾았다)
+  // ⛔⛔ **[2026-09-11 전수조사로 찾았다] 홈이 유통기한을 «아예 안 보고» 있었다.**
+  //   🔢 실측 = 같은 냉장고(두부 1일 지남)를 두고
+  //      🧊 냉장고 파먹기 = 팟타이·돼지고기 김치찌개·된장찌개 (급한 두부부터)
+  //      🏠 홈           = 팟타이·떡국·수제 떡갈비        (유통기한을 안 본다)
+  //      ＋ 5일 지난 두부로 재니 **홈 13편 / 냉장고 10편** — 홈은 «상한 것»도 세고 있었다.
+  //   📌 9/10 에 창업자가 정한 「임박 1순위」와 9/11 「이틀 지나면 뺀다」가 **냉장고에만** 들어갔다.
+  //      이 파일 머리말에 *"두 화면이 딴소리를 안 한다"* 고 적어놓고 **딴소리를 하고 있었다.**
+  //   ✅ `남은날` 을 넘겨서 둘을 맞춘다 — 셈은 `pantryMatch.js` 한 곳 그대로다.
+  const 남은날 = (p) => 남은날수(p?.expiry)
   const today = useMemo(() => {
     const pool = recipes.filter((r) => r.status !== 'unsorted')
     const withPantry = pool
-      .map((r) => ({ r, n: pantryScore(r, pantry) }))
+      .map((r) => ({ r, n: pantryScore(r, pantry, 남은날) }))
       .filter((x) => x.n > 0)
       .sort((a, b) => b.n - a.n)
     if (withPantry.length) return { list: withPantry.map((x) => x.r), fromFridge: true }

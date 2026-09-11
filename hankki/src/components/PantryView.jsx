@@ -12,7 +12,7 @@ import CropSheet from './CropSheet'
 import Portal from './Portal'
 import { useLayerBack } from '../useBackHandler'
 import { guessEmoji } from '../emoji'
-import { pantryKey, pantryUrgent, rankPantryRecipes, 급하다 } from '../pantryMatch'
+import { pantryKey, pantryUrgent, rankPantryRecipes, 급하다, 남은날수, 기한말 } from '../pantryMatch'
 import { 열쇠받기, EARN, KEY_NAME, KEY_UNIT } from '../ocr'
 // 🔑 열쇠 그림 — `KeyBadge`(가져오기·설정)가 쓰는 «바로 그 파일»이다.
 //    ⭐ 새로 만들지 않는다: 같은 것이 앱 안에서 두 모양이면 유저가 다른 것으로 읽는다.
@@ -35,21 +35,12 @@ function toYMD(d) {
   return `${y}-${m}-${day}`
 }
 
-function daysLeft(expiry) {
-  if (!expiry) return null
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const d = new Date(expiry + 'T00:00:00'); d.setHours(0, 0, 0, 0)
-  return Math.round((d - today) / 86400000)
-}
-
-function expiryChip(n) {
-  if (n === null) return null
-  if (n < 0) return { text: `${-n}일 지남`, cls: 'exp-over' }
-  if (n === 0) return { text: '오늘까지', cls: 'exp-soon' }
-  if (n <= 3) return { text: `D-${n}`, cls: 'exp-soon' }
-  if (n <= 7) return { text: `D-${n}`, cls: 'exp-mid' }
-  return { text: `D-${n}`, cls: 'exp-ok' }
-}
+// 🗓 [2026-09-11] 여기 있던 `daysLeft`·`expiryChip` 을 `src/pantryMatch.js` 로 «옮겼다».
+//   ⛔ 홈에도 같은 게 필요해져서 복사하려다 멈췄다 — 두 벌이 되면 언젠가 갈린다(오늘 두 번 겪었다).
+//   ⚠️ 옛 `daysLeft` 는 날짜가 이상하면 `NaN` 을 그대로 내보내 「D-NaN」이 뜰 수 있었다.
+//      공용 `남은날수` 는 그걸 `null` 로 막는다 — 이름만 바꾼 게 아니라 구멍도 하나 메운다.
+const daysLeft = 남은날수
+const expiryChip = 기한말
 
 export default function PantryView() {
   const store = useStore()

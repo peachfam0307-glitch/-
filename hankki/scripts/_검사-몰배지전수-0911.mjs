@@ -70,7 +70,7 @@ function 읽기(p) { return p.evaluate(() => [...document.querySelectorAll('.cur
   const 이름 = c.querySelector('h3,b,strong')?.textContent?.trim() || c.innerText.split('\n')[0]
   // 🏷 배지 = 이름 밑에 붙는 작은 딱지들. 「쿠팡·컬리·자연드림·오아시스·네이버·산지톡·한살림」 중 하나여야 한다
   const 딱지 = [...c.querySelectorAll('span')].map((s) => s.textContent.trim())
-  const 몰 = ['쿠팡', '컬리', '자연드림', '오아시스', '네이버', '산지톡'].find((m) => 딱지.includes(m))
+  const 몰 = ['쿠팡', '컬리', '자연드림', '오아시스', '네이버', '산지톡', '공식몰'].find((m) => 딱지.includes(m))
     || (딱지.some((t) => t.includes('조합원 전용')) ? '한살림' : null)
   return { 이름, 몰 }
 })) }

@@ -470,6 +470,12 @@ function Curation() {
     if (u.includes('oasis.co.kr')) return '오아시스'
     if (it.mall === 'kurly' || u.includes('kurly.com')) return '컬리'
     if (u.includes('icoop.or.kr')) return '자연드림'   // 링크만 봐도 알아채게(표식이 빠져도)
+    // 🏪 [2026-09-11 창업자 "공식몰좋아"] **만드는 곳이 «직접» 파는 홈페이지**
+    //   🔢 실측 = 백합된장(spcfood) · 와촌식품 초피액젓(wachonfood) · 홍블랑푸드(hongblancfood) 셋.
+    //      쿠팡·컬리·네이버 어디도 아니라 **붙일 이름이 없어 배지가 통째로 빠져 있었다.**
+    //   ⭐ 「아는 몰이 아닌 데로 보낸다」 = 그 회사 공식몰이라는 뜻이다. 그러니 그렇게 적어 준다.
+    //   ⛔ `url` 이 «아예 없는» 줄엔 안 붙는다 — 그건 네이버 검색으로 가므로 공식몰이 아니다.
+    if (u) return '공식몰'
     return ''
   }
   // 🏷 딱지는 이제 **둘**이다 — 분류tag(모래) · 쇼핑몰mall(크림).

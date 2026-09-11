@@ -28,7 +28,9 @@ const { SEED_COACH_SEEN } = await import('../src/coach.js')
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 const ctx = await b.newContext({ viewport: { width: 390, height: 900 }, timezoneId: 'Asia/Seoul', deviceScaleFactor: 2 })
 
-const 어제 = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+// ⛔ 날짜를 여기서 만들지 않는다 — todayKST 에 «그 시각»을 넘긴다(절대원칙 27)
+const { todayKST } = await import('../src/today.js')
+const 어제 = todayKST(new Date(Date.now() - 86400000))
 // 📸 창업자 캡처 그대로 — 두부만 「1일 지남」, 나머지는 유통기한 안 적음
 const 처음 = [['두부', 어제], ['닭고기', null], ['돼지고기', null], ['소고기', null], ['관자', null], ['계란', null], ['새우', null], ['참깨', null], ['김', null]]
 const 더넣기 = [['해물모듬', null], ['오징어', null]]

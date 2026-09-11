@@ -32,7 +32,8 @@ const { todayKST } = await import('../src/today.js')
 const 오늘문자 = todayKST()
 const 열린레시피 = allBasicRecipes.filter((r) => !r.from || r.from <= 오늘문자)
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
-const D = (n) => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10)
+// ⛔ 날짜를 여기서 만들지 않는다 — todayKST 에 «그 시각»을 넘긴다(절대원칙 27)
+const D = (n) => todayKST(new Date(Date.now() + n * 86400000))
 
 let 나쁨 = 0
 const 말 = (ok, s, 덧 = '') => { if (!ok) 나쁨++; console.log(`   ${ok ? '✅' : '⛔'} ${s}${덧 ? ' · ' + 덧 : ''}`) }

@@ -11,7 +11,8 @@ let 죽음 = 0
 const 칸 = (참, 이름, 말 = '') => { console.log(`${참 ? '✅' : '❌'} ${이름}${말 ? ' · ' + 말 : ''}`); if (!참) 죽음++ }
 const 오늘 = Date.parse(todayKST() + 'T00:00:00Z')
 const 남은날 = (p) => (p?.expiry ? Math.round((Date.parse(p.expiry) - 오늘) / 86400000) : null)
-const D = (n) => new Date(오늘 + n * 86400000).toISOString().slice(0, 10)
+// ⛔ 날짜를 여기서 만들지 않는다 — todayKST 에 «그 시각»을 넘긴다(절대원칙 27)
+const D = (n) => todayKST(new Date(오늘 + n * 86400000))
 const 열린것 = allBasicRecipes.filter((r) => !r.from || r.from <= todayKST())
 const 세우기 = (칸들) => rankPantryRecipes(열린것, 칸들, 남은날)
 const T = (r) => ingredientTokens(r.ingredients)

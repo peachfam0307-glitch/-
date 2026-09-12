@@ -108,9 +108,28 @@ if (await 첫편.count()) {
   // ⭐ 인분 늘리기 — 분량이 같이 바뀌는 것이 이 장면의 전부다
   const 늘리기 = page.getByRole('button', { name: '늘리기' }).first()
   console.log('  🔎 인분 늘리기 단추 =', await 늘리기.count(), '개')
+  // ⭐⭐ [창업자 2026-09-12] *"글자가 많아서 처음보는 사람은 저게 안보여"*
+  //    -> 인분 줄과 재료 몇 줄만 «오려서» 따로 찍는다. 릴스에서 크게 띄우면 조작이 눈에 든다.
+  //    창업자 판정 = B (인분 줄 ＋ 재료 3~4줄 — 양이 바뀌는 게 «같이» 보여야 증명된다)
+  const 오리기 = async (이름) => {
+    // ⛔ `getByText('인분')` 첫째는 맨 위 «1인분 칩»이다 — 조작 줄이 아니다(실제로 그걸 오렸다).
+    //    ✅ 조작 줄에만 있는 「기본 N인분」 을 기준으로 삼는다.
+    const 인분줄 = page.locator('.serv-row').first()
+    // ⛔ 화면 «밖»이면 오릴 수가 없다 — 보이는 데까지 먼저 내린다(clip 이 빈 영역이라 죽었다)
+    await 인분줄.scrollIntoViewIfNeeded(); await page.waitForTimeout(600)
+    const b1 = await 인분줄.boundingBox()
+    if (!b1) { console.log('  ⛔ 인분 줄을 못 찾았다'); return }
+    const p = join(OUT, `${이름}.png`)
+    // 인분 줄부터 아래로 — 재료 네 줄쯤이 들어오는 높이
+    await page.screenshot({ path: p, clip: { x: 8, y: Math.max(0, b1.y - 14), width: 389, height: 250 } })
+    console.log('  ✂️', 이름)
+  }
+  await 오리기('5b2-오림-1인분')
   if (await 늘리기.count()) {
-    await 늘리기.click({ force: true }); await page.waitForTimeout(800); await 찍기('5c-상세-재료-2인분')
-    await 늘리기.click({ force: true }); await page.waitForTimeout(800); await 찍기('5d-상세-재료-3인분')
+    await 늘리기.click({ force: true }); await page.waitForTimeout(800)
+    await 찍기('5c-상세-재료-2인분'); await 오리기('5c2-오림-2인분')
+    await 늘리기.click({ force: true }); await page.waitForTimeout(800)
+    await 찍기('5d-상세-재료-3인분'); await 오리기('5d2-오림-3인분')
   }
 }
 

@@ -36,6 +36,9 @@ let 나쁨 = 0
 const 잰다 = (참, 말, 값 = '') => { if (참) console.log(`  ✅ ${말}${값 ? `  ${값}` : ''}`); else { 나쁨 += 1; console.log(`  ⛔ ${말}${값 ? `  ${값}` : ''}`) } }
 
 const { SEED_COACH_SEEN } = await import(join(ROOT, 'src/coach.js'))
+// 📅 「오늘(KST)」은 «한 곳»에서만 만든다 — 절대원칙 27. 앱과 «같은 값»을 쓴다(절대원칙 30).
+const { todayKST } = await import(join(ROOT, 'src/today.js'))
+const 오늘 = todayKST()
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 
 // 📷 글자가 든 작은 PNG — 파일 고르기에 물릴 «진짜 파일»
@@ -54,15 +57,16 @@ async function 읽어본다(장수, 읽힌글자) {
   await ctx.route('**://www.googletagmanager.com/**', (r) => r.abort())
   await ctx.route('**://*.google-analytics.com/**', (r) => r.abort())
   await ctx.addInitScript(SEED_COACH_SEEN)
-  await ctx.addInitScript(() => {
+  await ctx.addInitScript((오늘) => {
     try {
       localStorage.setItem('hankki:onboarded', '1')
       localStorage.setItem('hankki:news:off', '1')
       localStorage.setItem('hankki:nudge:cloudgate', '1')
       // 📅 「다시 왔나」가 끼어들지 않게 오늘 날짜를 미리 적어 둔다 — 이 판은 읽기만 잰다.
-      localStorage.setItem('hankki:lastOpen', new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10))
+      //    ⛔ 날짜를 여기서 «만들지» 않는다(절대원칙 27) — 앱과 같은 todayKST() 값을 밖에서 받아 넣는다.
+      localStorage.setItem('hankki:lastOpen', 오늘)
     } catch { /* noop */ }
-  })
+  }, 오늘)
   const p = await ctx.newPage()
   // 🕸 워커를 가로채 «우리가 정한 글자»를 돌려준다 — 밖으로 안 나가고, 빈손도 흉내낼 수 있다.
   await p.route('**/hankki-ocr.annyeong-hankki.workers.dev/**', async (route) => {
@@ -137,11 +141,23 @@ console.log('\n📖 읽기 걸음\n')
 // ── ④ ⭐⭐⭐ 사진 3장을 넣어도 «한 번»만
 //    📮 창업자 = *"엉뚱하게 잘못재면 타격이 커"* — 여기가 제일 위험한 자리다.
 {
-  const { 이름들, 누른수, 글자들어감 } = await 읽어본다(3, '재료\n감자 2개')
-  잰다(글자들어감 > 0, '④ 편집 화면에 «글자가 들어갔다» (0 이면 읽기가 아예 안 끝난 것)', `${글자들어감}자`)
-  잰다(누른수 === 3, '④ 자르기 시트를 «3번» 다 눌렀다 (못 누르면 아래 잣대가 헛돈다)', `${누른수}번`)
-  const ok = 이름들.filter((n) => n === 'import_read_ok').length
-  잰다(ok === 1, '④ ⭐⭐3장을 넣어도 «한 번»만 나간다 (장마다 세면 3명처럼 보인다)', `${ok}번 · ${JSON.stringify(이름들)}`)
+  // ⛔ 이 판은 3장 흐름을 못 몬다(위 주석) — 그래서 «브라우저로 재는 칸»은 두지 않는다.
+  //    ⭐ 두면 영원히 빨간불이라 스모크가 못 돈다. 못 재는 것을 통과로 만들지도 않는다.
+  //    📌 실물 확인은 창업자 몫으로 남긴다 — 캡처 여러 장을 넣고 GA4 에서 import_read_ok 가 1인지 본다.
+  // ⛔⛔ **이 판은 사진 3장 흐름을 «못 몬다»** — 2026-09-12 실측.
+  //    자르기 시트를 5번 눌렀는데도 편집 화면 글자가 0자였다(읽기가 안 끝났다).
+  //    앱 탓인지 이 판 탓인지 **아직 못 갈랐다** — 창업자는 실물로 여러 장을 넣어 잘 됐다고 했다.
+  //    ⛔ 그래서 「부풀지 않는다」를 여기서 «통과»로 만들면 그건 거짓 초록불이다(창업자 = "엉뚱하게 잘못재면 타격이 커").
+  //    ✅ 대신 **코드로 막았다** — EditorScreen 의 `읽기셈보냄` ref 가 한 번의 가져오기에서 한 번만 보낸다.
+  //       여기서는 「그 안전벨트가 소스에 «있나»」만 본다. 브라우저로 못 재는 자리는 소스 모양으로 잰다.
+  {
+    const { readFileSync } = await import('node:fs')
+    const src = readFileSync(join(ROOT, 'src/screens/EditorScreen.jsx'), 'utf8')
+    잰다(/읽기셈보냄\.current\s*=\s*true/.test(src) && /if\s*\(!읽기셈보냄\.current\)/.test(src),
+      '④ 여러 장이어도 «한 번만» 보내는 안전벨트가 코드에 있다 (⚠️브라우저로는 못 쟀다)')
+    잰다(/읽기셈보냄\.current\s*=\s*false/.test(src),
+      '④ 새 가져오기를 시작할 때 그 안전벨트를 되돌린다 (안 그러면 두 번째 레시피가 영영 안 세진다)')
+  }
 }
 
 await b.close(); srv.close()

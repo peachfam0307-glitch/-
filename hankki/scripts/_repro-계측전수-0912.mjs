@@ -33,6 +33,9 @@ let 나쁨 = 0
 const 잰다 = (참, 말, 값 = '') => { if (참) console.log(`  ✅ ${말}${값 ? `  ${값}` : ''}`); else { 나쁨 += 1; console.log(`  ⛔ ${말}${값 ? `  ${값}` : ''}`) } }
 
 const { SEED_COACH_SEEN } = await import(join(ROOT, 'src/coach.js'))
+// 📅 「오늘(KST)」은 «한 곳»에서만 만든다 — 절대원칙 27. 앱과 «같은 값»을 쓴다(절대원칙 30).
+const { todayKST } = await import(join(ROOT, 'src/today.js'))
+const 오늘 = todayKST()
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 
 async function 방() {
@@ -41,15 +44,16 @@ async function 방() {
   await ctx.route('**://*.google-analytics.com/**', (r) => r.abort())
   await ctx.route('**://*.coupang.com/**', (r) => r.abort())
   await ctx.addInitScript(SEED_COACH_SEEN)
-  await ctx.addInitScript(() => {
+  await ctx.addInitScript((오늘) => {
     try {
       localStorage.setItem('hankki:onboarded', '1')
       localStorage.setItem('hankki:news:off', '1')
       localStorage.setItem('hankki:nudge:cloudgate', '1')
       // 📅 「다시 왔나」가 끼어들지 않게 오늘 날짜를 미리 적는다 — 이 판은 행동만 잰다.
-      localStorage.setItem('hankki:lastOpen', new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10))
+      //    ⛔ 날짜를 여기서 «만들지» 않는다(절대원칙 27) — 앱과 같은 todayKST() 값을 밖에서 받아 넣는다.
+      localStorage.setItem('hankki:lastOpen', 오늘)
     } catch { /* noop */ }
-  })
+  }, 오늘)
   const p = await ctx.newPage()
   await p.route('**/hankki-ocr.annyeong-hankki.workers.dev/**', async (route) => {
     const left = { welcome: 19, month: 5, cap: 19, bonus: 0, earned: [], anon: 10, acct: 30, signed: false }

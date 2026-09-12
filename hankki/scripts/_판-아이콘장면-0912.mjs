@@ -30,16 +30,21 @@ const 제철 = {
 const w = readFileSync(`${R}/src/data/weekly.js`, 'utf8')
 const { 레시피들 } = await import(`${R}/scripts/recipe.mjs`)
 const 편 = new Map(레시피들().map((r) => [r.id, r]))
-const 우리집 = []
+// ⭐ [창업자 2026-09-12] *"우리집레시피는 10월꺼 안넣나 sns랑."*
+//    제철이 「8·9월 / 9·10월」 두 줄이니 우리집·SNS 도 같은 문법으로 «지난 것 / 앞으로»를 다 보여준다.
+const 우리집지난 = [], 우리집앞 = []
 for (const m of w.matchAll(/\{ from: '(2026-\d\d-\d\d)', title: '우리집레시피'[\s\S]{0,200}?ids: \[([^\]]*)\]/g)) {
-  if (m[1] > 오늘) continue
+  if (m[1] > '2026-10-31') continue
+  const 통 = m[1] <= 오늘 ? 우리집지난 : 우리집앞
   for (const i of [...m[2].matchAll(/'([^']+)'/g)].map((x) => x[1])) {
-    const r = 편.get(i); if (r) 우리집.push([r.title, r.icon || r.thumb])
+    const r = 편.get(i); if (r) 통.push([r.title, r.icon || r.thumb])
   }
 }
 // ── ③ SNS — sourceName 이 있는 열린 편
-const sns = 레시피들().filter((r) => (!r.from || r.from <= 오늘) && r.sourceName).map((r) => [r.title, r.icon || r.thumb])
-console.log(`  🔎 제철 10 · 우리집 ${우리집.length} · SNS ${sns.length}`)
+const snsAll = 레시피들().filter((r) => r.sourceName && (!r.from || r.from <= '2026-10-31'))
+const sns지난 = snsAll.filter((r) => !r.from || r.from <= 오늘).map((r) => [r.title, r.icon || r.thumb])
+const sns앞 = snsAll.filter((r) => r.from && r.from > 오늘).sort((a, b) => a.from.localeCompare(b.from)).slice(0, 6).map((r) => [r.title, r.icon || r.thumb])
+console.log(`  🔎 제철 10 · 우리집 ${우리집지난.length}+${우리집앞.length} · SNS ${sns지난.length}+${sns앞.length}`)
 
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 })
@@ -69,21 +74,24 @@ await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/장면/04.jpg', ty
 console.log('✍️ 04-제철')
 
 // 우리집레시피
+// 제철과 «같은 짜임» — 지난 줄 / 앞으로 줄
 await p.setContent(`${머리}<div class=band><div class=big>우리집레시피</div></div>
-<div class=sec style="top:480px"><div class=tag>8·9월</div>${칸(우리집, 238)}</div>`)
+<div class=sec style="top:450px"><div class=tag>8·9월</div>${칸(우리집지난, 192)}</div>
+<div class=sec style="top:1090px"><div class=tag>9·10월</div>${칸(우리집앞, 178)}</div>`)
 await p.evaluate(() => document.querySelectorAll('.it span').forEach((s) => {
   // 이름이 칸보다 넓으면 «그 칸만» 글씨를 줄인다 — 접히는 것보다 낫다
   for (let f = 30; f > 18 && s.scrollWidth > s.clientWidth; f -= 1) s.style.fontSize = f + 'px'
 }))
 await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/장면/05.jpg', type: 'jpeg', quality: 92 })
-console.log('✍️ 05-우리집', 우리집.length)
+console.log('✍️ 05-우리집', 우리집지난.length, '+', 우리집앞.length)
 
 // SNS
 await p.setContent(`${머리}<div class=band><div class=big>SNS 레시피</div></div>
-<div class=sec style="top:520px;max-width:820px;margin:0 auto"><div class=tag>원작자 글과 영상도 그대로</div>${칸(sns, 390)}</div>`)
+<div class=sec style="top:450px"><div class=tag>8·9월</div>${칸(sns지난, 214)}</div>
+<div class=sec style="top:1130px"><div class=tag>9·10월</div>${칸(sns앞, 192)}</div>`)
 await p.evaluate(() => document.querySelectorAll('.it span').forEach((s) => {
   for (let f = 30; f > 18 && s.scrollWidth > s.clientWidth; f -= 1) s.style.fontSize = f + 'px'
 }))
 await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/장면/06.jpg', type: 'jpeg', quality: 92 })
-console.log('✍️ 06-SNS', sns.length)
+console.log('✍️ 06-SNS', sns지난.length, '+', sns앞.length)
 await b.close()

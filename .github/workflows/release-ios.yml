@@ -175,7 +175,14 @@ jobs:
       - name: 🔍 서명 확인 (.ipa 안 실물 · 누가 서명했나 · 어떤 권한)
         working-directory: ios-app/ios/App
         run: |
-          IPA=$(ls build/out/*.ipa | head -1)
+          # destination=upload 면 .ipa 를 디스크에 «안 남기고» 바로 올린다 → 그땐 DistributionSummary 만 찍고 끝
+          IPA=$(ls build/out/*.ipa 2>/dev/null | head -1)
+          if [ -z "$IPA" ]; then
+            echo "ℹ️ .ipa 없음(=upload 로 바로 올림). DistributionSummary.plist:"
+            plutil -p build/out/DistributionSummary.plist 2>/dev/null | head -60 || true
+            grep -i "upload\|success\|error" build/out/Packaging.log 2>/dev/null | tail -20 || true
+            exit 0
+          fi
           rm -rf build/ipa-check && mkdir -p build/ipa-check
           unzip -q "$IPA" -d build/ipa-check
           APP=$(ls -d build/ipa-check/Payload/*.app | head -1)

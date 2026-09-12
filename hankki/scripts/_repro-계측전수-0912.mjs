@@ -124,11 +124,9 @@ console.log('\n📊 계측 전수\n')
   await 길막(p)
   await p.locator('.nav-item', { hasText: '레시피' }).first().click()
   await p.waitForTimeout(1400); await 길막(p)
-  // ⛔ 카드 «클래스»로 열지 않는다 — 2026-09-12 에 .r-card·.rc-card·[data-recipe] 셋 다 안 맞아
-  //    상세에 못 들어간 채로 아래 칸이 「단추를 못 찾았다」로 헛돌았다. 제목 «글자»로 연다(캡처판이 쓴 방법).
-  // ⛔ 카드 «클래스»로 안 열린다(.r-card·.rc-card·[data-recipe] 셋 다 안 맞았다)
-  //    ⛔ 막연한 한글 글자로도 안 된다 — 「여기에 다 모았어」 말풍선을 먼저 잡았다(캡처로 눈으로 봤다).
-  //    ✅ 레시피 «제목»을 콕 집는다.
+  // ⛔ 카드 «클래스»로 안 열린다(.r-card·.rc-card·[data-recipe] 셋 다 안 맞았다) — 상세에 못 들어간 채
+  //    아래 칸이 「단추를 못 찾았다」로 헛돌았다. ⛔막연한 한글 글자로도 안 된다
+  //    (「여기에 다 모았어」 말풍선을 먼저 잡았다 — 캡처로 눈으로 봤다). ✅레시피 «제목»을 콕 집는다.
   await 길막(p)   // ⛔ 누르기 «직전»에 한 번 더 — 시트가 늦게 떠서 클릭을 가로챘다(2026-09-12)
   // ⛔⛔ 그래도 못 닫는 시트가 있다(길막은 「닫기/확인/알겠어요/나중에」만 안다).
   //    ⭐ 그 시트가 무엇이든 **마스크를 직접 치운다** — 이 판은 시트를 재는 판이 아니다.
@@ -136,7 +134,10 @@ console.log('\n📊 계측 전수\n')
   await p.waitForTimeout(400)
   await p.getByText('가지 소고기 덮밥', { exact: true }).first().click({ timeout: 15000 }).catch(() => {})
   await p.waitForTimeout(1600); await 길막(p)
-  await p.screenshot({ path: new URL('../_계측전수-레시피탭.jpg', import.meta.url).pathname, quality: 40, type: 'jpeg' })
+  // ⛔ 캡처는 «저장소에 안 남긴다» — 필요할 때만 SHOT=1 로 켠다.
+  //    ⛔⛔ new URL().pathname 은 한글을 %인코딩한다 → `_%EA%B3%84…jpg` 로 저장되어
+  //       「캡처가 안 찍혔다」고 오해했다(2026-09-12). join() 으로 만든다.
+  if (process.env.SHOT) await p.screenshot({ path: join(ROOT, '_계측전수-레시피탭.jpg'), quality: 40, type: 'jpeg' })
   잰다((await 이름들(p)).includes('detail'), '③ 레시피 상세에 들어갔다 (0 이면 아래가 헛돈다)', JSON.stringify((await 이름들(p)).slice(-3)))
   const 담기 = p.locator('button', { hasText: '장보기 담기' }).first()
   if (await 담기.count() > 0) {

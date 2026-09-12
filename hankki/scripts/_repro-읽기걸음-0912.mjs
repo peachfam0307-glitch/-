@@ -107,7 +107,8 @@ async function 읽어본다(장수, 읽힌글자) {
     const t = [...document.querySelectorAll('textarea')].map((e) => e.value).join('').trim()
     return t.length
   })
-  await p.screenshot({ path: new URL(`../_읽기걸음-${장수}장.jpg`, import.meta.url).pathname, quality: 40, type: 'jpeg' })
+  // ⛔ 캡처는 «저장소에 안 남긴다» — SHOT=1 로 켤 때만. (new URL().pathname 은 한글을 %인코딩한다)
+  if (process.env.SHOT) await p.screenshot({ path: join(ROOT, `_읽기걸음-${장수}장.jpg`), quality: 40, type: 'jpeg' })
   await ctx.close()
   return { 이름들, 누른수, 글자들어감 }
 }

@@ -144,7 +144,7 @@ await p.setContent(`${머리}<div class=mid><div class=m1>매주 토요일 3개�
 await 찍기('6-숫자')
 
 // ⑦ 아직 안 열린 칸 — 비어 있는 게 사실이다
-await p.setContent(`${머리}<div class=mid><div class=m1>아직 안 열린 칸도 있어요</div><div class=m2>열리면 알려드릴게요</div></div>
+await p.setContent(`${머리}<div class=mid><div class=m1>곧 열려요</div><div class=m2>매주 토요일마다 하나씩</div></div>
 <div class=grid style="top:560px;gap:44px 8px">${빈갈래
   .map(([c, k]) => `<div class=ic><img src="${아이콘(k)}" style="opacity:.45;width:150px;height:150px"><span style="color:#e8c89a;font-size:30px">${c}</span></div>`).join('')}</div>`)
 await 찍기('7-앞으로')

@@ -79,6 +79,10 @@ html,body{margin:0;width:1080px;height:1920px;font-family:GD,sans-serif;overflow
   box-shadow:0 20px 50px rgba(0,0,0,.55)}
 .quote2 p{margin:0;font-size:44px;line-height:1.45;letter-spacing:-.02em}
 .quote2 .who{margin-top:24px;font-size:30px;font-weight:700;color:#8a6a3e}
+/* ⋮ 세로 점 — 「계속 이어진다」는 뜻 (창업자) */
+.more{display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:6px}
+.more i{width:16px;height:16px;border-radius:50%;background:#e8c89a;opacity:.75}
+.more i:nth-child(2){opacity:.5}.more i:nth-child(3){opacity:.28}
 .tail{position:absolute;left:170px;top:1000px;width:0;height:0;
   border-left:44px solid transparent;border-right:0 solid transparent;border-top:52px solid #f6f1e7}
 /* 🔢 숫자 두 개 — 열린 것과 줄 서 있는 것 */
@@ -132,11 +136,12 @@ const 말들 = [
 ]
 // 📮 창업자 = *"그걸 한장씩 하지말고 2장에 3개정도씩 붙이자"*
 //   ⭐ 한 장에 셋이면 «여러 제품에 다 적혀 있다»가 한눈에 보인다 — 한 장 한 개는 그 말이 안 된다.
-const 한장에 = Number(process.env.PER || 3)
+const 한장에 = Number(process.env.PER || 3)   // ☑️창업자 확정 = 3개씩 2장
 for (let i = 0; i < 말들.length; i += 한장에) {
   const 묶음 = 말들.slice(i, i + 한장에)
   await p.setContent(`${머리}<div class=mid><div class=m1>파는 말이 아니라</div><div class=m2>쓰는 말이에요</div></div>
-<div class=quotes>${묶음.map(([, 갈래, 글]) => `<div class=quote2><p>${글}</p><div class=who>— ${갈래}</div></div>`).join('')}</div>`)
+<div class=quotes>${묶음.map(([, 갈래, 글]) => `<div class=quote2><p>${글}</p><div class=who>— ${갈래}</div></div>`).join('')}
+<div class=more><i></i><i></i><i></i></div></div>`)
   await 찍기(`4${'abcdef'[i / 한장에]}-말`)
 }
 

@@ -92,6 +92,11 @@ export default function CookScreen({ id }) {
   }
 
   const finish = () => {
+    // 📊 [2026-09-12] 요리모드를 «끝냈다» — ⛔조건 «밖»이다.
+    //    ⛔⛔ 처음엔 아래 `if (!오늘것)` 안에 넣었다가 잡았다(창업자 = "다 확인해 하나하나").
+    //       그러면 상세에서 「만들었어요」를 먼저 누른 사람은 요리모드를 끝내도 0건이 된다.
+    //       이름이 「요리모드를 끝냈다」인데 잣대가 「오늘 그 레시피 첫 기록」이면 뜻이 어긋난다.
+    요리끝냄()
     // 오늘 이미 이 레시피 기록이 있으면(상세의 '만들었어요' 등) 중복으로 쌓지 않는다
     const today = new Date().toDateString()
     const 오늘것 = diary.find((d) => d.recipeId === r.id && new Date(d.at).toDateString() === today)
@@ -99,8 +104,6 @@ export default function CookScreen({ id }) {
       addDiary({ id: newId(), recipeId: r.id, title: r.title, source: r.source, at: Date.now(), rating: 0, note: '', photo })
       // 🎁 요리모드를 끝냈다 — 평생 1회. ⛔「처음인가」는 «서버»가 정한다(폰이 세면 지웠다 깔 때마다 또 받는다).
       열쇠받기(EARN.요리).then((받음) => { if (받음) nav.showToast(`요리모드를 처음 써봤어요 · ${KEY_NAME} 1${KEY_UNIT}를 더 받았어요`, 5200) })
-      // 📊 [2026-09-12] 요리모드를 «끝냈다» — ⛔열쇠받기 «바깥»이다(열쇠는 평생 1회, 통계는 매번).
-      요리끝냄()
       cook(r.id)
     } else if (photo && !오늘것.photo) {
       // ⭐ 오늘 이미 기록이 있어도 **찍은 사진은 안 버린다** — 그 기록에 사진만 채운다.

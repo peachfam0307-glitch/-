@@ -774,6 +774,8 @@ function ChecklistAdd() {
   const add = () => {
     if (!text.trim()) return
     addShopItems([text])
+    // 📊 [2026-09-12] 담았다 — 직접 입력해서 담는 길도 «담기»다.
+    장보기담음()
     setText('')
   }
   return (

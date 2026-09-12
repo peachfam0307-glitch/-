@@ -52,7 +52,8 @@ html,body{margin:0;width:1080px;height:1920px;background:#FFFDF7;font-family:GD,
 .sec{position:absolute;left:44px;right:44px}
 .tag{display:inline-block;font-size:46px;font-weight:700;color:#fff;background:#7a4a1e;
      padding:12px 32px;border-radius:999px;margin-bottom:18px;box-shadow:0 8px 22px rgba(93,52,16,.24)}
-.row{display:flex;flex-wrap:wrap;justify-content:center;gap:20px 14px}
+/* ⭐ 다섯 개가 «한 줄»에 들어가야 한다 — 4＋1 로 접히면 다섯째가 외톨이가 된다(실제로 그랬다) */
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 6px}
 .it{display:flex;flex-direction:column;align-items:center;gap:8px;width:184px}
 .it img{width:150px;height:150px;object-fit:contain}
 /* ⭐ 이름이 두 줄로 접히면 지저분하다(「새우 해장 파스 / 타」) — 한 줄로 두고 폭에 맞춰 줄인다 */
@@ -63,13 +64,13 @@ const 칸 = (것들, 크기) => `<div class=row>${것들.map(([n, k]) => `<div c
 
 // 제철 — 두 줄
 await p.setContent(`${머리}<div class=band><div class=big>${제철.큰}</div></div>
-${제철.줄들.map((x, i) => `<div class=sec style="top:${470 + i * 620}px"><div class=tag>${x[0]}</div>${칸(x[1], 184)}</div>`).join('')}`)
+${제철.줄들.map((x, i) => `<div class=sec style="top:${450 + i * 640}px"><div class=tag>${x[0]}</div>${칸(x[1], 192)}</div>`).join('')}`)
 await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/장면/04.jpg', type: 'jpeg', quality: 92 })
 console.log('✍️ 04-제철')
 
 // 우리집레시피
 await p.setContent(`${머리}<div class=band><div class=big>우리집레시피</div></div>
-<div class=sec style="top:520px"><div class=tag>지금까지 ${우리집.length}편</div>${칸(우리집, 210)}</div>`)
+<div class=sec style="top:480px"><div class=tag>8·9월</div>${칸(우리집, 238)}</div>`)
 await p.evaluate(() => document.querySelectorAll('.it span').forEach((s) => {
   // 이름이 칸보다 넓으면 «그 칸만» 글씨를 줄인다 — 접히는 것보다 낫다
   for (let f = 30; f > 18 && s.scrollWidth > s.clientWidth; f -= 1) s.style.fontSize = f + 'px'
@@ -79,7 +80,7 @@ console.log('✍️ 05-우리집', 우리집.length)
 
 // SNS
 await p.setContent(`${머리}<div class=band><div class=big>SNS 레시피</div></div>
-<div class=sec style="top:560px"><div class=tag>원작자 글과 영상도 그대로</div>${칸(sns, 250)}</div>`)
+<div class=sec style="top:520px;max-width:820px;margin:0 auto"><div class=tag>원작자 글과 영상도 그대로</div>${칸(sns, 390)}</div>`)
 await p.evaluate(() => document.querySelectorAll('.it span').forEach((s) => {
   for (let f = 30; f > 18 && s.scrollWidth > s.clientWidth; f -= 1) s.style.fontSize = f + 'px'
 }))

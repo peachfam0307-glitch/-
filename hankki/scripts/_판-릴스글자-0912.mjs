@@ -18,7 +18,7 @@ rmSync(낼곳, { recursive: true, force: true }); mkdirSync(낼곳, { recursive:
 // [파일이름, 큰 글자, 작은 글자]
 const 판들 = [
   ['01-출시', '8월 21일 출시 · 신상 레시피앱', '「한끼」 에는요'],
-  ['02-편수', '레시피 87편이 들어 있어요', '한식 · 양식 · 중식 · 일식 · 간식'],
+  ['02-편수', '레시피 87편이 들어 있어요', '9월 11일 기준 · 한식 양식 중식 일식 간식'],
   ['03-주기', '매주 6편씩 새로 열려요', '제철 · 우리집 · SNS'],
   ['04-지난', '오징어 깻잎 토마토 햅쌀 꽃게', '지금까지 이렇게 열렸어요'],
   ['05-앞으로', '가지 버섯 고구마 대하 고등어', '앞으로 이렇게 열려요'],
@@ -43,22 +43,30 @@ html,body{margin:0;width:1080px;height:1920px;background:transparent}
       → 제목 줄 «전체»에 크림색 띠를 깔고 그 위에 알약을 얹는다. 앱 배경이 크림이라 흰 알약은 묻혔다.
    ⛔ 캐릭터는 안 붙인다 — 창업자 = *"애들은 안붙여도 될 것 같아. 정신없어"*
       (앱 화면 안에 이미 한끼 친구들이 있다) */
-.band{position:absolute;left:0;right:0;top:250px;height:330px;
+.band{position:absolute;left:0;right:0;top:238px;height:360px;
       background:linear-gradient(180deg,rgba(255,253,247,0) 0%,rgba(255,253,247,.97) 14%,rgba(255,253,247,.97) 86%,rgba(255,253,247,0) 100%)}
-.wrap{position:absolute;left:0;right:0;top:250px;height:330px;display:flex;flex-direction:column;
+.wrap{position:absolute;left:0;right:0;top:238px;height:360px;display:flex;flex-direction:column;
       align-items:center;justify-content:center;gap:22px}
 /* 🏷 우리 앱 배지와 같은 «둥근 알약» — 흔한 흰 자막 대신 브랜드 모양을 쓴다 */
 /* ⭐ 글씨를 «띠 폭에 맞춰» 자동으로 줄인다 — 긴 문구도 안 잘리고 짧은 건 크게 보인다 */
-.big{font-family:GD,sans-serif;font-size:62px;font-weight:700;color:#fff;background:#5d3410;
-     padding:22px 46px;border-radius:999px;letter-spacing:-.03em;white-space:nowrap;
-     box-shadow:0 12px 34px rgba(93,52,16,.30)}
-.sub{font-family:GD,sans-serif;font-size:42px;font-weight:700;color:#5d3410;
-     letter-spacing:-.01em;white-space:nowrap}
+/* ⛔⛔ [창업자 2026-09-12 · «두 번째» 지적] **크림색 바탕에 작게 쓰면 안 보인다.**
+   📮 *"아래 조그만글씨 아예안보여. 저거 왜 또 저렇게 만들었어??? 아까 말했잖아."*
+   🌲 뿌리 = 앱 배경이 크림색(#FFFDF7)인데 글자 배경도 크림색이라 묻힌다.
+      한 번 지적받고 흰 알약을 없앴는데, «배경 없는 갈색 글씨»로 바꿔 놓아서 같은 일이 났다.
+   ✅ 그래서 **큰 글씨도 작은 글씨도 «진갈색 알약»** 하나로 간다. 크림 바탕 위 글자는 쓰지 않는다. */
+.big{font-family:GD,sans-serif;font-size:76px;font-weight:700;color:#fff;background:#5d3410;
+     padding:30px 60px;border-radius:999px;letter-spacing:-.03em;white-space:nowrap;
+     box-shadow:0 14px 40px rgba(93,52,16,.34)}
+.sub{font-family:GD,sans-serif;font-size:46px;font-weight:700;color:#fff;background:#7a4a1e;
+     padding:18px 42px;border-radius:999px;letter-spacing:-.01em;white-space:nowrap;
+     box-shadow:0 10px 28px rgba(93,52,16,.26)}
 </style><div class=band></div><div class=wrap><div class=big>${큰}</div>${작은 ? `<div class=sub>${작은}</div>` : ""}</div>`)
   // ⭐ 띠(1080px)보다 글씨가 넓으면 «자동으로» 줄인다 — 긴 문구가 잘려 나가는 걸 막는다
   await p.evaluate(() => {
     const el = document.querySelector(".big")
-    for (let s = 62; s > 30 && el.getBoundingClientRect().width > 1000; s -= 2) el.style.fontSize = s + "px"
+    for (let s = 76; s > 34 && el.getBoundingClientRect().width > 1010; s -= 2) el.style.fontSize = s + "px"
+    const sb = document.querySelector(".sub")
+    if (sb) for (let s = 46; s > 26 && sb.getBoundingClientRect().width > 1010; s -= 2) sb.style.fontSize = s + "px"
   })
   await p.waitForTimeout(350)
   await p.screenshot({ path: join(낼곳, `${이름}.png`), omitBackground: true })

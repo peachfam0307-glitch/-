@@ -32,7 +32,7 @@ html,body{margin:0;width:1080px;height:1920px;font-family:GD,sans-serif;overflow
 .k1{font-size:40px;font-weight:700;color:#e8c89a;letter-spacing:.02em;margin-bottom:14px}
 .k2{font-size:72px;font-weight:700;line-height:1.18;letter-spacing:-.03em;text-shadow:0 6px 24px rgba(0,0,0,.6)}
 /* 📱 크게 · 살짝 기울여 · 화면 아래로 넘긴다 — 「앱 안을 들여다보는」 느낌 */
-.tilt{position:absolute;left:210px;top:700px;width:900px;transform:rotate(-4deg);
+.tilt{position:absolute;left:210px;top:600px;width:900px;transform:rotate(-4deg);
   border-radius:44px;overflow:hidden;box-shadow:-30px 40px 100px rgba(0,0,0,.7);border:3px solid rgba(232,200,154,.3)}
 .tilt img{display:block;width:900px}
 </style>

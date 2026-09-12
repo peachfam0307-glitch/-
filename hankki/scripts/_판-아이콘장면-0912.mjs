@@ -75,9 +75,13 @@ html,body{margin:0;width:1080px;height:1920px;background:#FFFDF7;font-family:GD,
 const 칸 = (것들, 크기, 다섯) => `<div class="row${다섯 ? " five" : ""}">${것들.map(([n, k]) => `<div class=it style="width:${크기}px"><img src="${그림(k)}" style="width:${크기 - 18}px;height:${크기 - 18}px"><span>${n}</span></div>`).join('')}</div>`
 
 // 제철 — 두 줄
+// ⛔ [창업자 2026-09-12] "제철 고등어이름 잘림" — 둘째 칸이 너무 아래라 마지막 줄 이름이 1920 밖으로 나갔다.
+//    🔢 한 칸 = 이름표 100 ＋ 두 단(칸+76)×2. 칸 280 이면 812 라 420+812+812 = 2044 > 1920 이었다.
+// ⛔⛔ 그리고 이 주석을 «템플릿 문자열 안»에 넣었더니 글자로 새어 화면이 통째로 무너졌다.
+//    📌 setContent 안에는 주석을 쓰지 않는다.
 await p.setContent(`${머리}<div class=band><div class=big>${제철.큰}</div></div>
 ${제철.줄들.map((x, i) => `<div class=sec style="/* ⛔ 3+2 라 첫 줄이 두 단이 된다 — 둘째 칸을 충분히 내리지 않으면 이름표가 앞 이름을 덮는다(실제로 그랬다) */
-top:${420 + i * 830}px"><div class=tag>${x[0]}</div>${칸(x[1], 280, true)}</div>`).join('')}`)
+top:${380 + i * 740}px"><div class=tag>${x[0]}</div>${칸(x[1], 246, true)}</div>`).join('')}`)
 await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/장면/04.jpg', type: 'jpeg', quality: 92 })
 console.log('✍️ 04-제철')
 

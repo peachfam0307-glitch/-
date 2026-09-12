@@ -19,7 +19,9 @@ name: 🍎 iOS 서명 빌드 → TestFlight
 # ⚠️ upload=true 는 App Store Connect 에 「한끼」 앱(번들 kr.hankki.app)이 «먼저» 만들어져 있어야 성공한다.
 
 # ⚠️ workflow_dispatch(손으로 돌리기)는 깃허브 규칙상 «기본 갈래»에 있는 워크플로만 된다(2026-09-12 실측 404).
-#    이 파일은 아이폰 갈래에만 있으므로 push 로도 돈다(upload 는 push 땐 false).
+#    이 파일은 아이폰 갈래에만 있으므로 push 로도 돈다.
+#    ⭐ push 로 TestFlight 에 «올리려면» 커밋 제목에 [testflight] 를 넣는다(2026-09-12 2판 뒤 추가). 없으면 .ipa 만 만든다.
+#       ⚠️ 올리기 전에 App Store Connect 에 「한끼」 앱 기록이 있어야 한다(없으면 upload 가 죽는다).
 on:
   workflow_dispatch:
     inputs:
@@ -128,9 +130,14 @@ jobs:
 
       - name: 📝 ExportOptions.plist
         working-directory: ios-app/ios/App
+        env:
+          HEAD_MSG: ${{ github.event.head_commit.message }}
         run: |
+          # 올리는 길 둘 = ⓐ dispatch upload=true(기본 갈래 전용이라 지금은 못 씀) ⓑ push 커밋 제목에 «[testflight]»
           DEST=export
           [ "${{ inputs.upload }}" = "true" ] && DEST=upload
+          case "$HEAD_MSG" in *"[testflight]"*) DEST=upload;; esac
+          echo "DEST=$DEST"
           cat > build/ExportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -163,12 +170,26 @@ jobs:
           ls -la build/out || true
           find build/out -name "*.ipa" -exec du -sh {} \; || true
 
-      - name: 🔍 서명 확인 (누가 서명했나 · 어떤 권한)
+      # 🧪 2판(run 34673353854)에서 이 단계가 «빈 줄»로 지났다 — archive 안의 App.app 은 서명 «없는» 것이라 볼 게 없었다.
+      #    서명된 실물은 .ipa 안 Payload/App.app 이다 → 풀어서 본다. ＋ DistributionSummary.plist(누가·무슨 프로필로)도 찍는다.
+      - name: 🔍 서명 확인 (.ipa 안 실물 · 누가 서명했나 · 어떤 권한)
         working-directory: ios-app/ios/App
         run: |
-          APP=build/App.xcarchive/Products/Applications/App.app
+          IPA=$(ls build/out/*.ipa | head -1)
+          rm -rf build/ipa-check && mkdir -p build/ipa-check
+          unzip -q "$IPA" -d build/ipa-check
+          APP=$(ls -d build/ipa-check/Payload/*.app | head -1)
+          echo "── $APP"
           codesign -dv --verbose=2 "$APP" 2>&1 | grep -i "Authority\|TeamIdentifier\|Identifier=" || true
-          codesign -d --entitlements :- "$APP" 2>/dev/null | grep -A1 "applesignin\|team-identifier\|application-identifier" || true
+          echo "── entitlements"
+          codesign -d --entitlements :- "$APP" 2>/dev/null | grep -A1 "applesignin\|team-identifier\|application-identifier\|aps-environment" || true
+          echo "── Info.plist"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" -c "Print :CFBundleShortVersionString" -c "Print :CFBundleVersion" "$APP/Info.plist" || true
+          echo "── DistributionSummary.plist"
+          plutil -p build/out/DistributionSummary.plist 2>/dev/null | grep -i "certificate\|name\|profile\|team\|type\|entitlements\|applesignin" | head -40 || true
+          echo "── 서명이 팀 $TEAM_ID 인가"
+          codesign -dv --verbose=2 "$APP" 2>&1 | grep -q "TeamIdentifier=$TEAM_ID" || { echo "⛔ TeamIdentifier 가 $TEAM_ID 가 아니다"; exit 1; }
+          echo "✅ 서명 = 팀 $TEAM_ID"
 
       - name: ⬆️ 결과물 (.ipa · ExportOptions · 로그)
         if: always()

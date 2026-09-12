@@ -99,7 +99,7 @@ await 찍기('2-탭')
 //    카드 «한 장»만 오려서 크게. 그래야 「왜 좋은지가 적혀 있다」는 말이 눈에 보인다.
 //    🔢 원본 1170x2532 · 폭 940 으로 줄이면 배율 0.803 → 카드 자리 y 1560 부터
 await p.setContent(`${머리}<div class=corner><div class=k1>제품마다</div>
-<div class=k2>왜 좋은지가<br>적혀 있어요</div></div>
+<div class=k2>실사용 추천이유를<br>적어놓았어요</div></div>
 <div style="position:absolute;left:70px;top:640px;width:940px;height:660px;overflow:hidden;
   border-radius:40px;box-shadow:0 30px 80px rgba(0,0,0,.65);border:3px solid rgba(232,200,154,.3)">
   <img src="${PNG('/tmp/큐레샷2/t1-전체.png')}" style="display:block;width:940px;margin-top:-1253px"></div>`)

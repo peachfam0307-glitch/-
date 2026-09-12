@@ -22,6 +22,8 @@ name: 🍎 iOS 서명 빌드 → TestFlight
 #    이 파일은 아이폰 갈래에만 있으므로 push 로도 돈다.
 #    ⭐ push 로 TestFlight 에 «올리려면» 커밋 제목에 [testflight] 를 넣는다(2026-09-12 2판 뒤 추가). 없으면 .ipa 만 만든다.
 #       ✅ App Store Connect 앱 기록 = 「한끼 - 캡처로 만드는 레시피앱」(2026-09-12 14:00 생성 · 번들 kr.hankki.app · SKU hankki-ios-2026).
+#       ⛔ 3판(run 34673892037) 실측 = 커밋 제목에 그 글자를 «설명으로» 적었더니 스위치가 켜져 앱 기록 «전»에 올리려다
+#          "Error Downloading App Information" 으로 죽었다 → 올릴 생각이 없으면 커밋 글에 그 글자를 쓰지 않는다.
 on:
   workflow_dispatch:
     inputs:

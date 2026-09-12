@@ -21,7 +21,7 @@ name: 🍎 iOS 서명 빌드 → TestFlight
 # ⚠️ workflow_dispatch(손으로 돌리기)는 깃허브 규칙상 «기본 갈래»에 있는 워크플로만 된다(2026-09-12 실측 404).
 #    이 파일은 아이폰 갈래에만 있으므로 push 로도 돈다.
 #    ⭐ push 로 TestFlight 에 «올리려면» 커밋 제목에 [testflight] 를 넣는다(2026-09-12 2판 뒤 추가). 없으면 .ipa 만 만든다.
-#       ⚠️ 올리기 전에 App Store Connect 에 「한끼」 앱 기록이 있어야 한다(없으면 upload 가 죽는다).
+#       ✅ App Store Connect 앱 기록 = 「한끼 - 캡처로 만드는 레시피앱」(2026-09-12 14:00 생성 · 번들 kr.hankki.app · SKU hankki-ios-2026).
 on:
   workflow_dispatch:
     inputs:

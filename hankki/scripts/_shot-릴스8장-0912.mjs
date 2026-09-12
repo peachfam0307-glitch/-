@@ -125,6 +125,20 @@ if (await 첫편.count()) {
     console.log('  ✂️', 이름)
   }
   await 오리기('5b2-오림-1인분')
+  // ⭐ [창업자 2026-09-12] *"몇분인지는 캡쳐에 없는데"* + *"따로잘라서 옆에 붙여주던가"*
+  //    -> 만드는 법에서 «시간이 적힌 걸음»을 따로 오려 둔다. 인분 카드 옆에 붙일 재료다.
+  const 걸음오리기 = async () => {
+    const 후보 = page.locator('li, .step, [class*=step]').filter({ hasText: /\d+분|\d+초/ })
+    const n = await 후보.count()
+    console.log('  🔎 시간이 적힌 걸음 =', n, '개')
+    if (!n) return
+    await 후보.first().scrollIntoViewIfNeeded(); await page.waitForTimeout(600)
+    const bb = await 후보.first().boundingBox()
+    if (!bb) return
+    await page.screenshot({ path: join(OUT, '5e-오림-걸음시간.png'), clip: { x: 8, y: Math.max(0, bb.y - 12), width: 389, height: 200 } })
+    console.log('  ✂️ 5e-오림-걸음시간')
+  }
+  await 걸음오리기()
   if (await 늘리기.count()) {
     await 늘리기.click({ force: true }); await page.waitForTimeout(800)
     await 찍기('5c-상세-재료-2인분'); await 오리기('5c2-오림-2인분')

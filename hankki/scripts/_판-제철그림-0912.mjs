@@ -5,7 +5,7 @@ const 그림 = (k) => 'data:image/png;base64,' + readFileSync(`${R}/src/assets/s
 const 폰트 = readFileSync(`${R}/src/assets/fonts/gowun-dodum-korean-400.woff2`).toString('base64')
 const 판들 = [
   ['04-지난', '8·9월 제철 레시피는', [['오징어','ig_s9_16'],['깻잎','ig_s2_08'],['토마토','ig_s7_04'],['햅쌀','ig_s11_08'],['꽃게','ig_s9_13']]],
-  ['05-앞으로', '앞으로는', [['가지','ig_s2_02'],['버섯','ig_s3_12'],['고구마','ig_s8_13'],['대하','ig_s6_07'],['고등어','ig_s6_01']]],
+  ['05-앞으로', '9·10월엔', [['가지','ig_s2_02'],['버섯','ig_s3_12'],['고구마','ig_s8_13'],['대하','ig_s6_07'],['고등어','ig_s6_01']]],
 ]
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
 const p = await b.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 })

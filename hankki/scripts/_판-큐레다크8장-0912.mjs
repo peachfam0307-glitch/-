@@ -28,10 +28,20 @@ const 자리 = [...body.matchAll(/cat: '([^']+)', group: '([^']+)', emoji: '[^']
 const 탭 = []
 for (const z of 자리) if (!탭.some((t) => t[0] === z.group)) 탭.push([z.group, z.icon])
 let 열림 = 0, 앞 = 0
+const 셈 = new Map(자리.map((z) => [z.at, { 열림: 0, 첫날: null }]))
 for (const it of body.matchAll(/^\s*\{ name: '([^']*)'(.*)$/gm)) {
+  let cur = 자리[0]; for (const z of 자리) if (z.at < it.index) cur = z
   const f = /from: '(\d{4}-\d\d-\d\d)'/.exec(it[0])
-  if (!f || f[1] <= 오늘) 열림++; else 앞++
+  const c = 셈.get(cur.at)
+  if (!f || f[1] <= 오늘) { 열림++; c.열림++ }
+  else { 앞++; if (!c.첫날 || f[1] < c.첫날) c.첫날 = f[1] }
 }
+// ⭐ 「아직 안 열린 칸」은 «갈래»로 센다 — 탭으로 세면 3개뿐이지만 갈래로는 11개다
+//   📮 창업자 = *"아직 안열린 칸이 저거뿐인가??"* → 세어 보니 아니었다.
+const 빈갈래 = 자리.filter((z) => 셈.get(z.at).열림 === 0)
+  .sort((a, b) => (셈.get(a.at).첫날 || '9').localeCompare(셈.get(b.at).첫날 || '9'))
+  .map((z) => [z.cat, z.icon])
+console.log('   아직 안 열린 갈래', 빈갈래.length)
 console.log(`🔢 탭 ${탭.length} · 열림 ${열림} · 앞으로 ${앞}`)
 
 const b = await chromium.launch(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {})
@@ -80,6 +90,7 @@ html,body{margin:0;width:1080px;height:1920px;font-family:GD,sans-serif;overflow
 .e2{font-size:104px;font-weight:700;letter-spacing:-.03em}
 .e3{margin-top:18px;font-size:52px;font-weight:700;color:#1b1410;background:#f2e4cf;
   padding:22px 52px;border-radius:999px}
+.store{margin-top:34px;font-size:38px;font-weight:700;color:#e8c89a}
 </style>`
 const 찍기 = async (n) => { await p.waitForTimeout(220); await p.screenshot({ path: `${낼곳}/${n}.jpg`, type: 'jpeg', quality: 94 }); console.log('📸', n) }
 
@@ -105,11 +116,20 @@ await p.setContent(`${머리}<div class=corner><div class=k1>제품마다</div>
   <img src="${PNG('/tmp/큐레샷2/t1-전체.png')}" style="display:block;width:940px;margin-top:-1253px"></div>`)
 await 찍기('3-카드')
 
-// ④ 주부의 말 — 말풍선. ⛔한 글자도 지어내지 않았다(curation.js 낫또 benefit 원문)
-await p.setContent(`${머리}<div class=mid><div class=m1>파는 말이 아니라</div><div class=m2>쓰는 말이에요</div></div>
-<div class=quote><p>“낫또를 썩 좋아하진 않는데…<br>그중에 자연드림 낫또가<br>제 입맛에는 제일 괜찮았어요”</p>
-<div class=who>— 주부의 장바구니 · 낫또</div></div>`)
-await 찍기('4-말')
+// ④ 주부의 말 — 말풍선 «셋». ⛔한 글자도 지어내지 않았다 — 전부 curation.js benefit 원문에서 떼어낸 것.
+//    📮 창업자 = *"파는 말이 하니가 쓰는말도 다른거 더 보여주고"*
+//    ⭐ 고른 잣대 = **파는 사람은 절대 못 쓰는 말**
+//       ⓐ 제 입에 안 맞는다고 먼저 말한다  ⓑ 남의 가게가 더 싸다고 말한다  ⓒ 제품이 나빠진 걸 말한다
+const 말들 = [
+  ['4a-말-낫또', '낫또', '“낫또를 썩 좋아하진 않는데…<br>그중에 자연드림 낫또가<br>제 입맛에는 제일 괜찮았어요”'],
+  ['4b-말-치즈', '하바티치즈', '“코스트코에서 대용량으로 사면<br>완전 저렴하지만,<br>급할 때는 쿠팡에서 가끔 주문해요”'],
+  ['4c-말-사골', '한우 사골 곰탕 스틱', '“냉장고에 늘 구비해둬요.<br>리뉴얼되면서<br>소금이 들어갔어요”'],
+]
+for (const [이름, 갈래, 글] of 말들) {
+  await p.setContent(`${머리}<div class=mid><div class=m1>파는 말이 아니라</div><div class=m2>쓰는 말이에요</div></div>
+<div class=quote><p>${글}</p><div class=who>— 주부의 장바구니 · ${갈래}</div></div>`)
+  await 찍기(이름)
+}
 
 // ⑤ 몰 — 알약 (⛔개수 안 씀)
 await p.setContent(`${머리}<div class=cloud>${['쿠팡', '마켓컬리', '한살림', '자연드림', '오아시스'].map((m) => `<div class=mall>${m}</div>`).join('')}</div>
@@ -125,13 +145,14 @@ await 찍기('6-숫자')
 
 // ⑦ 아직 안 열린 칸 — 비어 있는 게 사실이다
 await p.setContent(`${머리}<div class=mid><div class=m1>아직 안 열린 칸도 있어요</div><div class=m2>열리면 알려드릴게요</div></div>
-<div class=grid style="top:640px;grid-template-columns:repeat(3,1fr)">${[['빵·떡', 'cu_tteok'], ['김치·절임', 'cu_kimchi'], ['음료', 'cu_coffee']]
-  .map(([g, k]) => `<div class=ic><img src="${아이콘(k)}" style="opacity:.42"><span style="color:#e8c89a">${g}</span></div>`).join('')}</div>`)
+<div class=grid style="top:560px;gap:44px 8px">${빈갈래
+  .map(([c, k]) => `<div class=ic><img src="${아이콘(k)}" style="opacity:.45;width:150px;height:150px"><span style="color:#e8c89a;font-size:30px">${c}</span></div>`).join('')}</div>`)
 await 찍기('7-앞으로')
 
 // ⑧ 끝 — ⛔고정멘트로 닫는다 (오늘 = 토요일)
 await p.setContent(`${머리}<div class=end><div class=e1>주부의 장바구니</div>
-<div class=e2>한끼</div><div class=e3>주말에도 한끼하세요</div></div>`)
+<div class=e2>한끼</div><div class=e3>오늘도 한끼하세요</div>
+<div class=store>구글 플레이스토어에서 「한끼」 다운로드</div></div>`)
 await 찍기('8-끝')
 console.log(`\n✅ ${낼곳}`)
 await b.close()

@@ -130,7 +130,7 @@ const 남은합 = 남은.reduce((s, [, v]) => s + v, 0)
 const 합 = 안팜 + 이미 + 붙음 + 남은합
 
 console.log(`\n🥬 재료 줄 ${합}개 — 지금 상태`)
-console.log(`   🚱 안 사는 것(물·밥·소금…)        ${String(안팜).padStart(4)}줄`)
+console.log(`   🚱 안 사는 것(물·밥·면수…)        ${String(안팜).padStart(4)}줄`)
 console.log(`   ✅ 큐레이션 제품이 덮는다           ${String(이미).padStart(4)}줄  (파트너스 이미 붙음 · 창업자 손 0)`)
 console.log(`   🔗 이 표로 붙었다                  ${String(붙음).padStart(4)}줄  (${표키.size}개)`)
 console.log(`   ⛔ 아직 링크 없다                  ${String(남은합).padStart(4)}줄  (고유 ${남은.length}개)`)

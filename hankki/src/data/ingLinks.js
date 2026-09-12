@@ -75,9 +75,11 @@ export const ING_LINKS = {
   '새송이버섯': 'https://link.coupang.com/a/gYXpRCdI9Q',
   '부침가루': 'https://link.coupang.com/a/gYXA5qmDDg',
   '홍고추': 'https://link.coupang.com/a/gYXMGqQRNY',
-  '원당': 'https://link.coupang.com/a/gR0nzFheX6',
+
   '들깨가루': 'https://link.coupang.com/a/gYXwwN8geG',
-  '물엿': 'https://link.coupang.com/a/gYXyDzvNRY',
+  // 🍯 「물엿」·「원당」은 2026-09-12 에 레시피에서 **이름이 바뀌었다**(물엿→올리고당 · 원당→아우노슈가)
+  //    → 표에 두면 아무 줄도 안 덮는 «죽은 링크»가 된다.  ⑥ 가 잡아 줬다.
+  //    ⭐ 올리고당·아우노슈가는 「주부의 장바구니」 제품이라 **큐레이션이 알아서 덮는다**(창업자 손 0).
   '스리라차': 'https://link.coupang.com/a/gYXCUg3eNw',
   '파프리카': 'https://link.coupang.com/a/gYXLWLldD2',
   '다진마늘': 'https://link.coupang.com/a/gYVvIKX79w', // ⛇묶음: 다진 마늘 / 다진마늘

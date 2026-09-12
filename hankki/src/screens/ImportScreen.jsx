@@ -236,11 +236,13 @@ export default function ImportScreen() {
   //    📌 그 둘이 겹쳐서 퍼널 첫 칸을 못 믿게 만들었다(2026-09-12 전수검사).
   //
   // ✅ 이제 갈래가 «바뀌는 길»은 전부 이 함수를 지난다 ＋ **같은 가져오기에서 한 갈래는 한 번만** 센다.
-  //    ⛔ 목록으로 나갔다(`null`) 들어오면 다시 셀 수 있게 «그때» 비운다 — 새 가져오기니까.
+  //    ⛔⛔ 처음엔 「목록으로 나가면(null) 비운다」로 짰다가 **재현판이 잡았다** —
+  //       목록↔갈래를 오가는 게 바로 「둘러보기」라, 나갈 때 비우면 **매번 새로 세서 그대로 3건**이었다.
+  //       ✅ 그래서 «이 화면이 떠 있는 동안»은 안 비운다. 가져오기 화면을 나갔다 들어오면
+  //          컴포넌트가 다시 뜨면서 ref 가 새로 생기니 그때는 저절로 새로 센다(＝새 가져오기).
   const 센갈래 = useRef(new Set())
   const 갈래로 = (key) => {
     if (key && !센갈래.current.has(key)) { 센갈래.current.add(key); 갈래고름(key) }
-    if (!key) 센갈래.current.clear()
     setFlow(key)
   }
   const choose = (key) => {
@@ -969,7 +971,13 @@ export default function ImportScreen() {
               </div>
               <button
                 className="btn-primary press"
-                onClick={() => { setAiPreview(false); choose('write') }}
+                // ⛔⛔ [2026-09-12 고침] 여기는 `choose('write')`(빈 종이) 였다 — **동작이 틀렸다.**
+                //    이 시트는 처음부터 끝까지 「사진 찍으면 레시피가 돼요」·「캡처만 올리면」이라고 말한다.
+                //    그런데 누르면 «빈 종이»가 열렸다 → 사진을 기대한 사람이 빈 종이를 받는다.
+                //    📮 창업자 = "저게 뭐야??? ai미리보기?" → "이거 고쳐"
+                //    ⭐ 계측(import_write)이 틀린 게 아니라 «동작»이 틀렸던 것이다.
+                //       계측은 동작을 따라가므로 고치면 저절로 맞아진다(import_photo).
+                onClick={() => { setAiPreview(false); choose('photo') }}
                 style={{ width: '100%', marginTop: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               >
                 <Icon name="camera" size={17} color="#fff" /> 사진으로 시작하기

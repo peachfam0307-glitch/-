@@ -73,10 +73,12 @@ html,body{margin:0;width:1080px;height:1920px;font-family:GD,sans-serif;overflow
 .f2{margin-top:26px;font-size:40px;font-weight:700;color:#e8c89a}
 .f2 b{color:#fff;border-bottom:3px dashed rgba(232,200,154,.6);padding-bottom:4px}
 /* 💬 말풍선 — 「파는 말이 아니라 쓰는 말」 이 릴스의 값어치다 */
-.quote{position:absolute;left:80px;right:80px;top:520px;background:#f6f1e7;color:#2b2118;
-  border-radius:48px;padding:56px 56px 48px;box-shadow:0 24px 60px rgba(0,0,0,.6)}
-.quote p{margin:0;font-size:52px;line-height:1.5;letter-spacing:-.02em}
-.quote .who{margin-top:34px;font-size:34px;font-weight:700;color:#8a6a3e}
+/* 💬 말풍선 여럿 — 한 장에 2~3개 (창업자) */
+.quotes{position:absolute;left:70px;right:70px;top:520px;display:flex;flex-direction:column;gap:34px}
+.quote2{background:#f6f1e7;color:#2b2118;border-radius:44px;padding:44px 46px 38px;
+  box-shadow:0 20px 50px rgba(0,0,0,.55)}
+.quote2 p{margin:0;font-size:44px;line-height:1.45;letter-spacing:-.02em}
+.quote2 .who{margin-top:24px;font-size:30px;font-weight:700;color:#8a6a3e}
 .tail{position:absolute;left:170px;top:1000px;width:0;height:0;
   border-left:44px solid transparent;border-right:0 solid transparent;border-top:52px solid #f6f1e7}
 /* 🔢 숫자 두 개 — 열린 것과 줄 서 있는 것 */
@@ -122,13 +124,20 @@ await 찍기('3-카드')
 //       ⓐ 제 입에 안 맞는다고 먼저 말한다  ⓑ 남의 가게가 더 싸다고 말한다  ⓒ 제품이 나빠진 걸 말한다
 const 말들 = [
   ['4a-말-낫또', '낫또', '“낫또를 썩 좋아하진 않는데…<br>그중에 자연드림 낫또가<br>제 입맛에는 제일 괜찮았어요”'],
-  ['4b-말-치즈', '하바티치즈', '“코스트코에서 대용량으로 사면<br>완전 저렴하지만,<br>급할 때는 쿠팡에서 가끔 주문해요”'],
-  ['4c-말-사골', '한우 사골 곰탕 스틱', '“냉장고에 늘 구비해둬요.<br>리뉴얼되면서<br>소금이 들어갔어요”'],
+  ['4b-말-액젓', '초피액젓', '“국물요리 간은 거의 이걸로 해요.<br>수도 없이 사서 쓰는 템이에요”'],
+  ['4c-말-두유', '국산콩두유 약콩', '“출출할 때나 아이 간식으로<br>챙겨주기 좋은,<br>제 최애 두유예요”'],
+  ['4d-말-어묵', '바른어묵', '“한살림이 집 근처에 없다면<br>이걸로 대용해도 좋아요.<br>구우면 겉이 쫄깃해져 더 맛있어요”'],
+  ['4e-말-비엔나', '문어 비엔나', '“햄·소시지는 첨가물이 많아<br>쉽게 손이 안 가는데,<br>이건 성분이 괜찮아 꼭 담는 단골템이에요”'],
+  ['4f-말-사골', '한우 사골 곰탕 스틱', '“냉장고에 늘 구비해둬요.<br>리뉴얼되면서<br>소금이 들어갔어요”'],
 ]
-for (const [이름, 갈래, 글] of 말들) {
+// 📮 창업자 = *"그걸 한장씩 하지말고 2장에 3개정도씩 붙이자"*
+//   ⭐ 한 장에 셋이면 «여러 제품에 다 적혀 있다»가 한눈에 보인다 — 한 장 한 개는 그 말이 안 된다.
+const 한장에 = Number(process.env.PER || 3)
+for (let i = 0; i < 말들.length; i += 한장에) {
+  const 묶음 = 말들.slice(i, i + 한장에)
   await p.setContent(`${머리}<div class=mid><div class=m1>파는 말이 아니라</div><div class=m2>쓰는 말이에요</div></div>
-<div class=quote><p>${글}</p><div class=who>— 주부의 장바구니 · ${갈래}</div></div>`)
-  await 찍기(이름)
+<div class=quotes>${묶음.map(([, 갈래, 글]) => `<div class=quote2><p>${글}</p><div class=who>— ${갈래}</div></div>`).join('')}</div>`)
+  await 찍기(`4${'abcdef'[i / 한장에]}-말`)
 }
 
 // ⑤ 몰 — 알약 (⛔개수 안 씀)

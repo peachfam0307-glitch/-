@@ -137,7 +137,9 @@ if (await 첫편.count()) {
     if (!(await 칩.count())) { console.log('  ⛔ 시간 칩을 못 찾았다'); return }
     await 칩.scrollIntoViewIfNeeded(); await page.waitForTimeout(500)
     const bb = await 칩.boundingBox(); if (!bb) return
-    await page.screenshot({ path: join(OUT, '5g-오림-총시간.png'), clip: { x: 8, y: Math.max(0, bb.y - 12), width: 389, height: 76 } })
+    // ⛔ [창업자 2026-09-12] *"특히 몇분은 잘렸어"* — 높이 76px 로 오려서 칩 아래가 잘렸다.
+    //    ⭐ 칩은 화면 폭의 «절반도» 안 쓴다 → 폭을 좁게(칩 셋만) · 높이는 넉넉히 → 크게 키워도 또렷하다
+    await page.screenshot({ path: join(OUT, '5g-오림-총시간.png'), clip: { x: 12, y: Math.max(0, bb.y - 16), width: 240, height: 74 } })
     console.log('  ✂️ 5g-오림-총시간')
   }
   await 시간칩오리기()

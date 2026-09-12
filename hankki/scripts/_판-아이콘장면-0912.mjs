@@ -37,7 +37,10 @@ for (const m of w.matchAll(/\{ from: '(2026-\d\d-\d\d)', title: '우리집레시
   if (m[1] > '2026-10-31') continue
   const 통 = m[1] <= 오늘 ? 우리집지난 : 우리집앞
   for (const i of [...m[2].matchAll(/'([^']+)'/g)].map((x) => x[1])) {
-    const r = 편.get(i); if (r) 통.push([r.title, r.icon || r.thumb])
+    // ⛔ [창업자 2026-09-12] 소스·양념만 덩그러니 뜨면 어색하다 — *"고마다래소스만 나가??? 요리가 없이?"*
+    //    (그 주엔 「목살조림」의 짝으로 나가는 게 맞지만, 릴스 그림으로는 요리만 보여준다)
+    const 소스류 = /소스$|양념$|드레싱$|장아찌$/
+    const r = 편.get(i); if (r && !소스류.test(r.title)) 통.push([r.title, r.icon || r.thumb])
   }
 }
 // ── ③ SNS — sourceName 이 있는 열린 편
@@ -58,26 +61,38 @@ html,body{margin:0;width:1080px;height:1920px;background:#FFFDF7;font-family:GD,
 .tag{display:inline-block;font-size:46px;font-weight:700;color:#fff;background:#7a4a1e;
      padding:12px 32px;border-radius:999px;margin-bottom:18px;box-shadow:0 8px 22px rgba(93,52,16,.24)}
 /* ⭐ 다섯 개가 «한 줄»에 들어가야 한다 — 4＋1 로 접히면 다섯째가 외톨이가 된다(실제로 그랬다) */
-.row{display:flex;flex-wrap:wrap;justify-content:center;gap:18px 6px}
+/* ⭐⭐ [창업자 2026-09-12] *"4개씩 넣어줘. 어떤건 1줄에 5개 어떤건 4개 이상해"*
+   -> 한 줄에 «넷»으로 못 박는다. grid 로 칸을 넷으로 고정하면 개수와 무관하게 짜임이 같다. */
+.row{display:grid;grid-template-columns:repeat(4,1fr);justify-items:center;gap:22px 10px}
+.row.five{grid-template-columns:repeat(3,1fr);gap:26px 14px}
 .it{display:flex;flex-direction:column;align-items:center;gap:8px;width:184px}
+/* ⭐ 창업자 = "그림은 큰게 좋지" — 칸 폭에서 이름 자리만 빼고 다 그림에 준다 */
 .it img{width:150px;height:150px;object-fit:contain}
 /* ⭐ 이름이 두 줄로 접히면 지저분하다(「새우 해장 파스 / 타」) — 한 줄로 두고 폭에 맞춰 줄인다 */
 .it span{font-size:30px;font-weight:700;color:#5d3410;text-align:center;line-height:1.15;
          white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:clip}
 </style>`
-const 칸 = (것들, 크기) => `<div class=row>${것들.map(([n, k]) => `<div class=it style="width:${크기}px"><img src="${그림(k)}" style="width:${크기 - 34}px;height:${크기 - 34}px"><span>${n}</span></div>`).join('')}</div>`
+const 칸 = (것들, 크기, 다섯) => `<div class="row${다섯 ? " five" : ""}">${것들.map(([n, k]) => `<div class=it style="width:${크기}px"><img src="${그림(k)}" style="width:${크기 - 18}px;height:${크기 - 18}px"><span>${n}</span></div>`).join('')}</div>`
 
 // 제철 — 두 줄
 await p.setContent(`${머리}<div class=band><div class=big>${제철.큰}</div></div>
-${제철.줄들.map((x, i) => `<div class=sec style="top:${450 + i * 640}px"><div class=tag>${x[0]}</div>${칸(x[1], 192)}</div>`).join('')}`)
+${제철.줄들.map((x, i) => `<div class=sec style="/* ⛔ 3+2 라 첫 줄이 두 단이 된다 — 둘째 칸을 충분히 내리지 않으면 이름표가 앞 이름을 덮는다(실제로 그랬다) */
+top:${420 + i * 830}px"><div class=tag>${x[0]}</div>${칸(x[1], 280, true)}</div>`).join('')}`)
 await p.waitForTimeout(400); await p.screenshot({ path: '/tmp/장면/04.jpg', type: 'jpeg', quality: 92 })
 console.log('✍️ 04-제철')
 
 // 우리집레시피
 // 제철과 «같은 짜임» — 지난 줄 / 앞으로 줄
+// ⛔⛔ 자리를 손으로 잡으면 «줄 수»가 바뀔 때 겹친다 — 10개는 4+4+2 로 «세 줄»인데
+//    두 줄로 잡아 「9·10월」 이름표가 앞 이름을 덮었다(실제로 그랬다).
+//    ✅ 칸 수로 줄 수를 세어 둘째 칸 자리를 «계산»한다.
+const 아래자리 = (개수, 한줄, 칸크기) => 430 + 100 + Math.ceil(개수 / 한줄) * (칸크기 + 76) + 60
+// ⛔ 10+10 을 한 장에 넣으면 아래가 화면 밖으로 넘친다(1920px) — 줄마다 «여섯»만 보여준다(4+2)
+const 우지난 = 우리집지난.slice(0, 6), 우앞 = 우리집앞.slice(0, 6)
+const 우자리 = 아래자리(우지난.length, 4, 214)
 await p.setContent(`${머리}<div class=band><div class=big>우리집레시피</div></div>
-<div class=sec style="top:450px"><div class=tag>8·9월</div>${칸(우리집지난, 192)}</div>
-<div class=sec style="top:1090px"><div class=tag>9·10월</div>${칸(우리집앞, 178)}</div>`)
+<div class=sec style="top:430px"><div class=tag>8·9월</div>${칸(우지난, 214)}</div>
+<div class=sec style="top:${우자리}px"><div class=tag>9·10월</div>${칸(우앞, 214)}</div>`)
 await p.evaluate(() => document.querySelectorAll('.it span').forEach((s) => {
   // 이름이 칸보다 넓으면 «그 칸만» 글씨를 줄인다 — 접히는 것보다 낫다
   for (let f = 30; f > 18 && s.scrollWidth > s.clientWidth; f -= 1) s.style.fontSize = f + 'px'
@@ -87,8 +102,8 @@ console.log('✍️ 05-우리집', 우리집지난.length, '+', 우리집앞.len
 
 // SNS
 await p.setContent(`${머리}<div class=band><div class=big>SNS 레시피</div></div>
-<div class=sec style="top:450px"><div class=tag>8·9월</div>${칸(sns지난, 214)}</div>
-<div class=sec style="top:1130px"><div class=tag>9·10월</div>${칸(sns앞, 192)}</div>`)
+<div class=sec style="top:430px"><div class=tag>8·9월</div>${칸(sns지난, 230)}</div>
+<div class=sec style="top:${아래자리(sns지난.length, 4, 230)}px"><div class=tag>9·10월</div>${칸(sns앞, 230)}</div>`)
 await p.evaluate(() => document.querySelectorAll('.it span').forEach((s) => {
   for (let f = 30; f > 18 && s.scrollWidth > s.clientWidth; f -= 1) s.style.fontSize = f + 'px'
 }))

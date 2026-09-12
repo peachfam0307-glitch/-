@@ -12,6 +12,7 @@ import { guessFoodIcon } from '../components/FoodIcon'
 import { getOcrLeft, KEY_NAME, KEY_SHORT, KEY_UNIT, keyCount } from '../ocr'
 import KeyBadge from '../components/KeyBadge'
 import EarnList from '../components/EarnList'
+import { 갈래고름, 레시피저장 } from '../stats'
 import Icon from '../components/Icon'
 import Portal from '../components/Portal'
 // 🐻 [2026-08-28] 잔량 띠의 캐릭터(펭펭 돋보기 · 둘이 하트)를 **뺐다** — 창업자 *"그림 박스하나 없어져"*.
@@ -119,6 +120,15 @@ const ALL_FLOWS = [...OPTIONS, ...HIDDEN]
 //    ⛔ 자리마다 따로 적으면 말이 갈라진다(같은 기능은 같은 이름 원칙).
 // 🔀 `홀로` = 자기 줄에 혼자 설 때(가운뎃점을 안 붙인다).
 //    ⛔ 「 · 」는 «앞 문장에 이어 붙일 때»의 이음표다. 줄 맨 앞에 남으면 글머리표처럼 보인다.
+// 🔑 안내 화면 제목 밑에 붙는 «값 한마디» — ⛔여기 한 곳이 잣대다(자리마다 다르게 적으면 또 갈린다)
+function 열쇠말(flow, meta) {
+  // ⛔ 무제한인 사람에게 「열쇠 1개」라고 적으면 거짓말이 된다
+  if (getOcrLeft().무제한) return `${KEY_NAME} 무제한`
+  if (flow === 'photo') return '열쇠를 쓸지 고를 수 있어요'
+  if (!meta?.paid) return `${KEY_NAME}를 안 써요`
+  return meta.costText
+}
+
 function 장수꼬리(costText, paid, 홀로 = false) {
   if (홀로) {
     return <b style={{ fontWeight: 800, fontSize: '0.88em', color: paid ? 'var(--danger)' : 'var(--text-sub)', whiteSpace: 'nowrap' }}>{costText}</b>
@@ -156,7 +166,7 @@ export default function ImportScreen() {
   useLayerBack(help, () => setHelp(false))
   // 하위 흐름(링크·사진 등 선택 단계)은 모달이 아니라 화면 내 단계라 상태만 되돌린다.
   useBackHandler(() => {
-    if (flow) { setFlow(null); return true }
+    if (flow) { 갈래로(null); return true }   // 📊 갈래 셈도 비운다 — 다음 가져오기는 새로 센다
     return false
   })
 
@@ -214,8 +224,29 @@ export default function ImportScreen() {
   //    ⛔ 예전엔 「사진·직접 작성하기」가 목록에서 곧장 편집 화면으로 갔다. 그러면
   //       «어떻게 쓰는지»를 말할 자리가 없어서, 안내가 전부 편집 화면 안으로 밀려 들어가 있었다.
   //    ⚠️ 직접 입력도 예외로 두지 않는다 — 한 갈래만 다르게 굴면 「이건 왜 바로 열리지」가 된다.
-  const choose = (key) => {
+  // 🪜🪜 [2026-09-12 고침] 갈래 세기를 «한 곳»으로 모았다.
+  //
+  // ⛔⛔ 전엔 `choose()` 안에서만 셌다. 그래서 둘이 동시에 틀렸다 —
+  //    ⒜ **빠짐** — 흐름 «안»에서 갈래를 바꾸는 여덟 길(`setFlow` 직접 호출)이 한 건도 안 세졌다:
+  //       「이미 캡처해 뒀으면 여기서 고르기」·「앱을 안 나가고 여기서 고르기」(→photo) ·
+  //       「Instagram/YouTube 에서 담는 다른 방법」 · 「링크 주소만 담아두기」 ·
+  //       「설명(더보기) 붙여넣기」·「글을 복사했다면 붙여넣기」 외 1(→text)
+  //    ⒝ **부풂** — 목록으로 돌아왔다(`setFlow(null)`) 다시 누르면 «또» 셌다.
+  //       둘러보기만 한 사람 하나가 4건이 될 수 있다.
+  //    📌 그 둘이 겹쳐서 퍼널 첫 칸을 못 믿게 만들었다(2026-09-12 전수검사).
+  //
+  // ✅ 이제 갈래가 «바뀌는 길»은 전부 이 함수를 지난다 ＋ **같은 가져오기에서 한 갈래는 한 번만** 센다.
+  //    ⛔⛔ 처음엔 「목록으로 나가면(null) 비운다」로 짰다가 **재현판이 잡았다** —
+  //       목록↔갈래를 오가는 게 바로 「둘러보기」라, 나갈 때 비우면 **매번 새로 세서 그대로 3건**이었다.
+  //       ✅ 그래서 «이 화면이 떠 있는 동안»은 안 비운다. 가져오기 화면을 나갔다 들어오면
+  //          컴포넌트가 다시 뜨면서 ref 가 새로 생기니 그때는 저절로 새로 센다(＝새 가져오기).
+  const 센갈래 = useRef(new Set())
+  const 갈래로 = (key) => {
+    if (key && !센갈래.current.has(key)) { 센갈래.current.add(key); 갈래고름(key) }
     setFlow(key)
+  }
+  const choose = (key) => {
+    갈래로(key)
     setUrl('')
     setTitle('')
     setLinkOpen(false)
@@ -224,6 +255,9 @@ export default function ImportScreen() {
   const saveLink = () => {
     const t = title.trim() || `${flowMeta?.title || '새'} 레시피`
     addRecipe(makeInboxRecipe({ source: flow, title: t, sourceUrl: url.trim() }))
+    // 📊 [2026-09-12] 새 레시피가 담겼다 — ⛔전엔 EditorScreen 한 곳만 세서 이 길이 통째로 빠졌다.
+    //    그래서 「갈래 고름 → 저장」 퍼널이 «샌 것처럼» 보였다(2026-09-12 전수검사에서 잡았다).
+    레시피저장()
     nav.pop()
     nav.push({ name: 'inbox' })
     nav.showToast('임시보관함에 담았어요 · 나중에 정리해요')
@@ -320,16 +354,16 @@ export default function ImportScreen() {
         //       **그 사람은 인스타에 다시 갈 이유가 없다.** 이미 폰 안에 있다.
         //    ⛔ 위 설명 셋을 안 지운다 — 공유로 «바로» 오는 길이 여전히 제일 빠르다.
         //       이건 그 길을 못 가는 사람의 «두 번째 문»이다.
-        { label: '이미 캡처해 뒀으면 여기서 고르기', onClick: () => setFlow('photo') },
+        { label: '이미 캡처해 뒀으면 여기서 고르기', onClick: () => 갈래로('photo') },
         // ⛔ 「열러 가기」라고 쓰지 않는다 — **앱을 여는 게 아니라 «우리 안내 화면»으로 간다.**
         //    이름이 하는 일과 달라지면 그게 곧 「되는 척」이다(v11.19 링크 정직과 같은 자리).
         //    ⭐ 그 화면 안에 「글 붙여넣기」·「보면서 적기」·「링크만 저장」이 있고, 진짜 앱 열기 단추도 맨 아래 있다.
-        { label: 'Instagram 에서 담는 다른 방법', ghost: true, onClick: () => setFlow('instagram') },
-        { label: 'YouTube 에서 담는 다른 방법', ghost: true, onClick: () => setFlow('youtube') },
+        { label: 'Instagram 에서 담는 다른 방법', ghost: true, onClick: () => 갈래로('instagram') },
+        { label: 'YouTube 에서 담는 다른 방법', ghost: true, onClick: () => 갈래로('youtube') },
         // 🔗 목록에서 내렸을 뿐 «죽이지 않았다» — 여기로 들어간다.
         //    ⛔ 어디서도 못 들어가면 그건 「목록에서 내린 것」이 아니라 «지운 것»이다.
         //       그 화면(v11.19 링크 정직)이 「주소만 담아둬요 · 재료·순서는 안 담겨요」를 말하는 자리다.
-        { label: '링크 주소만 담아두기', ghost: true, onClick: () => setFlow('link') },
+        { label: '링크 주소만 담아두기', ghost: true, onClick: () => 갈래로('link') },
       ],
     },
     gallery: {
@@ -359,7 +393,7 @@ export default function ImportScreen() {
       buttons: [
         // ⭐ 갤러리를 여는 길은 폰마다 달라 우리가 못 연다 → 대신 «앱 안에서 고르는 길»을 준다.
         //    ⛔ 「갤러리 앱을 여세요」라고만 하고 끝내면 막다른 길이 된다.
-        { label: '앱을 안 나가고 여기서 고르기', onClick: () => setFlow('photo') },
+        { label: '앱을 안 나가고 여기서 고르기', onClick: () => 갈래로('photo') },
       ],
     },
     photo: {
@@ -396,7 +430,11 @@ export default function ImportScreen() {
       //      (「disabled 금지」 원칙과도 같은 결 — 눌러도 같은 일이 나면 먹통으로 읽힌다.)
       //   ⚠️ `unknown` = 서버가 아직 답한 적이 없다는 뜻이라 «있다» 쪽으로 본다
       //      (안 써 본 사람은 웰컴 20개가 있다). ⛔여기서 0으로 넘겨짚으면 열쇠 있는 사람이 길을 잃는다.
-      buttons: (ocrLeft.unknown || ocrLeft.total > 0
+      // 🔓 [2026-09-10 창업자 제보] **무제한을 조건에 넣는다.**
+      //    ⛔ 그 전엔 「남은 개수」만 봐서, 무제한인 운영자가 «열쇠 다 쓴 사람»으로 취급됐다 —
+      //       창업자 폰에서 「그냥 읽기」가 사라지고 「사진 고르기」 하나만 떴다(2026-09-10 실물 캡처).
+      //    📌 2026-09-02 사고와 같은 뿌리 = 「무제한인가」를 보는 자리와 안 보는 자리가 갈렸다.
+      buttons: (ocrLeft.무제한 || ocrLeft.unknown || ocrLeft.total > 0
         ? [
             { label: `AI로 정확하게 읽기 · ${keyCount(1)}`, onClick: () => 사진고르기(false) },
             // 📊 열쇠가 «있는데» 이걸 눌렀다 = 진짜 「고름」이다(값이 비싸게 느껴진다는 신호)
@@ -435,7 +473,7 @@ export default function ImportScreen() {
         style={{ display: 'none' }}
       />
       <div className="topbar-back">
-        <button className="icon-btn press" onClick={() => (flow ? setFlow(null) : nav.pop())} aria-label="닫기">
+        <button className="icon-btn press" onClick={() => (flow ? 갈래로(null) : nav.pop())} aria-label="닫기">
           <Icon name={flow ? 'chevron-left' : 'x'} size={24} />
         </button>
         <div style={{ fontSize: 18, fontWeight: 700 }} />
@@ -518,6 +556,15 @@ export default function ImportScreen() {
               ⛔ 자리만 바뀌었다 — 문구도 내용도 그대로다(창업자가 2026-08-29 에 직접 줄여 준 글).
               ⭐ 왜 그때는 위가 맞았나 = 그때 우리가 세운 사람은 «이미 쓰던 사람»이었다.
                  처음 온 사람은 갈래가 뭔지도 모르는 채로 설명부터 읽는다. 사람이 달랐다. */}
+          {/* ⬆️⬆️ [창업자 확정 2026-09-10 · ⓑ] 열쇠 안내를 초록 상자보다 «먼저» 세운다.
+              🔢 왜 = 2026-09-10 실측 = 그 칸이 880px 지점인데 폰 화면은 860px 이라 **20px 차이로 안 보였다.**
+                 📮 창업자 = *"아래까지 안 봐 사람들."*
+              ⛔ 오늘 아침 내가 그렇게 만들었다 — 갈래 넷을 위로 올리며 이 칸을 아래로 밀었다.
+                 하나를 얻고 하나를 잃은 것을 «내가 먼저» 못 봤고, 창업자가 폰에서 보고 짚었다. */}
+          {/* 🎁 [창업자 판정 2026-09-01] 행동 열쇠 다섯 — 「토스트 ＋ 가져오기 목록」 중 목록 쪽.
+              ⭐ 안 해본 기능이 눈에 보여야 「해볼까」가 된다 — 창업자가 열쇠를 주려는 이유가 그거였다. */}
+          <EarnList />
+
           {/* 🔔🔔 젤 윗단 알림 — [창업자 2026-08-28] *"(젤 윗단 박스하나 만들어서 —
               **열쇠를 다 사용하면 기본인식으로 전환 — 계속 무료로 사용할 수 있어요** 알림.)"*
               ⭐⭐ 이 박스는 **한 가지만** 말한다: 「끊기지 않는다」.
@@ -540,9 +587,6 @@ export default function ImportScreen() {
             </div>
           </div>
 
-          {/* 🎁 [창업자 판정 2026-09-01] 행동 열쇠 다섯 — 「토스트 ＋ 가져오기 목록」 중 목록 쪽.
-              ⭐ 안 해본 기능이 눈에 보여야 「해볼까」가 된다 — 창업자가 열쇠를 주려는 이유가 그거였다. */}
-          <EarnList />
 
           {/* AI 자동정리 — 이미 되는 기능(캡처 OCR·링크 읽기·텍스트). '이렇게 돼요' 안내로. */}
           <button
@@ -610,6 +654,27 @@ export default function ImportScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, marginBottom: 4 }}>
             <div className="opt-ico"><Icon name={flowMeta.icon} size={24} color={flowMeta.color} stroke={1.7} /></div>
             <div className="h-title" style={{ fontSize: 23, wordBreak: 'keep-all', textWrap: 'balance', lineHeight: 1.35 }}>{flowMeta.title}</div>
+          </div>
+          {/* 🔑🔑 [창업자 확정 2026-09-10] **값을 «누르기 전»에 말한다.**
+              📮 창업자 = *"각 가져오기 안내화면에 열쇠그림이랑 숫자를 표시하면 안돼? 소모되는"*
+                 ＋ *"열쇠는 너무 크지않게 제목앞이나 끝에 아님 아이콘옆에"*
+              ⛔⛔ 왜 필요했나 = 2026-09-10 에 **창업자가 기본 인식 화면을 보고 「이건 열쇠를 쓰는거잖아」로 읽었다.**
+                 안 쓰는 길인데도. **만든 나도 코드 세 파일을 따라가서야 확정했다** — 유저가 알 리가 없다.
+              ⭐ 자리 = 제목 «바로 아래» 왼쪽. 제목은 두 줄이 되는 게 정상이라(위 주석) 옆에 붙이면 배치가 흔들린다.
+              ⛔ 목록(네 갈래 줄)에는 안 붙인다 — 2026-08-28 창업자 판단(*"캡쳐하면 열쇠1개 다 빼자"*)을 안 뒤집는다.
+                 그건 «고르기 전»에 돈 걱정을 시키지 말자는 것이었고, 여기는 «고른 다음»이라 그 문제가 없다.
+              ⛔ 「한끼 앱에서 사진」은 열쇠를 «쓸 수도 안 쓸 수도» 있어서 한 값으로 못 적는다 →
+                 「고를 수 있어요」로 적고, 값은 아래 단추 둘이 각각 말한다. */}
+          <div style={{ display: 'flex', marginTop: 2 }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 999,
+              background: 'var(--cream)', color: 'var(--brown)',
+              fontSize: 13.5, fontWeight: 800, whiteSpace: 'nowrap',
+            }}>
+              <img src={uiKeyOne} alt="" aria-hidden="true" draggable={false} style={{ width: 14, height: 14, objectFit: 'contain' }} />
+              {열쇠말(flow, flowMeta)}
+            </span>
           </div>
           <div className="t-sub" style={{ marginTop: 12, marginBottom: 18, fontSize: 16, lineHeight: 1.6, wordBreak: 'keep-all', textWrap: 'pretty' }}>
             {안내들[flow].lead}
@@ -732,12 +797,12 @@ export default function ImportScreen() {
           {(flow === 'youtube'
             ? [
                 ['camera', '캡처해서 올리기', '캡처만 하면 재료·순서 자동으로', true, () => nav.push({ name: 'editor', prefill: { source: flow, sourceUrl: url.trim() } }), keyCount(1), true],
-                ['pen', '설명(더보기) 붙여넣기', '글 복사해 오면 알아서 정리해요', false, () => { setFlow('text'); setText('') }, keyCount(0), false],
+                ['pen', '설명(더보기) 붙여넣기', '글 복사해 오면 알아서 정리해요', false, () => { 갈래로('text'); setText('') }, keyCount(0), false],
                 ['play', '영상 보면서 적기', '영상 띄워두고 아래에 받아적기', false, () => nav.push({ name: 'editor', prefill: { source: flow, sourceUrl: url.trim(), watch: true } }), `받아적으면 ${keyCount(0)}`, false],
               ]
             : [
                 ['camera', '캡처해서 올리기', '인스타는 글자 복사가 안 돼요', true, () => nav.push({ name: 'editor', prefill: { source: flow, sourceUrl: url.trim() } }), keyCount(1), true],
-                ['pen', '글을 복사했다면 붙여넣기', '복사한 글을 넣으면 알아서 정리해요', false, () => { setFlow('text'); setText('') }, keyCount(0), false],
+                ['pen', '글을 복사했다면 붙여넣기', '복사한 글을 넣으면 알아서 정리해요', false, () => { 갈래로('text'); setText('') }, keyCount(0), false],
                 ['photo', '미리보기 띄우고 적기', '게시물 띄워두고 아래에 받아적기', false, () => nav.push({ name: 'editor', prefill: { source: flow, sourceUrl: url.trim(), watch: true } }), `받아적으면 ${keyCount(0)}`, false],
               ]
           ).map(([ic, t, d, best, go, costText, paid]) => (
@@ -798,7 +863,7 @@ export default function ImportScreen() {
           {/* 블로그 정직 안내 — 사진이 많아 캡처가 번거로우니 '글 복사 → 텍스트 붙여넣기'를 권한다 */}
           <button
             className="press"
-            onClick={() => { setFlow('text'); setText('') }}
+            onClick={() => { 갈래로('text'); setText('') }}
             style={{ width: '100%', textAlign: 'left', marginBottom: 16, padding: '13px 15px', borderRadius: 'var(--r-md)', background: 'var(--cream)', border: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 11 }}
           >
             <div className="opt-ico" style={{ background: '#fff', flexShrink: 0 }}><Icon name="edit" size={20} color="var(--brown)" /></div>
@@ -906,7 +971,13 @@ export default function ImportScreen() {
               </div>
               <button
                 className="btn-primary press"
-                onClick={() => { setAiPreview(false); choose('write') }}
+                // ⛔⛔ [2026-09-12 고침] 여기는 `choose('write')`(빈 종이) 였다 — **동작이 틀렸다.**
+                //    이 시트는 처음부터 끝까지 「사진 찍으면 레시피가 돼요」·「캡처만 올리면」이라고 말한다.
+                //    그런데 누르면 «빈 종이»가 열렸다 → 사진을 기대한 사람이 빈 종이를 받는다.
+                //    📮 창업자 = "저게 뭐야??? ai미리보기?" → "이거 고쳐"
+                //    ⭐ 계측(import_write)이 틀린 게 아니라 «동작»이 틀렸던 것이다.
+                //       계측은 동작을 따라가므로 고치면 저절로 맞아진다(import_photo).
+                onClick={() => { setAiPreview(false); choose('photo') }}
                 style={{ width: '100%', marginTop: 15, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               >
                 <Icon name="camera" size={17} color="#fff" /> 사진으로 시작하기

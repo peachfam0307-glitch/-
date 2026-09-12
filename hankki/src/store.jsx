@@ -1,6 +1,10 @@
 import { createContext, useContext, useEffect, useReducer, useCallback, useRef } from 'react'
-import { seedRecipes } from './data/seed'
+import { seedRecipes, 열린때 } from './data/seed'
 import { basicRecipes, BASICS_VERSION } from './data/basics'
+// 🥬 재료 이름 → 파트너스 링크 (2026-09-12 창업자 *"장보기에 들어가는 것도 다 붙이자"*)
+//   ⭐ **담는 길이 여기 하나로 모인다** — 레시피 「재료 담기」·장보기 자유 입력·어디서 담든
+//      이 자리를 지나므로, 링크를 여기서 붙이면 화면마다 따로 손댈 곳이 없다.
+import { ingLink } from './data/ingLinks'
 import { makeSampleDiary, SAMPLE_DIARY_ID, SAMPLE_READY } from './data/sampleDiary'
 // ⛔ `FOOD_ICON_GROUPS` 를 빠뜨리면 v96 패스가 ReferenceError 로 죽고
 //    **그 앞의 v13·v34·v38·v88 마이그레이션까지 통째로 안 돈다**(같은 함수 안이라서).
@@ -161,16 +165,27 @@ function migrateBasics(saved) {
   const opened = basicRecipes.filter((r) => !have.has(r.id) && !dead.has(r.id) && !haveTitles.has(r.title))
   if (v >= BASICS_VERSION) {
     return opened.length
-      ? { recipes: [...saved.recipes, ...opened.map((r, i) => ({ ...r, savedAt: Date.now() - i * 60000 }))], seedV: v }
+      ? { recipes: [...saved.recipes, ...opened.map((r, i) => ({ ...r, savedAt: 열린때(r, i) }))], seedV: v }
       : { recipes: saved.recipes, seedV: v }
   }
   const add = basicRecipes
     // 같은 제목의 레시피가 이미 있으면 넣지 않는다 (예전 예시의 김치볶음밥 등과 중복 방지)
     .filter((r) => !have.has(r.id) && !dead.has(r.id) && !haveTitles.has(r.title))
-    .map((r, i) => ({ ...r, savedAt: Date.now() - i * 60000 }))
+    .map((r, i) => ({ ...r, savedAt: 열린때(r, i) }))
+  // 🕘🕘 [창업자 제보 2026-09-10] 「최신 레시피가 제일 아래야」 — **이미 깔린 폰도 고친다**(규칙 18ⓙ).
+  //   ⛔ 새로 까는 사람만 고치면 «지금 쓰는 사람»은 영영 거꾸로 본다. 옛 savedAt 이 폰에 이미 저장돼 있다.
+  //   ✅ 기본 레시피(basic-*)의 savedAt 만 「열린 날짜」로 다시 찍는다.
+  //   ⛔⛔ 유저가 «직접 저장한» 레시피는 한 개도 안 건드린다 — 그 savedAt 은 진짜 저장 시각이다.
+  //   ⭐ 내용은 한 글자도 안 바뀐다(줄 세우는 값만 고친다) — 유저가 고쳐 둔 기본 레시피도 안전하다.
+  const 자리 = new Map(basicRecipes.map((r, i) => [r.id, i]))
+  const 시각고침 = saved.recipes.map((r) =>
+    r && String(r.id).startsWith('basic-') && 자리.has(r.id)
+      ? { ...r, savedAt: 열린때(r, 자리.get(r.id)) }
+      : r
+  )
   // 기존 기본 레시피에 새 표지 사진 입히기 — 아직 사진이 없는(기본 아이콘) 것만.
   // (사용자가 직접 넣은 사진/커스텀은 건드리지 않는다)
-  const withPhotos = saved.recipes.map((r) =>
+  const withPhotos = 시각고침.map((r) =>
     r && BASIC_PHOTOS[r.id] && r.thumb !== 'photo' && r.thumb !== 'none' && !r.image
       ? { ...r, thumb: 'photo', image: BASIC_PHOTOS[r.id] }
       : r
@@ -1015,7 +1030,11 @@ function reducer(state, action) {
       const add = action.names
         .map((n) => n.trim())
         .filter((n) => n && !existing.has(n))
-        .map((n) => ({ id: newId(), name: n, done: false }))
+        // 🔗 [2026-09-12] 아는 재료면 파트너스 링크를 «담을 때» 붙인다.
+        //   ⛔ 옛 판은 이름만 담아서, 장보기의 `buyUrlFor()` 가 쿠팡 «일반 검색»으로 보냈다 = 수수료 0원.
+        //   ⚠️ `url: undefined` 로 둔다(빈 문자열 아님) — `addShopItem` 과 같은 모양이라야
+        //      장보기 줄을 읽는 쪽이 두 길을 다르게 보지 않는다.
+        .map((n) => ({ id: newId(), name: n, done: false, url: ingLink(n) || undefined }))
       return { ...state, shoppingList: [...add, ...state.shoppingList] }
     }
     // 단건 담기 — 사러가기 링크(url)를 함께 저장(주부의 장바구니 '담기' 등). 이름 중복은 무시.
@@ -1026,7 +1045,11 @@ function reducer(state, action) {
     case 'addShopItem': {
       const name = (action.item?.name || '').trim()
       if (!name || state.shoppingList.some((i) => i.name === name)) return state
-      const item = { id: newId(), name, done: false, url: action.item.url || undefined, ...(action.item.noBuy ? { noBuy: true } : {}) }
+      // 🔗 [2026-09-12] 주소를 «안 주고» 담는 자리(냉장고·직접 입력)도 아는 재료면 링크가 붙는다.
+      //   ⛔ `noBuy`(한살림 = 조합원 전용)에는 절대 안 붙인다 — 사러가기를 «안 그리는» 줄이다.
+      //      여기서 url 을 채우면 8/17 에 링크를 뺀 일이 통째로 헛일이 된다.
+      const url = action.item.url || (action.item.noBuy ? '' : ingLink(name)) || undefined
+      const item = { id: newId(), name, done: false, url, ...(action.item.noBuy ? { noBuy: true } : {}) }
       return { ...state, shoppingList: [item, ...state.shoppingList] }
     }
     case 'toggleShopItem': {

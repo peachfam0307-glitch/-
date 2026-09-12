@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { COACH } from '../coach'
+import { 사러나감, 장보기담음 } from '../stats'
 import { useStore, newId } from '../store'
 import { useNav } from '../App'
 import Icon from '../components/Icon'
@@ -24,7 +25,7 @@ import { dateLabel, openExternal as openUrl, ingredientName, fitImage } from '..
 import { photoPanStart } from '../photoPan'
 import { shouldAskReviewNow } from '../nudges'
 import ReviewAskSheet from '../components/ReviewAskSheet'
-import { SOURCES } from '../data/seed'
+import { SOURCES, 저장날짜보임 } from '../data/seed'
 // 🔁 AI 정리 실패 만회(아래 「만회한적」 절) — 잣대는 앱이 쓰는 그 모듈 그대로다(절대원칙 30).
 import { tidyRecipe, 실패꼬리 } from '../tidy'
 import { picksForIngredients, productLink, productMall, curIcon, isHansalim } from '../data/curation'
@@ -78,13 +79,18 @@ const SecTitle = ({ children }) => (
 
 // 첫 방문 코치마크 — 숨어 있는 중요 기능을 반짝이며 알려준다(창업자 딸 아이디어 ⭐)
 const COACH_KEY = COACH.detail
+// 🚫🚫 [창업자 확정 2026-09-10] *"상세랑 레시피도 줄여"* — **다섯 → 둘.**
+//    🔢 왜 = 레시피를 «처음 열자마자» 다섯 번을 눌러야 내용을 본다. 첫 사람이 제일 먼저 가는 자리다.
+//    ⭐⭐ 뺀 셋(꾸미기·공유·요리모드)은 **가져오기 화면의 「이거 해보면 열쇠 1개씩」 다섯 줄과 겹친다** —
+//       레꾸 해보기 · 레꾸자랑 보내기 · 요리모드로 한 번 만들어보기가 거기 그대로 있다(EarnList).
+//       ⛔ 같은 말을 두 곳에서 하면 둘 다 안 읽힌다.
+//    ✅ 남긴 둘은 **여기서«만» 할 수 있고 다른 데서 안 알려주는 것**이다.
+//       ⛔ 「편집」도 뺐다 — 연필 아이콘이라 눌러볼 수 있고, 잘못 눌러도 잃는 게 없다.
+//    ⛔ 열쇠(COACH.detail)를 «올리지 않는다** — 줄이는 판이라 이미 본 사람에게 또 띄울 이유가 없다.
 const COACH_STEPS = [
-  { sel: '[data-coach="edit"]', label: '편집', desc: '재료·만드는 법, 언제든 고칠 수 있어요' },
   { sel: '[data-coach="shop"]', label: '재료 장보기 담기', desc: '필요한 재료를 한 번에 장보기 리스트에 담아요. 담은 건 장보기 탭에서 체크하며 사면 편해요' },
   // ⛔ 「주부의 장바구니」 코치 한 칸을 뺐다 — 그 자리(제품 사러가기)를 2026-08-03 에 레시피에서 뺐다.
   //    ⚠️ 없는 자리를 짚는 코치는 **오버레이만 뜨고 아무것도 안 가리킨다**(빈 화면 반짝임).
-  { sel: '[data-coach="share"]', label: '친구와 레시피 공유하기', desc: '재료·만드는 법이 담긴 예쁜 카드로 보내요' },
-  { sel: '[data-coach="decor"]', label: '레시피 꾸미기', desc: '스티커·마스킹테이프·손글씨로 나만의 표지!' },
   // ⛓ [2026-08-29] label 은 «그 버튼에 적힌 글자»와 같아야 한다(v11.02 「책갈피」 교훈 — 한 곳만 바꾸면 말이 갈린다).
   //    ⚠️ desc 에서 「요리모드」를 뺐다 — 이름이 「요리모드 시작」이 되어 한 줄에 같은 말이 두 번 나왔다.
   //       ⛔ 창업자가 시킨 건 «버튼 이름»이고 이건 거기 «딸려온» 것이라 밝혀 둔다.
@@ -446,6 +452,9 @@ export default function RecipeDetailScreen({ id }) {
   const addAllPicks = () => {
     // ⛔ 한살림은 `noBuy` 를 같이 담는다 — 안 그러면 장보기 리스트에서 쿠팡·네이버 검색으로 샌다
     pantryPicks.forEach((p) => addShopItem({ name: p.name, url: productLink(p), ...(isHansalim(p) ? { noBuy: true } : {}) }))
+    // 📊 [2026-09-12] 담았다 — ⛔ forEach «바깥»이다. 안에 넣으면 픽이 6개일 때 6건이 되어 부푼다.
+    //    「다 담기」는 사람이 한 번 누른 «한 번»이다.
+    장보기담음()
     nav.showToast(`장바구니 재료 ${pantryPicks.length}개를 장보기에 담았어요`)
   }
   // 구매처 배지 — 장보기 화면 `mallLabel()` 과 «같은 규칙»이라야 한다(한쪽만 고치면 앞뒤가 안 맞는다)
@@ -657,8 +666,9 @@ export default function RecipeDetailScreen({ id }) {
         <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 4 }}>
           <SourceBadge source={r.source} size={16} showLabel={false} />
           <span className="t-sub" style={{ marginLeft: 2 }}>{SOURCES[r.source]?.line || '링크에서 가져옴'}</span>
-          {/* 저장 날짜 — 자동 기록(savedAt) */}
-          {r.savedAt && <span className="t-sub">· {dateLabel(r.savedAt)} 저장</span>}
+          {/* 📅 저장 날짜 — ⛔«유저가 저장한 것»만. 기본 레시피는 저장한 적이 없다(창업자 확정 2026-09-12).
+              판정은 seed.js 의 저장날짜보임 한 곳에서 — 여기서 따로 재지 않는다. */}
+          {저장날짜보임(r) && <span className="t-sub">· {dateLabel(r.savedAt)} 저장</span>}
         </div>
 
         {info.length > 0 && (
@@ -910,6 +920,8 @@ export default function RecipeDetailScreen({ id }) {
                   //   ⛔ 그래서 `scaleIngredient`(인분 환산)도 여기선 안 쓴다 — 어차피 분량을 뗄 것이라
                   //      환산해 봐야 그 숫자가 버려진다. 인분 환산은 «재료 목록 화면»이 하는 일이다.
                   addShopItems(r.ingredients.filter((ing) => !isIngHeader(ing)).map((ing) => ingredientName(ing)))
+                  // 📊 [2026-09-12] 담았다 — 재료가 몇 개든 «한 번» 누른 것이다.
+                  장보기담음()
                   nav.showToast('재료를 장보기 리스트에 담았어요')
                 }}
               >
@@ -978,7 +990,7 @@ export default function RecipeDetailScreen({ id }) {
                 {/* ⛔ 한살림은 사러가기를 안 그린다 (창업자 2026-08-17 *"링크안달면되고"*) */}
                 {isHansalim(p)
                   ? <span style={{ flex: '0 0 auto', fontSize: 16, fontWeight: 700, color: 'var(--text-sub)' }}>매장에서</span>
-                  : <button className="press" onClick={() => openUrl(productLink(p))} style={{ flex: '0 0 auto', padding: '6px 13px', borderRadius: 10, background: 'var(--cream-deep)', color: 'var(--brown)', fontWeight: 800, fontSize: 15.5 }}>사러가기</button>}
+                  : <button className="press" onClick={() => { 사러나감('pick_detail'); openUrl(productLink(p)) }} style={{ flex: '0 0 auto', padding: '6px 13px', borderRadius: 10, background: 'var(--cream-deep)', color: 'var(--brown)', fontWeight: 800, fontSize: 15.5 }}>사러가기</button>}
               </div>
             ))}
             {/* 🔽🔼 [2026-08-15] 창업자 *"4칸 넘어가면 접을 수 있게 해줘. 너무 길면 좀 그래."*

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { COACH } from '../coach'
 import { useStore, newId } from '../store'
 import { pantryExpiryCount } from '../pantryExpiry'
+import { 사러나감, 장보기담음 } from '../stats'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import Icon from '../components/Icon'
@@ -36,7 +37,7 @@ import TabTips from '../components/TabTips'
 import TabTalk from '../components/TabTalk'
 import ConfirmSheet from '../components/ConfirmSheet'
 import { openExternal, matchKo } from '../utils'
-import { CURATION, curIcon, weeklyPicks, isHansalim } from '../data/curation'
+import { CURATION, curIcon, weeklyPicks, isHansalim, productLink, productMall } from '../data/curation'
 import { weeklyNow, todayKST } from '../data/weekly'
 import SeasonHeadCut from '../components/SeasonHeadCut.jsx'
 
@@ -212,7 +213,7 @@ export default function ShopScreen() {
                   ⚠️ 이 줄이 없으면 `buyUrlFor()` 가 url 없는 줄을 **쿠팡·네이버 검색으로 보내서**
                      큐레이션에서 링크를 뺀 게 통째로 헛일이 된다(담은 뒤에 새는 구멍). */}
               {!noBuyRow(it) && (
-                <button className="press mini-buy" onClick={() => openUrl(buyUrlFor(it, shops), it.name)}>
+                <button className="press mini-buy" onClick={() => { 사러나감('cart'); openUrl(buyUrlFor(it, shops), it.name) }}>
                   사러가기
                 </button>
               )}
@@ -398,25 +399,25 @@ function Curation() {
     return out
   }
 
-  // '사러가기' 연결: url 이 있으면 그 직접 링크로, mall 이 있으면 그 쇼핑몰 검색으로,
-  // 없으면 무엇이든 잘 찾는 네이버쇼핑 통합검색으로.
-  const MALL_SEARCH = {
-    coupang: 'https://www.coupang.com/np/search?q={q}',
-    oasis: 'https://www.oasis.co.kr/product/search?keyword={q}',
-    naver: 'https://search.shopping.naver.com/search/all?query={q}',
-  }
-  // 쇼핑몰 검색으로 연결. (설치 PWA 안에서 외부 '앱' 강제 열기는 브라우저 제어라 불안정 →
-  //  쿠팡 앱 직접 열기는 정식 TWA 출시 때 다시. 지금은 웹 검색이 안정적.)
-  // ⛔ 한살림은 **빈 문자열** = 「사러가기를 안 그린다」 (창업자 2026-08-17 *"링크안달면되고"*)
-  //   ⚠️ 폴백을 타면 한살림 제품을 네이버에서 찾게 되므로 «맨 먼저» 걸러 낸다.
-  const linkFor = (it) =>
-    isHansalim(it) ? '' : it.url || (MALL_SEARCH[it.mall] || MALL_SEARCH.naver).replace('{q}', encodeURIComponent(it.q))
-  const buy = (it) => openUrl(linkFor(it), [it.brand, it.name].filter(Boolean).join(" "))
+  // 🔗🔗 [2026-09-12] 「사러가기」 연결 = **`curation.js` 의 `productLink` 하나만 쓴다.**
+  //
+  // ⛔⛔⛔ **여기에 `MALL_SEARCH` 표와 `linkFor` 가 «통째로 베껴져» 있었다.** 창업자 = *"왜 이거 자꾸 이렇게 돼????? 컬리 몇번째야.."*
+  //    🌲 **그게 뿌리였다.** 2026-08-29 에 컬리 검색 주소를 넣었는데 **`curation.js` 쪽에만** 넣었고,
+  //       화면이 실제로 부르는 건 **여기 있던 베낀 표**라 컬리가 없었다.
+  //       → 배지엔 「컬리」라고 뜨는데 누르면 **네이버 검색**으로 갔다. 자연드림(icoop)도 같은 이유로 빠져 있었다.
+  //    📌 **「고쳤다」고 말한 게 거짓이 아니라, 고친 곳이 화면이 보는 곳이 아니었다.**
+  //       두 벌이면 한 벌은 반드시 낡는다 — 「현행이 둘이면 하나는 틀린 값」(2026-08-13)과 같은 사고다.
+  //    ⛔ 그래서 여기에 컬리 한 줄을 «더 넣지» 않았다 — 그러면 세 번째가 또 난다(절대원칙 34).
+  //       **표를 하나로 만들었다.** 이제 몰을 늘릴 곳은 `curation.js` 의 `MALL_SEARCH` «한 곳»뿐이다.
+  const linkFor = productLink
+  // 🛒 [2026-09-10] 「주부의 장바구니」에서 «바로» 사러 나간 자리 — 레시피 상세의 픽과 «따로» 센다
+  const buy = (it) => { 사러나감('pick_shop'); openUrl(linkFor(it), [it.brand, it.name].filter(Boolean).join(" ")) }
   const add = (it) => {
     // ⭐ 담는 건 그대로 된다 — 매장에 갈 때 «적어두는 것»은 여전히 쓸모가 있다.
     //   다만 `noBuy` 를 같이 담아 **리스트에서도** 사러가기를 안 그린다.
     //   ⛔ 이게 없으면 `buyUrlFor()` 가 url 없는 줄을 쿠팡·네이버 검색으로 보낸다(＝링크 뺀 게 헛일).
     store.addShopItem({ name: it.name, url: linkFor(it), ...(isHansalim(it) ? { noBuy: true } : {}) })
+    장보기담음()   // 🛒 [2026-09-10] 담기까지 세야 「들어와서 담지도 않는가」가 갈린다
     nav.showToast('장보기 리스트에 담았어요')
   }
 
@@ -427,33 +428,10 @@ function Curation() {
   //    📌 **한 칸(`brand`)에 두 가지가 섞여 있었다.** 그래서 「이름 앞이냐 딱지냐」를 이 목록으로 가른다.
   const 파는곳 = ['자연드림', '한살림', '쿠팡', '컬리', '마켓컬리', '오아시스', '네이버', '산지톡']
   // '사러가기' 버튼에 붙는 구매처 배지 라벨
-  const mallLabel = (it) => {
-    if (it.mall === 'coupang') return '쿠팡'
-    if (it.brand === '자연드림') return '자연드림'
-    if (it.mall === 'oasis') return '오아시스'
-    const u = it.url || ''
-    // ⭐ 한살림만 「조합원만」을 덧붙인다 — 창업자 2026-08-03
-    //   *"한살림템을 사러가기 누르면 안내해주는건 어때?"* → *"너무 복잡한가..."*
-    //   ⭐ **누른 뒤 시트로 알리는 것보다 누르기 «전»에 배지로 보이는 게 낫다** — 헛걸음이 아예 없고
-    //      시트·기억·버튼 같은 새 장치가 하나도 안 생긴다. 창업자 원래 걱정(*"조합원이 아니면
-    //      온라인몰 이용어려우니까"*)은 이 네 글자로 다 해결된다.
-    //   ⚠️ 한살림 온라인 장보기는 **조합원만**(가입비 3천원＋출자금 3만원·탈퇴 시 환불 · 공식 안내 확인)
-    //   🌱 2026-08-17 부터 **사러가기를 아예 안 단다** → 그래서 「조합원만」이 아니라 «전용»이라고 못 박는다.
-    //      ⛔ 판정을 `url` 로 하면 안 된다 — url 을 뺐으니 영영 안 걸린다(`mall` 표식으로).
-    if (isHansalim(it)) return '한살림 · 조합원 전용'
-    if (u.includes('sanjitalk')) return '산지톡'
-    if (u.includes('smartstore.naver') || u.includes('brand.naver')) return '네이버'
-    // ⛔⛔ [2026-08-23 창업자] *"하바티치즈는 왜 딱지없어? 쇼핑몰"* · *"쿠팡딱지 붙여야해 (하바티)"*
-    //    🔢 실측 = `mall:'coupang'` 26개 · `mall:'oasis'` 2 · `mall:'hansalim'` 7 인데
-    //       **쿠팡 링크는 5개**다 → 「링크는 쿠팡인데 `mall` 표식이 빠진 줄」이 있었다(하바티치즈).
-    //    ⭐ 표식이 «있어야만» 붙는 구조라 **손으로 안 적으면 조용히 빠진다.** 데이터를 고치면
-    //       다음에 제품을 넣을 때 또 빠진다 → **링크를 보고도 알아채게** 한 곳에서 고친다.
-    //    ⚠️ `mall` 표식이 우선이다 — 링크가 바뀌어도 창업자가 적어 둔 값이 이긴다.
-    if (u.includes('coupang.com')) return '쿠팡'
-    if (u.includes('oasis.co.kr')) return '오아시스'
-    if (u.includes('kurly.com')) return '컬리'
-    return ''
-  }
+  // 🏷 구매처 배지 = `curation.js` 의 `productMall` «하나»를 쓴다 (2026-09-12).
+  //    ⛔ 여기에 있던 판정 60줄을 그쪽으로 «옮겼다» — 두 벌이면 한 벌은 반드시 낡는다.
+  //       실제로 2026-09-10 에 한 번 갈려서 자연드림 배지 10개가 조용히 빠졌었다.
+  const mallLabel = productMall
   // 🏷 딱지는 이제 **둘**이다 — 분류tag(모래) · 쇼핑몰mall(크림).
   // ⛔⛔ [2026-08-23] 「브랜드 딱지(회색)」를 **없앴다.** 2026-08-22 에 *"브랜드 딱지는 따로 달자"* 로
   //    만들었는데, 창업자가 말한 「브랜드」는 **쿠팡·컬리 같은 «파는 곳»**이었고 나는 «제조사»로 읽었다.
@@ -539,7 +517,14 @@ function Curation() {
                    설명 글은 «훑는» 글이라 제품 이름(16.5px)보다 커 보이면 무게가 뒤집힌다. */
                 fontSize: 17,
                 lineHeight: 1.75,
-                textWrap: 'balance',
+                /* ⛔⛔ [2026-09-11 창업자] *"더오담도 혼자 이상하게 줄바꿈이 되어있네. 쭉 적어줘"*
+                   🔢 실물 = 「냉동실에 2개씩은 꼭 / 있어요. 아침대용으로도 / 좋고, 맛있어서 추천합니다」
+                      — 폭이 남는데도 세 줄로 «고르게» 끊겼다. 옆 카드들은 꽉 차게 흐르는데 이것만 달랐다.
+                   ⭐ 범인 = `textWrap: 'balance'`. 줄 길이를 맞추려고 **일부러 짧게 끊는다.**
+                   ⚠️ 바로 위 주석이 *"긴 설명은 한 글자도 안 바뀐다 → 손해가 없다"* 라고 적어뒀는데
+                      **짧은 설명에서는 바뀐다.** 「긴 것만 재보고 손해가 없다」고 적은 것이다 —
+                      재본 범위를 결론의 범위로 삼으면 안 된다.
+                   ✅ 그래서 뺐다. 이제 여느 글처럼 «쭉» 채운다. */
               }}
             >
               {it.benefit}
@@ -789,6 +774,8 @@ function ChecklistAdd() {
   const add = () => {
     if (!text.trim()) return
     addShopItems([text])
+    // 📊 [2026-09-12] 담았다 — 직접 입력해서 담는 길도 «담기»다.
+    장보기담음()
     setText('')
   }
   return (

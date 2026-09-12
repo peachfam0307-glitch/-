@@ -4,7 +4,10 @@ import { useStore, 서랍한도, 서랍다시재기 } from '../store'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import { APP_VERSION, APP_TAGLINE, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL } from '../version'
-import { tidyFounder, 다듬기기록 } from '../tidy'   // 📒 최근 AI 다듬기 기록 — ⛔창업자 폰에만
+// 📒 tidy 에서 오는 것 «한 줄로» 모은다 — 2026-09-10 에 두 줄로 갈려 있었다.
+//    ⛔ 갈려 있으면 다음 사람이 한쪽만 보고 「유저 눈을 안 본다」고 착각한다(오늘 실제로 그런 사고를 냈다).
+//    tidyFounder = 유저 눈을 «따른다» · 진짜운영자 = 유저 눈과 «무관»(스위치를 그릴지 정한다)
+import { tidyFounder, 다듬기기록, 진짜운영자, 유저눈인가, 유저눈설정 } from '../tidy'
 import Icon from '../components/Icon'
 import KeyBadge from '../components/KeyBadge'
 import TabTips from '../components/TabTips'
@@ -55,6 +58,8 @@ export default function ProfileScreen() {
   // (탭 이동은 인자를 못 넘겨서 nudges.js 쪽지로 받는다. 읽는 순간 지워져 한 번만 열린다.)
   const [backup, setBackup] = useState(() => takeOpenBackup())
   const [avatarSheet, setAvatarSheet] = useState(false)
+  // 👀 [2026-09-10] 유저 눈으로 보기 — 켜고 끄면 화면을 다시 그려야 해서 상태로 든다
+  const [유저눈, set유저눈] = useState(() => 유저눈인가())
   const [editSheet, setEditSheet] = useState(false)
   const [confirmAsk, setConfirmAsk] = useState(null) // { title, message, confirmLabel, danger, onConfirm }
   const [unlockAsk, setUnlockAsk] = useState(null) // 백업 안 잠긴 일기를 풀 때 { n, data }
@@ -428,6 +433,47 @@ export default function ProfileScreen() {
             ⭐ 가져오기와 «같은 부품»이다 — 모양도 숫자도 어긋날 수가 없다. */}
         <KeyBadge />
       </div>
+
+      {/* 👀👀 [창업자 확정 2026-09-10] **유저 눈으로 보기** — ⛔운영자 기기에만 뜬다.
+          📮 창업자 = *"이게 나랑 유저랑 보이는 화면이 다르니까 테스트하기가 너무 어렵네"*
+          ⛔ 그날 실제로 하루를 태웠다 — 창업자 폰에서 단추가 하나만 떠서 세 번을 버그로 의심했고,
+             진짜는 «창업자가 무제한이라» 그런 것이었다(시크릿 모드에선 멀쩡했다).
+          ⭐ 켜면 무제한 표시·운영자 배지가 «일반 유저»처럼 굴어서, 이 폰이 그대로 「유저 눈」이 된다.
+          ⭐⭐ **[2026-09-10 저녁 · 바뀌었다] 이제 열쇠도 진짜로 깎인다** (창업자 = "a로가").
+          유저 눈이면 두 워커(hankki-ocr · hankki-tidy)에 운영자 열쇠를 «안» 보낸다 →
+          개인 한도를 그대로 받고, 계기판의 「창업자」에도 안 실린다.
+          ⛔ 끄면 «표시»만 무제한으로 돌아온다 — 그동안 쓴 열쇠는 «안» 돌아온다(워커가 쓴 수를 누적한다).
+          ⛔ 판정은 `tidy.js` 한 곳이 갖는다(잣대를 늘리지 않는다). */}
+      {진짜운영자() && (
+        <div className="pad" style={{ paddingTop: 0 }}>
+          <button
+            className="press"
+            onClick={() => { 유저눈설정(!유저눈); set유저눈(!유저눈); location.reload() }}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px',
+              borderRadius: 14, textAlign: 'left',
+              border: `1px solid ${유저눈 ? 'var(--brown)' : 'var(--line)'}`,
+              background: 유저눈 ? 'var(--cream-deep)' : 'var(--card)',
+            }}
+          >
+            {/* ⛔ `eye` 아이콘은 우리 Icon 에 «없다» — 있는 것 중에 「사람」을 쓴다(유저 눈이니까) */}
+            <Icon name="user" size={18} color="var(--brown)" />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 800, fontSize: 15.5 }}>유저 눈으로 보기</div>
+              <div className="t-sub" style={{ fontSize: 13.5, marginTop: 2 }}>
+                {유저눈 ? '켜짐 · 일반 유저 화면이에요 · 열쇠가 진짜로 깎여요(안 돌아와요)' : '꺼짐 · 지금 운영자 화면이에요'}
+              </div>
+            </div>
+            <div style={{
+              flex: '0 0 auto', width: 44, height: 26, borderRadius: 999, padding: 3,
+              background: 유저눈 ? 'var(--brown)' : 'var(--line)',
+              display: 'flex', justifyContent: 유저눈 ? 'flex-end' : 'flex-start',
+            }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#fff' }} />
+            </div>
+          </button>
+        </div>
+      )}
 
       <div className="pad">
         {/* 프로필 — 아바타는 눌러서 이모지·사진으로 바꿀 수 있다 */}

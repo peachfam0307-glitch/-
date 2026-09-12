@@ -12,7 +12,7 @@ import { 만회값 } from './retidy'   // 🧺 선반에서 받은 답을 얹는
 //    ⛔ `src/linkReader.js` 파일은 «안 지웠다» — 되살릴 때 그대로 쓴다(v11.19 와 같은 방식).
 import { guessCategory, fitImage, imageSize } from './utils'
 // 🖼 「뭘 많이 썼나」를 재는 자리 — 나가는 건 «화면 이름 하나»뿐이다(자물쇠는 `src/stats.js`).
-import { 화면봄 } from './stats'
+import { 화면봄, 레시피저장 } from './stats'
 // 🍱 [2026-08-28] 공유로 담으면 아이콘이 빈 접시로 굳던 것 — 뿌리·막이 설명은 `shareIcon.js` 주석에.
 import { 공유아이콘 } from './shareIcon'
 // 🎴 축소 루프가 «자랑카드 표지»를 건드리지 않게 — 잣대는 화면·클라우드와 «같은 한 곳»(2026-09-02)
@@ -63,7 +63,13 @@ export const useNav = () => useContext(NavCtx)
 // 이후 OCR이 무제한(월 5회 제한 우회). 저장 뒤엔 주소에서 파라미터를 지워 비밀키가 새지 않게 한다.
 try {
   const _p = new URLSearchParams(location.search)
-  const _f = _p.get('founder')
+  // ⛔⛔ [2026-09-10] URLSearchParams 는 「＋」를 «공백»으로 바꿔 읽는다(폼 규칙).
+  //    주소창에 열쇠를 그냥 치면 ＋ 가 든 열쇠는 조용히 «다른 값»이 되어 저장되고,
+  //    ASCII 검사(공백도 ASCII 다)를 «통과한 채» 서버에서 탈락한다 — 아무 오류도 안 뜬다.
+  //    ✅ 그래서 주소 원문에서 그대로 떼어 쓴다(＋를 안 건드린다). 앞뒤 공백만 턴다.
+  //    (적대적 검토가 잡았다 — 새 방패를 통과하는데도 틀리는 구멍이었다)
+  const _raw = (location.search.match(/[?&]founder=([^&]*)/) || [])[1]
+  const _f = (_raw != null ? decodeURIComponent(_raw.replace(/%(?![0-9a-fA-F]{2})/g, '%25')) : _p.get('founder') || '').trim()
   if (_f) {
     localStorage.setItem('hankki:founder', _f)
     _p.delete('founder')
@@ -684,6 +690,10 @@ export default function App() {
         if (raw) rec.rawText = raw
       }
       store.addRecipe(rec)
+      // 📊 [2026-09-12] 새 레시피가 담겼다 — ⛔이 길이 제일 크게 빠져 있었다.
+      //    여기는 «SNS·갤러리에서 공유로 받아» 담는 길이다. 인스타 광고로 온 사람이 제일 많이 쓸 길인데
+      //    한 건도 안 세고 있었다. 그 위에서 「저장 1명」이라고 말했다(2026-09-12 전수검사에서 잡았다).
+      try { 레시피저장() } catch { /* 통계가 죽어도 담기는 된다 */ }
       // ⛔ 정리가 끝난 것을 임시보관함으로 보내면 «거기 없다» — 그 화면은 미정리만 보여준다.
       //    그래서 정리된 것은 «그 레시피»를 바로 연다(방금 담은 걸 눈으로 확인하게).
       setStack([rec.status === 'sorted' ? { name: 'detail', id: rec.id } : { name: 'inbox' }])

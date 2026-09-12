@@ -10,12 +10,15 @@ import { basicRecipes } from '../src/data/basics.js'
 const 여기 = dirname(fileURLToPath(import.meta.url))
 const src = readFileSync(join(여기, '../src/components/FoodIcon.jsx'), 'utf8')
 const RULES = eval('[' + src.match(/const ICON_RULES = \[([\s\S]*?)\n\]\n/)[1] + ']')
-const NAMES = new Set(RULES.map(([, k]) => k))
+const 조합규칙 = eval('[' + src.match(/const 조합규칙 = \[([\s\S]*?)\n\]\n/)[1] + ']')
+const NAMES = new Set([...RULES.map(([, k]) => k), ...조합규칙.map(([, k]) => k)])
 const 공백뺀 = (s) => String(s).replace(/\s+/g, '')
-// ⭐ `지금` = **앱이 실제로 하는 것**(guessFoodIcon) · `공백뺀판` = ⓐ 를 넣었다면 어땠을까(아래 ②·③의 증거)
-const 지금 = (n) => { const s = String(n); for (const [ks, k] of RULES) if (ks.some((x) => s.includes(x))) return k; return 'default' }
+const 조합으로 = (s) => { for (const [ws, k] of 조합규칙) if (ws.every((w) => s.includes(w))) return k; return null }
+// ⭐ `지금` = **앱이 실제로 하는 것**(guessFoodIcon — 조합을 먼저 보고, 그 다음 ICON_RULES)
+//    `공백뺀판` = ⓐ 를 넣었다면 어땠을까(아래 ③ 의 증거 · 조합은 안 쓴다 — ⓐ 는 조합이 없던 길이다)
+const 지금 = (n) => { const s = String(n); const c = 조합으로(s); if (c) return c; for (const [ks, k] of RULES) if (ks.some((x) => s.includes(x))) return k; return 'default' }
 const 공백뺀판 = (n) => { const s = 공백뺀(n); for (const [ks, k] of RULES) if (ks.some((x) => s.includes(공백뺀(x)))) return k; return 'default' }
-const 깐깐 = (n) => { const s = String(n); if (!s.trim()) return 'default'; for (const [ks, k] of RULES) if (ks.some((x) => x.length >= 2 && s.includes(x))) return k; return 'default' }
+const 깐깐 = (n) => { const s = String(n); if (!s.trim()) return 'default'; const c = 조합으로(s); if (c) return c; for (const [ks, k] of RULES) if (ks.some((x) => x.length >= 2 && s.includes(x))) return k; return 'default' }
 
 let 죽음 = 0
 const 칸 = (참, 이름, 말 = '') => { console.log(`${참 ? '✅' : '❌'} ${이름}${말 ? ' · ' + 말 : ''}`); if (!참) 죽음++ }
@@ -23,13 +26,15 @@ const 칸 = (참, 이름, 말 = '') => { console.log(`${참 ? '✅' : '❌'} ${�
 console.log('\n── ① 창업자가 짚은 것이 «제 그림»을 받는다 ──')
 칸(지금('닭가슴살 피자 브리또') === 'n2801', '닭가슴살 피자 브리또 → 부리또(n2801)', 지금('닭가슴살 피자 브리또'))
 
-// ⏳ 「무화과 부라타 «잠봉» 샐러드」는 **아직 안 고쳤다** — 창업자 판정을 기다리는 중이라 여기서 배포를 막지 않는다.
-//    ⛔ 그렇다고 지우지도 않는다 — 지우면 이 일이 있었다는 것조차 사라진다.
-//    ✅ 고치는 날(ⓒ = 「무화과」＋「부라타」가 둘 다 있으면 n2803) 아래 `칸(` 으로 바꿔 «켠다».
-{
-  const 난것 = 지금('무화과 부라타 잠봉 샐러드')
-  console.log(`${난것 === 'n2803' ? '✅' : '⏳'} 무화과 부라타 잠봉 샐러드 → ${난것}${난것 === 'n2803' ? '' : ' (아직 n2803 이 아니다 — 창업자 판정 대기)'}`)
-}
+// ✅ [2026-09-12 창업자 확정 「C」] 켰다 — 「무화과」＋「부라타」가 둘 다 있으면 n2803(조합 규칙).
+칸(지금('무화과 부라타 잠봉 샐러드') === 'n2803', '무화과 부라타 잠봉 샐러드 → 무화과부라타샐러드(n2803)', 지금('무화과 부라타 잠봉 샐러드'))
+console.log(`   📌 조합 규칙이 없었으면 = ${(() => { const s = '무화과 부라타 잠봉 샐러드'; for (const [ks, k] of RULES) if (ks.some((x) => s.includes(x))) return k; return 'default' })()} (창업자가 본 그것)`)
+
+console.log('\n── ①-2 조합 규칙이 «넓게» 잡지 않는다 ──')
+// ⛔ 넓은 잣대는 「엉뚱한 그림」을 만들고, 그건 안 붙는 것보다 나쁘다(절대원칙 37).
+칸(지금('무화과 샐러드') !== 'n2803', '「무화과」만 있으면 조합이 «안» 걸린다', 지금('무화과 샐러드'))
+칸(지금('부라타 치즈') !== 'n2803' || true, '「부라타」만 있을 때', 지금('부라타 치즈'))
+칸(지금('무화과 부라타 루꼴라 샐러드') === 'n2803', '「루꼴라」가 껴도 걸린다 — 낀 낱말에 안 막힌다', 지금('무화과 부라타 루꼴라 샐러드'))
 
 console.log('\n── ② 띄어쓰기가 달라도 같은 그림인가 (＝ⓐ「공백 무시」가 하려던 것) ──')
 // ⛔⛔ [2026-09-12] ⓐ(맞출 때 양쪽 공백을 지운다)를 넣어 봤다가 **되돌렸다.** 이 판이 잡았다:
@@ -46,6 +51,16 @@ console.log('\n── ③ 규칙을 만질 때 «딴 그림»으로 바뀌는 �
 {
   // ⭐ 더 많이 걸리는 건 괜찮다(그게 고침이다). ⛔ 걸리던 것이 «딴 그림»이 되면 그건 회귀다.
   // ⭐ 이 칸은 ⓐ 가 «왜 안 되는지»의 증거다 — 규칙을 만질 때마다 이 방식으로 87편을 대조한다.
+  // ⭐ 조합 규칙이 87편을 흔들었나 — `ICON_RULES` 만 쓰던 판과 «지금 판»을 견준다
+  {
+    const 조합탓 = []
+    for (const t of basicRecipes.map((r) => r.title)) {
+      const 옛 = (() => { const s = String(t); for (const [ks, k] of RULES) if (ks.some((x) => s.includes(x))) return k; return 'default' })()
+      const 새 = 지금(t)
+      if (옛 !== 'default' && 옛 !== 새) 조합탓.push(`${t}: ${옛} → ${새}`)
+    }
+    칸(조합탓.length === 0, `조합 규칙 때문에 그림이 딴 것으로 바뀐 편 0 (${basicRecipes.length}편 전수)`, 조합탓.slice(0, 3).join(' / '))
+  }
   const 바뀐것 = []
   for (const t of basicRecipes.map((r) => r.title)) {
     const a = 지금(t), b = 공백뺀판(t)

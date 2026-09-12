@@ -1577,8 +1577,28 @@ const ICON_RULES = [
   [['마트', '상점', '편의점', '쇼핑'], 'store'],
 ]
 
+// 🧩🧩 [2026-09-12 창업자 확정 「C」] **낱말이 «둘 다» 있으면** 그 그림 — 통짜 이름이 아니라 «조합»으로 본다.
+//   📮 창업자 폰 제보 = *"이거도이상하고"* — 「무화과 부라타 **잠봉** 샐러드」에 그냥 야채샐러드가 붙었다.
+//      우리한테 `n2803`(무화과부라타샐러드) 컷이 **있는데도** 규칙 키가 통짜라 가운데 낀 「잠봉」에 막혔다.
+//   ⛔⛔ 먼저 ⓐ「맞출 때 양쪽 공백을 지운다」를 넣어 봤다가 **되돌렸다** — `_repro-공백무시아이콘-0912.mjs` 가 잘랐다:
+//      ⑴ 목표를 못 이룬다(공백을 빼도 「잠봉」이 낀 건 그대로다) ⑵ **87편 중 7편이 «딴 그림»이 됐다**
+//         (아보카도 바나나 스무디 gr_014 → fe_508 · 연어 포케볼 gr_349 → fe_511 · 공심채 볶음 gr_379 → fe_499).
+//      📌 공백을 빼면 규칙이 걸리는 «차례»가 달라진다. 얻는 것 없이 멀쩡한 편만 틀어졌다.
+//   ✅ 그래서 «순서를 건드리지 않는» 길로 갔다 — 조합은 **따로** 두고 `ICON_RULES` 보다 «먼저» 본다.
+//      ⭐ 둘 다 있어야 걸리니 한 글자 함정과 무관하다 → OCR 용 깐깐한 판에도 그대로 쓴다.
+//      ⛔ 여기를 헐겁게 늘리지 말 것 — 넓은 잣대는 「엉뚱한 그림」을 만들고, 그건 유저가 그 요리인 줄 안다(절대원칙 37).
+const 조합규칙 = [
+  [['무화과', '부라타'], 'n2803'],
+]
+const 조합으로 = (s) => {
+  for (const [낱말들, key] of 조합규칙) if (낱말들.every((w) => s.includes(w))) return key
+  return null
+}
+
 export function guessFoodIcon(name = '') {
   const s = String(name)
+  const 조합 = 조합으로(s)
+  if (조합) return 조합
   for (const [keys, key] of ICON_RULES) {
     if (keys.some((k) => s.includes(k))) return key
   }
@@ -1595,6 +1615,8 @@ export function guessFoodIcon(name = '') {
 export function guessFoodIconStrict(name = '') {
   const s = String(name)
   if (!s.trim()) return 'default'
+  const 조합 = 조합으로(s)
+  if (조합) return 조합
   for (const [keys, key] of ICON_RULES) {
     if (keys.some((k) => k.length >= 2 && s.includes(k))) return key
   }

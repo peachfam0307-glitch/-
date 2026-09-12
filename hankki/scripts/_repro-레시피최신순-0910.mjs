@@ -57,6 +57,40 @@ console.log('\n── ⑥ from 없는 42편은 «바닥»에 모인다 ──')
   칸(위쪽, 'from 있는 편이 전부 위에 있다', `from 있는 편 ${from있는것} · 없는 편 ${세운것.length - from있는것}`)
 }
 
+// 🕘🕘 [2026-09-12 창업자 폰 제보] *"15개레시피 또 거꾸로들어가있어 역순으로"*
+//   ⛔ 뿌리 = 15편에 `from` 을 «안» 달고 넣었다 → 통째로 바닥에 깔리고 배열 뒤가 위로 섰다(원본 차례의 정반대).
+//   ⭐ 그래서 basics.js 의 15편 배열은 **역순(015 → 001)** 이다 — 「보기 좋게」 되돌리면 그 순간 또 거꾸로 선다.
+// 🕘🕘 [2026-09-12 창업자] *"역순으로 올라가는거 고쳐"* — 15편만의 일이 아니었다.
+//   ⛔ `열린때` 가 `+ i * 1000` 이던 때는 **같은 날 열린 묶음이 전부 거꾸로** 섰다
+//      (8/17 묶음 = basics 차례 「스무디 → … → 브로콜리 구이」인데 화면엔 브로콜리가 맨 위).
+//   ✅ 지금은 `- i * 1000` — **basics.js 에 적은 차례가 곧 화면 차례**다.
+console.log('\n── ⑨ 같은 날 열린 묶음이 «basics.js 에 적은 차례»대로 선다 ──')
+{
+  const 묶음 = new Map()
+  for (const r of basicRecipes) { const k = r.from || '(없음)'; if (!묶음.has(k)) 묶음.set(k, []); 묶음.get(k).push(r.title) }
+  let 어긋난날 = []
+  for (const [날, 적힌차례] of 묶음) {
+    if (적힌차례.length < 2) continue
+    const 선차례 = 세운것.filter((r) => (r.from || '(없음)') === 날 && r.id !== 맨위고정).map((r) => r.title)
+    const 적힌것 = 적힌차례.filter((t) => 선차례.includes(t))
+    if (JSON.stringify(적힌것) !== JSON.stringify(선차례)) 어긋난날.push(날)
+  }
+  칸(어긋난날.length === 0, '묶음 전부가 적힌 차례대로', 어긋난날.length ? `어긋난 날 ${어긋난날.join(', ')}` : `묶음 ${[...묶음.values()].filter((v) => v.length > 1).length}개`)
+}
+
+console.log('\n── ⑧ 창업자 저장 15편이 «창업자 원본 차례»대로 선다 ──')
+{
+  const 원본차례 = [
+    '가지 소고기 덮밥', '닭가슴살 피자 브리또', '보쌈 무김치', '닭가슴살 오이 샐러드', '파기름 간장국수',
+    '우삼겹 두부조림', '대파 소스 목살 덮밥', '닭목살 불고기', '달래 대패삼겹 덮밥', '새송이버섯 들깨무침',
+    '들깨 궁채나물', '미나리 오징어무침', '간장 목살스테이크', '육회 깻잎무침', '구움찰떡',
+  ]
+  const 선것 = 세운것.filter((r) => String(r.id).startsWith('basic-own-')).map((r) => r.title)
+  칸(선것.length === 15, '15편이 다 있다', `${선것.length}편`)
+  칸(JSON.stringify(선것) === JSON.stringify(원본차례), '위에서 아래로 원본 1번 → 15번', `맨 위 ${선것[0]} · 맨 아래 ${선것[14]}`)
+  칸(세운것.filter((r) => String(r.id).startsWith('basic-own-')).every((r) => r.from), '15편에 from 이 다 달려 있다 — 없으면 바닥으로 깔린다')
+}
+
 console.log('\n── ⑦ 맨 위 다섯 (창업자가 눈으로 볼 것) ──')
 세운것.slice(0, 5).forEach((r, i) => console.log(`   ${i + 1}. ${r.title} (${r.from || '처음부터'})`))
 

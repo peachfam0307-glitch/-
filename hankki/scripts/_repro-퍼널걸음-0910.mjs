@@ -52,6 +52,10 @@ for (let i = 0; i < 8; i++) {
 
 // 📥 dataLayer 에 쌓인 것을 읽는다 — 담기는 것은 `arguments` 라 배열로 바꿔서 본다
 const 이름들 = () => p.evaluate(() => [...(window.dataLayer || [])]
+  // ⛔⛔ [2026-09-10] dataLayer 에는 «배열이 아닌 것»도 들어온다 — GTM 스니펫이
+  //    { 'gtm.start': … } 같은 평범한 객체를 밀어 넣는다. 그걸 펼치려 하면 not iterable 로 죽는다.
+  //    📌 내 폰(로컬)에선 안 걸리고 CI 에서만 죽어서 v13.11 배포가 통째로 막혔다.
+  .filter((a) => a && typeof a.length === 'number')
   .map((a) => [...a])
   .filter((a) => a[0] === 'event' && a[1] === 'page_view')
   .map((a) => a[2]?.page_title))

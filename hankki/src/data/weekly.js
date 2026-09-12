@@ -112,9 +112,26 @@ export const WEEKLY = [
     ids: ['basic-kkotge-jjim', 'basic-kkotge-tang', 'basic-ganjang-gejang'],
   },
   {
-    from: '2026-09-14', title: '갈치',
-    why: '가을 갈치는 기름이 올라 제일 고소해요. 조림·구이·맑은국이에요.',
-    ids: ['basic-galchi-jorim', 'basic-galchi-gui', 'basic-galchi-guk'],
+    // 🍆🍆 [2026-09-11 창업자 확정] 「갈치」 → **「가지」로 갈았다.**
+    //   ⛔ 옛 갈치 세 편은 **클로드가 지어낸 것**이었다(📄 docs/클로드가지어낸레시피-2026-09-11.md).
+    //      📮 창업자 = *"갈치는 다양한 레시피가 없어.. 갈치조림? 구이는 레시피랄게없고"*
+    //   ✅ **갈치조림만 창업자 레시피로 갈아끼워 살렸다** — 다만 주간 줄에선 내린다(한 편으로는 줄이 안 선다).
+    //      레시피 탭엔 그대로 열린다(basics.js 의 from 이 살아 있다).
+    //   ⛔⛔ **여기 「갈치구이·갈치국은 from 을 떼서 안 열리게 했다」고 적혀 있었다 — 틀린 말이다.**
+    //      게이트가 `!r.from || r.from <= today` 라 **from 을 떼면 오히려 «항상» 열린다.**
+    //      실제로 둘 다 `from: '2026-09-14'` 가 붙어 있었고 9/14 에 그대로 열릴 참이었다(2026-09-11 실측).
+    //   ✅ [2026-09-11 밤 창업자 확정] *"갈치구이는 기본레시피로 넣어도 될 것 같고 국은 빼자"*
+    //      · **갈치국** = 편을 통째로 지웠다(`basics.js` 에서 뺐다).
+    //      · **갈치구이** = 남긴다 — 창업자 = *"구이는 레시피랄게없고"* (소금·굽기뿐이라 지어낼 여지가 없다).
+    //   ⛔⛔ **가지를 갈치 줄에 «섞지» 않았다** — 📮 창업자 = *"갈치가 제철인데 가지가 들어가면 이상하지."*
+    //      한 줄에 두 제철을 섞으면 주제가 흐려진다. 줄을 통째로 「가지」로 바꾼다.
+    //   ⭐ 가지덮밥은 8/31 에 «이미 열려 있다» — 주간 줄은 ids 로 가리키니 이미 열린 편도 넣을 수 있다
+    //      (9/07 줄이 가지덮밥을 그렇게 쓰고 있었다).
+    from: '2026-09-14', title: '가지',
+    why: '가을 가지는 살이 차고 달아요. 덮밥과 볶음 두 가지로.',
+    // 🍆 [2026-09-12 창업자] *"가지덮밥빼고 무침"* — 가지덮밥은 8/31 에 이미 열려서 사흘 전에 본 편이 또 나왔다.
+    //    ⛔ 편을 «지우지» 않았다(창업자 = *"그냥 두고"*) — 레시피 목록엔 그대로 살고, 이 제철 줄에서만 내렸다.
+    ids: ['basic-gaji-muchim', 'basic-gaji-bokkeum'],
   },
   // ⛔ 옛 「버섯 솥밥」(basic-beoseot-sotbap)을 여기서 뺐다 (창업자 2026-08-10).
   //    8/31 에 들어간 창업자 「버섯솥밥」과 이름이 거의 같아 3주 간격으로 두 번 나왔다.
@@ -122,35 +139,35 @@ export const WEEKLY = [
   {
     from: '2026-09-21', title: '버섯',
     why: '버섯이 가장 좋을 때예요. 끓이고 볶고 부치는 세 가지로.',
-    ids: ['basic-dubu-deulkkae-jeongol', 'basic-beoseot-bokkeum', 'basic-beoseot-jeon'],
+    ids: ['basic-dubu-deulkkae-jeongol', 'basic-beoseot-bokkeum'],
   },
   {
     // ⛔ 제철이 «아닌» 주라 기본값(「이번 주 제철」)을 쓰면 안 된다 — 명절 뒤 남은 음식이다.
     from: '2026-09-28', title: '추석 남은 음식', kicker: KICKER_SPECIAL,
     why: '연휴가 끝나면 전이랑 나물이 남죠. 데우기만 하면 물리니까 새 음식으로 바꿔요.',
-    ids: ['basic-jeon-jjigae', 'basic-namul-bibimbap', 'basic-namul-japchae'],
+    ids: ['basic-jeon-jjigae', 'basic-namul-bibimbap'],
   },
   {
     from: '2026-10-05', title: '고구마',
     why: '고구마가 제일 단 때예요. 튀기고 부치고 굽는 세 가지로.',
-    ids: ['basic-goguma-mattang', 'basic-goguma-jeon', 'basic-goguma-gratin'],
+    ids: ['basic-goguma-jeon', 'basic-goguma-gratin'],
   },
   {
     from: '2026-10-12', title: '대하',
     why: '가을 대하 철이에요. 굽고 담그고 튀기는 세 가지예요.',
-    ids: ['basic-daeha-sogeumgui', 'basic-saeujang', 'basic-saeu-twigim'],
+    ids: ['basic-saeujang', 'basic-saeu-twigim'],
   },
   {
     from: '2026-10-19', title: '고등어',
     why: '가을 고등어는 기름이 올라 제일 고소해요. 토막으로 팔아서 손질도 쉬워요.',
-    ids: ['basic-godeungeo-jorim', 'basic-godeungeo-gui', 'basic-godeungeo-kimchijjim'],
+    ids: ['basic-godeungeo-jorim', 'basic-godeungeo-kimchijjim'],
   },
   // ⚠️ 47주 「연근·우엉」을 10/26 으로 당겼다 — 버섯을 9/21 로 옮기면서 10월에 한 자리가 비었다.
   //    ⛔ 44주 배추(김장)를 당기지 않은 이유 = 김장은 11월이라 10월 말이면 이르다.
   {
     from: '2026-10-26', title: '연근·우엉',
     why: '땅속 뿌리채소가 나오는 때예요. 조려서 두고 먹기 좋아요.',
-    ids: ['basic-yeongeun-jorim', 'basic-ueong-jorim', 'basic-yeongeun-salad'],
+    ids: ['basic-yeongeun-jorim', 'basic-yeongeun-salad'],
   },
 
   // ⏰⏰ 11월치는 «10월에» 쓴다 (창업자 2026-08-10 *"10월꺼는 9월에 하자"* → *"10월까지만 하자 그럼"*).
@@ -174,12 +191,12 @@ export const WEEKLY = [
     // 📅 김장철이라 「그 시기의 일」 갈래다 — 제철 재료가 아니라서 kicker 를 바꿨다.
     from: '2026-11-02', title: '김장날 고기', kicker: KICKER_SPECIAL,
     why: '김장하는 날엔 고기죠. 삶고 굽는 세 가지로 골라 보세요.',
-    ids: ['basic-yangji-suyuk', 'basic-suyuk', 'basic-samgyeop-kkwarigochu'],
+    ids: ['basic-yangji-suyuk', 'basic-samgyeop-kkwarigochu'],
   },
   {
     from: '2026-11-09', title: '항정살', kicker: '이번 주 재료',
     why: '항정살 한 덩이로 세 가지가 나와요. 구워서 졸이면 손님상에도 좋아요.',
-    ids: ['basic-hangjeong-suyuk', 'basic-hangjeong-samhap', 'basic-hangjeongsal-ganjang-jorim'],
+    ids: ['basic-hangjeong-samhap', 'basic-hangjeongsal-ganjang-jorim'],
   },
   {
     // ⏳ 두 편뿐이다 — 셋째 「팽이버섯 베이컨 전」은 **창업자가 만드는 법을 쓰기로 했다**(2026-08-18).
@@ -200,12 +217,12 @@ export const WEEKLY = [
   {
     from: '2026-11-30', title: '묵은지', kicker: '이번 주 재료',
     why: '묵은지가 제일 맛있게 익었을 때예요. 볶고 지지고 조리는 세 가지로.',
-    ids: ['basic-mugeunji-bokkeum', 'basic-dwaeji-kimchi-duruchigi', 'basic-godeungeo-mugeunji-jorim'],
+    ids: ['basic-dwaeji-kimchi-duruchigi', 'basic-godeungeo-mugeunji-jorim'],
   },
   {
     from: '2026-12-07', title: '연말 파스타', kicker: KICKER_SPECIAL,
     why: '연말엔 파스타 한 접시가 어울려요. 차갑게, 꾸덕하게, 얼큰하게 세 가지로.',
-    ids: ['basic-haemul-oil-pasta', 'basic-onepan-cream-pasta', 'basic-ttukbaegi-pasta'],
+    ids: ['basic-haemul-oil-pasta', 'basic-ttukbaegi-pasta'],
   },
   // 📋 다음에 채울 곳 = **12/14 부터**. 아직 한 주도 없다.
   //    바닥 = docs/52주-제철표-2026-08-01.md (50 동태·명태 · 51 묵은지 · 52 연말 홈파티)

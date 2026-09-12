@@ -2,6 +2,7 @@ import { Fragment, useMemo, useRef, useState } from 'react'
 import { COACH } from '../coach'
 import { useStore } from '../store'
 import { useNav } from '../App'
+import { 저장날짜보임 } from '../data/seed'
 import Icon from '../components/Icon'
 import Thumb from '../components/Thumb'
 import TabTips from '../components/TabTips'
@@ -980,7 +981,9 @@ export default function MyRecipesScreen({ initView = 'grid' }) {
                           )}
                         </div>
                         <div className="name" style={gridSize === 'small' ? { fontSize: 15, marginTop: 5 } : undefined}>{r.title}</div>
-                        {gridSize === 'big' && <div className="date">{dateLabel(r.savedAt)}</div>}
+                        {/* 📅 ⛔기본 레시피는 저장 날짜를 안 보여준다 — 유저가 저장한 적이 없다(창업자 확정 2026-09-12 「a」).
+                            그 전엔 줄 세우려고 쓴 바닥값 2020-01-01 이 그대로 찍혀 목록이 거의 다 「2020.01.01」이었다. */}
+                        {gridSize === 'big' && 저장날짜보임(r) && <div className="date">{dateLabel(r.savedAt)}</div>}
                       </button>
                       {/* 🔖🔖 [2026-08-17 창업자] **북마크를 목록에서 «바로» 누른다.**
                           📮 *"근데 그 북마크는 **나도 한번도 안썼어 번거로워서. 레시피에 들어가서 눌러야 하니까**"*

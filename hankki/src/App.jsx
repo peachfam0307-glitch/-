@@ -66,7 +66,13 @@ export const useNav = () => useContext(NavCtx)
 // 이후 OCR이 무제한(월 5회 제한 우회). 저장 뒤엔 주소에서 파라미터를 지워 비밀키가 새지 않게 한다.
 try {
   const _p = new URLSearchParams(location.search)
-  const _f = _p.get('founder')
+  // ⛔⛔ [2026-09-10] URLSearchParams 는 「＋」를 «공백»으로 바꿔 읽는다(폼 규칙).
+  //    주소창에 열쇠를 그냥 치면 ＋ 가 든 열쇠는 조용히 «다른 값»이 되어 저장되고,
+  //    ASCII 검사(공백도 ASCII 다)를 «통과한 채» 서버에서 탈락한다 — 아무 오류도 안 뜬다.
+  //    ✅ 그래서 주소 원문에서 그대로 떼어 쓴다(＋를 안 건드린다). 앞뒤 공백만 턴다.
+  //    (적대적 검토가 잡았다 — 새 방패를 통과하는데도 틀리는 구멍이었다)
+  const _raw = (location.search.match(/[?&]founder=([^&]*)/) || [])[1]
+  const _f = (_raw != null ? decodeURIComponent(_raw.replace(/%(?![0-9a-fA-F]{2})/g, '%25')) : _p.get('founder') || '').trim()
   if (_f) {
     localStorage.setItem('hankki:founder', _f)
     _p.delete('founder')

@@ -4,7 +4,10 @@ import { useStore, 서랍한도, 서랍다시재기 } from '../store'
 import { useNav } from '../App'
 import { useLayerBack } from '../useBackHandler'
 import { APP_VERSION, APP_TAGLINE, FEEDBACK_URL, LAB_SURVEY_URL, LAB_BUG_URL } from '../version'
-import { tidyFounder, 다듬기기록 } from '../tidy'   // 📒 최근 AI 다듬기 기록 — ⛔창업자 폰에만
+// 📒 tidy 에서 오는 것 «한 줄로» 모은다 — 2026-09-10 에 두 줄로 갈려 있었다.
+//    ⛔ 갈려 있으면 다음 사람이 한쪽만 보고 「유저 눈을 안 본다」고 착각한다(오늘 실제로 그런 사고를 냈다).
+//    tidyFounder = 유저 눈을 «따른다» · 진짜운영자 = 유저 눈과 «무관»(스위치를 그릴지 정한다)
+import { tidyFounder, 다듬기기록, 진짜운영자, 유저눈인가, 유저눈설정 } from '../tidy'
 import Icon from '../components/Icon'
 import KeyBadge from '../components/KeyBadge'
 import TabTips from '../components/TabTips'
@@ -48,7 +51,6 @@ import { FAV_NAME } from '../favName'
 //    ⛔ 여기에 갈래 이름을 «다시 적지» 말 것. 2026-09-04 에 화면과 관문이 각각 적어서 실제로 갈렸다.
 import { 설정갈래, 설정섹션, 설정이름표스타일 } from '../settingsGroups'
 import { AI동의상태, AI동의쓰기, 바뀜이벤트 } from '../aiConsent'   // 🤖🔐 AI 다듬기 사용 켜기/끄기(큰 틀 6-② ⓑ)
-import { 진짜운영자, 유저눈인가, 유저눈설정 } from '../tidy'
 
 export default function ProfileScreen() {
   const store = useStore()
@@ -455,7 +457,10 @@ export default function ProfileScreen() {
           ⛔ 그날 실제로 하루를 태웠다 — 창업자 폰에서 단추가 하나만 떠서 세 번을 버그로 의심했고,
              진짜는 «창업자가 무제한이라» 그런 것이었다(시크릿 모드에선 멀쩡했다).
           ⭐ 켜면 무제한 표시·운영자 배지가 «일반 유저»처럼 굴어서, 이 폰이 그대로 「유저 눈」이 된다.
-          ⛔⛔ **표시만 바뀐다 — 진짜 열쇠는 안 깎인다.** 「열쇠가 다 떨어져 막히는 화면」은 시크릿 모드로 본다.
+          ⭐⭐ **[2026-09-10 저녁 · 바뀌었다] 이제 열쇠도 진짜로 깎인다** (창업자 = "a로가").
+          유저 눈이면 두 워커(hankki-ocr · hankki-tidy)에 운영자 열쇠를 «안» 보낸다 →
+          개인 한도를 그대로 받고, 계기판의 「창업자」에도 안 실린다.
+          ⛔ 끄면 «표시»만 무제한으로 돌아온다 — 그동안 쓴 열쇠는 «안» 돌아온다(워커가 쓴 수를 누적한다).
           ⛔ 판정은 `tidy.js` 한 곳이 갖는다(잣대를 늘리지 않는다). */}
       {진짜운영자() && (
         <div className="pad" style={{ paddingTop: 0 }}>
@@ -474,7 +479,7 @@ export default function ProfileScreen() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontWeight: 800, fontSize: 15.5 }}>유저 눈으로 보기</div>
               <div className="t-sub" style={{ fontSize: 13.5, marginTop: 2 }}>
-                {유저눈 ? '켜짐 · 지금 일반 유저 화면이에요 (열쇠는 안 깎여요)' : '꺼짐 · 지금 운영자 화면이에요'}
+                {유저눈 ? '켜짐 · 일반 유저 화면이에요 · 열쇠가 진짜로 깎여요(안 돌아와요)' : '꺼짐 · 지금 운영자 화면이에요'}
               </div>
             </div>
             <div style={{

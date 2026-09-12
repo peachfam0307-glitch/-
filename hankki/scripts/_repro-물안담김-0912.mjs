@@ -5,7 +5,9 @@ import { chromium } from 'playwright'
 import { createServer } from 'node:http'
 import { readFileSync, existsSync } from 'node:fs'
 import { join, extname } from 'node:path'
-const R = '/home/user/hankki/hankki'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+const R = dirname(dirname(fileURLToPath(import.meta.url)))   // ⛔ 컨테이너 경로를 박지 않는다 — CI 엔 그 자리가 없다
 const MIME = { '.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2' }
 const srv = createServer((q,s)=>{ let p=join(`${R}/dist`, decodeURIComponent(q.url.split('?')[0]).replace(/^\/hankki/,'')); if(!existsSync(p)||p.endsWith('/'))p=join(`${R}/dist`,'index.html'); s.writeHead(200,{'Content-Type':MIME[extname(p)]||'application/octet-stream'}); s.end(readFileSync(p)) }).listen(0)
 const port = srv.address().port

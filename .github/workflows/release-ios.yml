@@ -18,6 +18,8 @@ name: 🍎 iOS 서명 빌드 → TestFlight
 #
 # ⚠️ upload=true 는 App Store Connect 에 「한끼」 앱(번들 kr.hankki.app)이 «먼저» 만들어져 있어야 성공한다.
 
+# ⚠️ workflow_dispatch(손으로 돌리기)는 깃허브 규칙상 «기본 갈래»에 있는 워크플로만 된다(2026-09-12 실측 404).
+#    이 파일은 아이폰 갈래에만 있으므로 push 로도 돈다(upload 는 push 땐 false).
 on:
   workflow_dispatch:
     inputs:
@@ -25,6 +27,12 @@ on:
         description: 'TestFlight 로 올리기 (false = .ipa 만 만들어 결과물로)'
         type: boolean
         default: false
+  push:
+    branches:
+      - claude/annyeong-yoi12y
+    paths:
+      - '.github/workflows/release-ios.yml'
+      - 'ios-app/**'
 
 concurrency:
   group: release-ios

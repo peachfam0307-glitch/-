@@ -14,6 +14,7 @@ import { useWakeLock } from '../useWakeLock'
 import { useLayerBack } from '../useBackHandler'
 import { 항목묶어 } from '../stepBreak'
 import { 열쇠받기, EARN, KEY_NAME, KEY_UNIT } from '../ocr'
+import { 요리끝냄 } from '../stats'
 
 // 요리 모드 — 풀스크린. 큰 글씨 · 화면 안 꺼짐 · 단계 타이머.
 // 흐름: 0단계 = 재료 준비(요리의 시작) → 1~N단계 = 조리 단계.
@@ -98,6 +99,8 @@ export default function CookScreen({ id }) {
       addDiary({ id: newId(), recipeId: r.id, title: r.title, source: r.source, at: Date.now(), rating: 0, note: '', photo })
       // 🎁 요리모드를 끝냈다 — 평생 1회. ⛔「처음인가」는 «서버»가 정한다(폰이 세면 지웠다 깔 때마다 또 받는다).
       열쇠받기(EARN.요리).then((받음) => { if (받음) nav.showToast(`요리모드를 처음 써봤어요 · ${KEY_NAME} 1${KEY_UNIT}를 더 받았어요`, 5200) })
+      // 📊 [2026-09-12] 요리모드를 «끝냈다» — ⛔열쇠받기 «바깥»이다(열쇠는 평생 1회, 통계는 매번).
+      요리끝냄()
       cook(r.id)
     } else if (photo && !오늘것.photo) {
       // ⭐ 오늘 이미 기록이 있어도 **찍은 사진은 안 버린다** — 그 기록에 사진만 채운다.

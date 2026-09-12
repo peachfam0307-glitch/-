@@ -44,19 +44,16 @@ await p.screenshot({ path: `${낼곳}/A-그림주인공.jpg`, type: 'jpeg', qual
 
 // ── B · 숫자가 그림 ──────────────────────────────────────
 // ⭐ 알약 크기 = 제품 개수. 가운데 정렬을 버리고 흩뿌린다.
-const 큰것 = 몰들[0][1]
-const 알약 = 몰들.map(([이름, n]) => {
-  const 배 = 0.42 + 0.58 * (n / 큰것)          // 0.42~1.0 — 3개짜리도 읽히게 바닥을 깐다
-  return `<div class=mall style="font-size:${Math.round(88 * 배)}px;padding:${Math.round(30 * 배)}px ${Math.round(54 * 배)}px">
-    ${이름}<i>${n}</i></div>`
-}).join('')
+// ⛔ 개수를 알약 «크기»로 보이던 판은 버렸다 — 창업자 = *"너무 쿠팡 몰빵같아 보여서"*
+//    쿠팡이 72개라 제일 큰 건 사실이지만, 릴스에서 하려는 말은 «여러 몰에 흩어져 있다»다.
+//    크기를 다르게 두면 그 말과 정반대로 읽힌다. → 다 같은 크기.
+const 알약 = 몰들.map(([이름]) => `<div class=mall>${이름}</div>`).join('')
 await p.setContent(`<!doctype html><meta charset=utf-8><style>${폰트}
 html,body{margin:0;width:1080px;height:1920px;font-family:GD,sans-serif;overflow:hidden;${바탕};color:#fff}
 .cloud{position:absolute;left:60px;right:60px;top:560px;display:flex;flex-wrap:wrap;align-items:center;
   justify-content:center;gap:30px 24px}
-.mall{font-weight:700;color:#1b1410;background:#f2e4cf;border-radius:999px;white-space:nowrap;
-  box-shadow:0 14px 34px rgba(0,0,0,.5);display:flex;align-items:baseline;gap:14px}
-.mall i{font-style:normal;font-size:.5em;color:#8a6a3e}
+.mall{font-size:62px;font-weight:700;color:#1b1410;background:#f2e4cf;border-radius:999px;white-space:nowrap;
+  padding:24px 46px;box-shadow:0 14px 34px rgba(0,0,0,.5)}
 .foot{position:absolute;left:0;right:0;bottom:620px;text-align:center}
 .f1{font-size:66px;font-weight:700;letter-spacing:-.03em;text-shadow:0 6px 24px rgba(0,0,0,.6)}
 .f2{margin-top:26px;font-size:40px;font-weight:700;color:#e8c89a}

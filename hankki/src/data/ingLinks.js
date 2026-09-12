@@ -121,6 +121,11 @@ export const ING_LINKS = {
   // 🍖 [창업자 2026-09-12] 둘을 줬는데 재료 줄 이름은 하나다 → **찌개용**으로 (찌개·국 3편 · 볶음 2편)
   //    ⛔ 불고기·제육용(gZgrUsWnlc)은 안 쓴다 — 한 이름에 하나만 붙는다.
   '돼지고기 앞다리살': 'https://link.coupang.com/a/gZgtXRkfyC',
+  // ⭐ 아래 넷은 재료 줄에 «분량이 붙은 모양»으로만 있어 넣기 도구가 건너뛴다 — 앱은 분량을 떼고 찾으므로 붙는다.
+  '대패삼겹': 'https://link.coupang.com/a/gZjUYZsdkO', // ⛇묶음: 대패삼겹 / 돼지고기 목살
+  '돼지고기 다짐육': 'https://link.coupang.com/a/gZjXCOQfRs',
+  '모둠버섯': 'https://link.coupang.com/a/gZj3j9D4iO',
+  '소고기 다짐육': 'https://link.coupang.com/a/gZkspeX9Oe',
   // 🍡 떡은 «이름이 이미 갈려» 있어 따로 붙는다 — 떡국떡 / 떡볶이 떡 · 가래떡(누들떡)
   '떡볶이 떡': 'https://link.coupang.com/a/gZg4AihgOW', // ⛇묶음: 떡볶이 떡 / 가래떡
   '가래떡': 'https://link.coupang.com/a/gZg4AihgOW', // ⛇묶음: 떡볶이 떡 / 가래떡
@@ -130,6 +135,25 @@ export const ING_LINKS = {
   '화이트발사믹': 'https://www.kurly.com/goods/5053689',
   '갈치': 'https://brand.naver.com/fallinlovefish/category/435f21f6b43246a1ad7c12760e3c5078',
   '국간장': 'https://smartstore.naver.com/thebat/products/5108613448',
+  '소금': 'https://www.oasis.co.kr/product/detail/1557', // ⛇묶음: 소금 / 굵은소금
+  '올리브유': 'https://www.costco.co.kr/Foods/Processed-Food/Oils/KS-Siurana-Extra-Virgin-Olive-Oil-1L/p/892188', // ⛇묶음: 올리브유 / 식용유
+  '식용유': 'https://www.costco.co.kr/Foods/Processed-Food/Oils/KS-Siurana-Extra-Virgin-Olive-Oil-1L/p/892188', // ⛇묶음: 올리브유 / 식용유
+  '굵은소금': 'https://www.oasis.co.kr/product/detail/1557', // ⛇묶음: 소금 / 굵은소금
+  '고구마': 'https://link.coupang.com/a/gZi9xnoWgm',
+  '다시마': 'https://link.coupang.com/a/gZjMgmol2W',
+  '그릭요거트': 'https://emart.ssg.com/item/itemView.ssg?itemId=1000419163155&siteNo=6001&salestrNo=2037',
+  '닭가슴살': 'https://link.coupang.com/a/gZjNJKt7VQ',
+  '닭볶음탕용 닭': 'https://link.coupang.com/a/gZjQd9T2T6',
+  '돼지고기 목살': 'https://link.coupang.com/a/gZjUYZsdkO', // ⛇묶음: 대패삼겹 / 돼지고기 목살
+  '루꼴라': 'https://link.coupang.com/a/gZj0w4G25A',
+  '모차렐라 치즈': 'https://link.coupang.com/a/gZj6blHyHB',
+  '사과': 'https://link.coupang.com/a/gZkbGOntU4',
+  '숙주': 'https://link.coupang.com/a/gZktVgPObQ',
+  '시금치': 'https://link.coupang.com/a/gZkvaQIHg4',
+  '아보카도': 'https://link.coupang.com/a/gZkyjmhF6q',
+  '양송이버섯': 'https://link.coupang.com/a/gZkBeXvDS8',
+  '완숙 토마토': 'https://link.coupang.com/a/gZkCFDgWku',
+  '다시마초': 'https://smartstore.naver.com/cnmi/products/7222887351',
 }
 
 // 🚱 사는 물건이 아닌 재료 — 목록에도 안 올리고, 링크도 안 붙인다 (창업자 *"밥면수이런건 말고"*)

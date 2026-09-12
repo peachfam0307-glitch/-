@@ -64,7 +64,7 @@ export const ING_LINKS = {
   '표고버섯': 'https://link.coupang.com/a/gYW5mQxvmC',
   '다진 파': 'https://link.coupang.com/a/gYRLijw0cu', // ⛇묶음: 대파 / 다진 파
   '감자전분': 'https://link.coupang.com/a/gYWQr9gXIa', // ⛇묶음: 감자전분 / 전분가루
-  '다진 생강': 'https://link.coupang.com/a/gYWRWEezHE',
+
   '통후추': 'https://link.coupang.com/a/gYXtDrToZM',
   '토마토소스': 'https://link.coupang.com/a/gYXJohuE2K',
   '통마늘': 'https://link.coupang.com/a/gYWf0VtWnc', // ⛇묶음: 마늘 / 통마늘
@@ -81,6 +81,8 @@ export const ING_LINKS = {
   '스리라차': 'https://link.coupang.com/a/gYXCUg3eNw',
   '파프리카': 'https://link.coupang.com/a/gYXLWLldD2',
   '다진마늘': 'https://link.coupang.com/a/gYVvIKX79w', // ⛇묶음: 다진 마늘 / 다진마늘
+  '생강': 'https://link.coupang.com/a/gYWRWEezHE', // ⛇묶음: 생강 / 다진 생강
+  '다진 생강': 'https://link.coupang.com/a/gYWRWEezHE', // ⛇묶음: 생강 / 다진 생강
 }
 
 // 🚱 사는 물건이 아닌 재료 — 목록에도 안 올리고, 링크도 안 붙인다 (창업자 *"밥면수이런건 말고"*)

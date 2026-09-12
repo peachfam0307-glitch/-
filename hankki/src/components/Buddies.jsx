@@ -517,6 +517,21 @@ export const BUDDY_GROUPS = [
       { id: 'av_gecko', name: '꼬비' },
     ],
   },
+  // 🧑‍🍳 [2026-09-12 창업자 제공] 같은 5인의 «상반신» 컷 — 옷·소품까지 보인다.
+  //    📮 창업자 *"애들컷은 프로필용이야"* ＋ *"프로필설정에 친구들 컷 추가해주고"* ＋ *"기존꺼에 추가하라는거야"*
+  //    ⛔ 위 'ours'(얼굴 컷)를 «대체»하지 않는다 — 둘 다 고를 수 있게 나란히 둔다.
+  //    ⭐ 56px 원에 실제로 그려 눈으로 확인했다(얼굴이 작아 보일까 걱정했는데 상반신이라 충분히 알아본다).
+  {
+    key: 'ours_full',
+    label: '우리 애들 · 옷 입은 컷',
+    items: [
+      { id: 'av_gom_full', name: '꼬르곰' },
+      { id: 'av_peng_full', name: '펭펭' },
+      { id: 'av_capy_full', name: '카롱' },
+      { id: 'av_fox_full', name: '뾰미' },
+      { id: 'av_gecko_full', name: '꼬비' },
+    ],
+  },
   {
     key: 'origin',
     label: '오리지널',

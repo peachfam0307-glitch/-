@@ -85,12 +85,38 @@ export const ING_LINKS = {
   '다진마늘': 'https://link.coupang.com/a/gYVvIKX79w', // ⛇묶음: 다진 마늘 / 다진마늘
   '생강': 'https://link.coupang.com/a/gYWRWEezHE', // ⛇묶음: 생강 / 다진 생강
   '다진 생강': 'https://link.coupang.com/a/gYWRWEezHE', // ⛇묶음: 생강 / 다진 생강
-  '통깨': 'https://link.coupang.com/a/gYVL6ohhKe', // ⛇묶음: 통깨 / 깨소금
-  '깨소금': 'https://link.coupang.com/a/gYVL6ohhKe', // ⛇묶음: 통깨 / 깨소금
+  '통깨': 'https://link.coupang.com/a/gYVL6ohhKe', // ⛇묶음: 통깨 / 깨소금 / 깨 / 갈아 둔 깨
+  '깨소금': 'https://link.coupang.com/a/gYVL6ohhKe', // ⛇묶음: 통깨 / 깨소금 / 깨 / 갈아 둔 깨
   '고춧가루': 'https://link.coupang.com/a/gYVKs7LhaC', // ⛇묶음: 고춧가루 / 복이네먹거리 고춧가루
   '복이네먹거리 고춧가루': 'https://link.coupang.com/a/gYVKs7LhaC', // ⛇묶음: 고춧가루 / 복이네먹거리 고춧가루
   '묵은지': 'https://link.coupang.com/a/gYWFeBBQQu', // ⛇묶음: 묵은지 / 신김치
   '신김치': 'https://link.coupang.com/a/gYWFeBBQQu', // ⛇묶음: 묵은지 / 신김치
+  '후추': 'https://link.coupang.com/a/gZhOsYoxBQ', // ⛇묶음: 후추 / 후춧가루
+  '무': 'https://link.coupang.com/a/gZf2aXbvtk',
+  '깨': 'https://link.coupang.com/a/gYVL6ohhKe', // ⛇묶음: 통깨 / 깨소금 / 깨 / 갈아 둔 깨
+  '후춧가루': 'https://link.coupang.com/a/gZhOsYoxBQ', // ⛇묶음: 후추 / 후춧가루
+  '양배추': 'https://link.coupang.com/a/gZgdptpwey',
+  '부추': 'https://link.coupang.com/a/gZhfNOwn2i',
+  '꽈리고추': 'https://link.coupang.com/a/gZgl15nJYq',
+  '느타리버섯': 'https://link.coupang.com/a/gZgnN6PuG4',
+  '생크림': 'https://link.coupang.com/a/gZgyrKUbQH',
+  '파스타면': 'https://link.coupang.com/a/gZgElvHnVc', // ⛇묶음: 파스타면 / 스파게티 면 / 스파게티면
+  '미림': 'https://link.coupang.com/a/gZg7lG8oYS',
+  '고추기름': 'https://link.coupang.com/a/gZgN3nzK32',
+  '매실액': 'https://link.coupang.com/a/gZg6uVtfgG',
+  '밀가루': 'https://link.coupang.com/a/gZhbtOlBPE',
+  '배즙': 'https://link.coupang.com/a/gZheSMmxgW', // ⛇묶음: 배즙 / 갈아만든배
+  '알배추': 'https://link.coupang.com/a/gZhmfjCjnM',
+  '연근': 'https://link.coupang.com/a/gZhm3LXtUO',
+  '와사비': 'https://link.coupang.com/a/gZho03X3Ke',
+  '갈아 둔 깨': 'https://link.coupang.com/a/gYVL6ohhKe', // ⛇묶음: 통깨 / 깨소금 / 깨 / 갈아 둔 깨
+  '갈아만든배': 'https://link.coupang.com/a/gZheSMmxgW', // ⛇묶음: 배즙 / 갈아만든배
+  '건고추': 'https://link.coupang.com/a/gZhybNEQI8',
+  // ⭐ 아래 셋은 재료 줄에 «분량이 붙은 모양»으로만 있다(「닭다리살 700g」·「스파게티 면 180g」).
+  //    넣기 도구가 «이름 그대로»를 못 찾아 건너뛰었지만, 앱의  는 분량을 떼고 찾으므로 붙는다.
+  '닭다리살': 'https://link.coupang.com/a/gZgVXN4cpg',
+  '스파게티 면': 'https://link.coupang.com/a/gZgElvHnVc', // ⛇묶음: 파스타면 / 스파게티 면 / 스파게티면
+  '스파게티면': 'https://link.coupang.com/a/gZgElvHnVc', // ⛇묶음: 파스타면 / 스파게티 면 / 스파게티면
 }
 
 // 🚱 사는 물건이 아닌 재료 — 목록에도 안 올리고, 링크도 안 붙인다 (창업자 *"밥면수이런건 말고"*)

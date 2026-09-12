@@ -117,6 +117,19 @@ export const ING_LINKS = {
   '닭다리살': 'https://link.coupang.com/a/gZgVXN4cpg',
   '스파게티 면': 'https://link.coupang.com/a/gZgElvHnVc', // ⛇묶음: 파스타면 / 스파게티 면 / 스파게티면
   '스파게티면': 'https://link.coupang.com/a/gZgElvHnVc', // ⛇묶음: 파스타면 / 스파게티 면 / 스파게티면
+  '떡국떡': 'https://link.coupang.com/a/gZgZbTXfqK',
+  // 🍖 [창업자 2026-09-12] 둘을 줬는데 재료 줄 이름은 하나다 → **찌개용**으로 (찌개·국 3편 · 볶음 2편)
+  //    ⛔ 불고기·제육용(gZgrUsWnlc)은 안 쓴다 — 한 이름에 하나만 붙는다.
+  '돼지고기 앞다리살': 'https://link.coupang.com/a/gZgtXRkfyC',
+  // 🍡 떡은 «이름이 이미 갈려» 있어 따로 붙는다 — 떡국떡 / 떡볶이 떡 · 가래떡(누들떡)
+  '떡볶이 떡': 'https://link.coupang.com/a/gZg4AihgOW', // ⛇묶음: 떡볶이 떡 / 가래떡
+  '가래떡': 'https://link.coupang.com/a/gZg4AihgOW', // ⛇묶음: 떡볶이 떡 / 가래떡
+  '김가루': 'https://www.oasis.co.kr/product/detail/95589',
+  '고등어': 'https://smartstore.naver.com/jejugalchi/products/4772215785',
+  '쌀': 'https://smartstore.naver.com/eeem/products/6764610456',
+  '화이트발사믹': 'https://www.kurly.com/goods/5053689',
+  '갈치': 'https://brand.naver.com/fallinlovefish/category/435f21f6b43246a1ad7c12760e3c5078',
+  '국간장': 'https://smartstore.naver.com/thebat/products/5108613448',
 }
 
 // 🚱 사는 물건이 아닌 재료 — 목록에도 안 올리고, 링크도 안 붙인다 (창업자 *"밥면수이런건 말고"*)

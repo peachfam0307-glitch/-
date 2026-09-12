@@ -92,7 +92,11 @@ for (const 줄 of readFileSync(받은파일, 'utf8').split('\n')) {
     continue
   }
   const 주소 = m[2]
-  if (!주소.startsWith('https://link.coupang.com/')) { 버린것.push({ 줄: t, 왜: '파트너스 링크가 아니다 — 이 주소로는 수수료가 안 붙는다' }); continue }
+  // 🛒 [창업자 확정 2026-09-12] **쿠팡에 없는 것은 다른 몰 주소도 받는다.**
+  //   📮 창업자 = *"4번은 꼭 넣어줘. 쿠팡에 없어서 넣은거야."*
+  //   ⭐ 수수료는 0원이지만 **유저는 살 수 있다** — 못 사는 링크보다 낫다.
+  //   ⚠️ 그래서 «막지 않고 알린다» — 나중에 쿠팡에 들어오면 바꾸라는 뜻이다.
+  if (!주소.startsWith('https://link.coupang.com/')) console.log(`   ⚠️ ${m[1].trim()} — 파트너스가 아니라 수수료 0원 (쿠팡에 없어서 받은 주소)`)
   // ⭐ 「계란 / 달걀」처럼 한 링크를 여러 이름에 달 수 있다
   const 한줄이름들 = m[1].split(/\s*[/|]\s*/).map((x) => x.trim()).filter(Boolean)
   for (const 이름 of 한줄이름들) {

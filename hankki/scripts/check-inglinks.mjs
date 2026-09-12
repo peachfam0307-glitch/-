@@ -11,6 +11,7 @@ import { readFileSync } from 'node:fs'
 const il = readFileSync('src/data/ingLinks.js', 'utf8')
 const store = readFileSync('src/store.jsx', 'utf8')
 const 탈 = []
+const 알림 = []   // ⚠️ 막지는 않지만 눈에 보여야 하는 것 (파트너스 아닌 주소)
 
 // ── ① 파트너스 링크가 아닌 주소 = 수수료 0원인데 붙은 줄 안다
 const 표 = [...il.matchAll(/^\s*'([^']+)':\s*'([^']+)',?(.*)$/gm)].map((m) => ({
@@ -20,7 +21,11 @@ const 표 = [...il.matchAll(/^\s*'([^']+)':\s*'([^']+)',?(.*)$/gm)].map((m) => (
 }))
 for (const { 이름, 주소 } of 표)
   if (!주소.startsWith('https://link.coupang.com/'))
-    탈.push(`⛔ 「${이름}」 이 파트너스 링크가 아니다 — ${주소}\n   👉 파트너스 「링크 생성」이 주는 link.coupang.com 주소라야 수수료가 붙는다.`)
+    // 🛒 [창업자 확정 2026-09-12] 쿠팡에 없는 것은 다른 몰 주소를 쓴다 — 창업자 *"쿠팡에 없어서 넣은거야"*
+    //   ⭐ 수수료 0원이지만 유저는 살 수 있다. 못 사는 링크보다 낫다 → **막지 않고 «세어서 알린다».**
+    //   ⛔ 다만 «주소 모양»은 본다 — http/https 가 아니면 그건 오타다.
+    if (!/^https?:\/\//.test(주소)) 탈.push(`⛔ 「${이름}」 주소가 이상하다 — ${주소}`)
+    else 알림.push(`⚠️ 「${이름}」 은 파트너스가 아니다(수수료 0원) — ${주소.replace(/^https?:\/\//, '').split('/')[0]}`)
 
 // ── ② 같은 주소가 두 재료에 = 2026-09-08 「짝 밀림」 사고의 모양
 //    ⭐ 다만 **창업자가 «일부러» 한 줄로 준 묶음**은 봐준다 — 「계란 / 달걀」은 같은 게 맞다.
@@ -89,4 +94,5 @@ if (표.length) {
 }
 
 if (탈.length) { console.error('\n' + 탈.join('\n\n') + '\n'); process.exit(1) }
+if (알림.length) console.log('\n' + 알림.join('\n') + '\n   ⭐ 쿠팡에 들어오면 파트너스 주소로 바꾼다 (창업자 2026-09-12)\n')
 console.log(`✅ 재료 링크 표 — 링크 ${표.length}개 · 안 사는 것 ${안파는것.length}개 · 담는 자리 둘 다 이어져 있다`)

@@ -121,17 +121,23 @@ jobs:
       #   → 딸 폰에서 Apple 로그인이 「잘 안 됐어요」. 권한 파일은 archive 때 서명하면서 박히는데 서명을 껐으니 빠진 것.
       #   실험 = archive 를 «임시(ad-hoc · CODE_SIGN_IDENTITY=-) 서명»으로 만들어 권한을 박고, export 가 배포 서명으로 갈아입힌다.
       #   아래 「archive 권한 확인」이 applesignin 이 없으면 죽는다(빈 줄로 지나가지 않게).
-      - name: 🍎 archive (임시 서명으로 권한 박기 · 배포 서명은 export 에서)
+      #   ⛔ 7판 결과(run 34682795868) = "Ad Hoc code signing is not allowed with SDK 'iOS 26.5'" — 임시 서명 길은 애플이 막았다.
+      #   ✅ 8판 = 1판 방식(자동 서명 · API 키)으로 되돌린다. 1판이 죽은 이유 「팀에 기기 0대」는
+      #      딸 아이폰 UDID 를 개발자 사이트 Devices 에 등록하면 풀린다(등록 «전»엔 이 단계가 1판과 같은 말로 죽는다).
+      - name: 🍎 archive (자동 서명 · API 키 · 팀에 기기 1대 이상 필요)
         working-directory: ios-app/ios/App
+        env:
+          K: ${{ secrets.ASC_KEY_ID }}
+          I: ${{ secrets.ASC_ISSUER_ID }}
         run: |
           set -o pipefail
           xcodebuild -resolvePackageDependencies -project App.xcodeproj -scheme App
           xcodebuild -project App.xcodeproj -scheme App -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -archivePath build/App.xcarchive \
-            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="-" \
-            CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER="" \
-            DEVELOPMENT_TEAM="$TEAM_ID" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$KEY_PATH" -authenticationKeyID "$K" -authenticationKeyIssuerID "$I" \
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGN_STYLE=Automatic \
             MARKETING_VERSION="$MARKETING_VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             archive | tail -80
           test -d build/App.xcarchive || { echo "⛔ archive 가 안 만들어졌다"; exit 1; }
@@ -211,9 +217,10 @@ jobs:
           /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" -c "Print :CFBundleShortVersionString" -c "Print :CFBundleVersion" "$APP/Info.plist" || true
           echo "── DistributionSummary.plist"
           plutil -p build/out/DistributionSummary.plist 2>/dev/null | grep -i "certificate\|name\|profile\|team\|type\|entitlements\|applesignin" | head -40 || true
-          echo "── 서명이 팀 $TEAM_ID 인가"
+          echo "── 서명이 팀 $TEAM_ID 인가 · applesignin 권한이 있나"
           codesign -dv --verbose=2 "$APP" 2>&1 | grep -q "TeamIdentifier=$TEAM_ID" || { echo "⛔ TeamIdentifier 가 $TEAM_ID 가 아니다"; exit 1; }
-          echo "✅ 서명 = 팀 $TEAM_ID"
+          codesign -d --entitlements :- "$APP" 2>/dev/null | grep -q "com.apple.developer.applesignin" || { echo "⛔ 서명된 앱에 applesignin 권한이 없다(빌드 4·6 사고) — 이 빌드는 올리면 안 된다"; exit 1; }
+          echo "✅ 서명 = 팀 $TEAM_ID · applesignin 있음"
 
       - name: ⬆️ 결과물 (.ipa · ExportOptions · 로그)
         if: always()

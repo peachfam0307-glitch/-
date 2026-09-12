@@ -116,7 +116,12 @@ jobs:
       #   "Your team has no devices from which to generate a provisioning profile" ＋ "No iOS App Development profiles for kr.hankki.app"
       #   → archive 는 서명 «없이» 만들고, 아래 exportArchive 가 API 키로 «배포용(App Store)» 서명을 한다.
       #   (러너 밖에서 원문을 못 열어 «실험»으로 잰다 — 안 되면 3판 = ASC API 로 인증서·프로필을 직접 만들어 수동 서명)
-      - name: 🍎 archive (서명 없이 · 서명은 export 에서)
+      # ⛔⛔ 7판(2026-09-12 17:1x) — 「서명 없이 archive」의 대가: 빌드 4·6 의 서명된 앱 권한에 applesignin 이 «없었다»
+      #   (6판 로그 entitlements = application-identifier · beta-reports-active · team-identifier · get-task-allow 넷뿐)
+      #   → 딸 폰에서 Apple 로그인이 「잘 안 됐어요」. 권한 파일은 archive 때 서명하면서 박히는데 서명을 껐으니 빠진 것.
+      #   실험 = archive 를 «임시(ad-hoc · CODE_SIGN_IDENTITY=-) 서명»으로 만들어 권한을 박고, export 가 배포 서명으로 갈아입힌다.
+      #   아래 「archive 권한 확인」이 applesignin 이 없으면 죽는다(빈 줄로 지나가지 않게).
+      - name: 🍎 archive (임시 서명으로 권한 박기 · 배포 서명은 export 에서)
         working-directory: ios-app/ios/App
         run: |
           set -o pipefail
@@ -124,10 +129,20 @@ jobs:
           xcodebuild -project App.xcodeproj -scheme App -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -archivePath build/App.xcarchive \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="-" \
+            CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER="" \
             DEVELOPMENT_TEAM="$TEAM_ID" \
             MARKETING_VERSION="$MARKETING_VERSION" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" \
             archive | tail -80
+          test -d build/App.xcarchive || { echo "⛔ archive 가 안 만들어졌다"; exit 1; }
+
+      - name: 🔍 archive 권한 확인 (applesignin 이 박혔나)
+        working-directory: ios-app/ios/App
+        run: |
+          APP=build/App.xcarchive/Products/Applications/App.app
+          codesign -d --entitlements :- "$APP" 2>/dev/null | tee build/archive-entitlements.txt || true
+          grep -q "com.apple.developer.applesignin" build/archive-entitlements.txt || { echo "⛔ archive 앱에 applesignin 권한이 없다"; exit 1; }
+          echo "✅ archive 권한에 applesignin 있음"
           test -d build/App.xcarchive || { echo "⛔ archive 가 안 만들어졌다"; exit 1; }
 
       - name: 📝 ExportOptions.plist

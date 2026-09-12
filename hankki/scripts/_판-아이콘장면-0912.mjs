@@ -8,7 +8,13 @@ import { chromium } from 'playwright'
 import { readFileSync, existsSync } from 'node:fs'
 const R = '/home/user/hankki/hankki'
 const 오늘 = '2026-09-12'
+// ⛔ [2026-09-12] 「오징어」 컷(ig_s9_16)이 «잘려서» 저장돼 있다 — 몸통 끝이 그림 밖으로 나갔다.
+//    📮 창업자가 원본 시트를 보내 확인해 줬다 — 내가 「원본이 잘렸다」고 잘못 말했다. 원본은 멀쩡하다.
+//    ✅ 표준 도구(tools/cut.py)로 다시 잘라 /tmp/오징어-온전.png 에 뒀다.
+//    ⏳ 앱 아이콘 교체는 «배포»라 창업자 신호를 기다린다. 릴스에서만 먼저 쓴다.
+const 고침 = { ig_s9_16: '/tmp/오징어-온전.png' }
 const 그림 = (k, 폴더) => {
+  if (고침[k] && existsSync(고침[k])) return 'data:image/png;base64,' + readFileSync(고침[k]).toString('base64')
   for (const f of 폴더 ? [폴더] : ['ing', 'photo']) {
     const p = `${R}/src/assets/stickers/${f}/${k}.png`
     if (existsSync(p)) return 'data:image/png;base64,' + readFileSync(p).toString('base64')

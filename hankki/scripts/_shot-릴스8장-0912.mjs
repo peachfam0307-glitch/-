@@ -80,6 +80,11 @@ await 찍기('1-홈')
 const 제철 = page.locator('.weekly-box').filter({ hasText: '이번 주 제철' })
 if (await 제철.count()) { await 제철.first().scrollIntoViewIfNeeded(); await page.waitForTimeout(800) }
 await 찍기('3-제철')
+// 🏠 [창업자 2026-09-12] *"우리집레시피 없어"* — 3번 글자에 「제철·우리집·SNS」 라 써놓고
+//    정작 우리집 화면을 안 보여줬다. 홈에 제철 박스 «아래» 따로 있다(HomeScreen.jsx:62).
+const 우리집 = page.locator('.weekly-box').filter({ hasText: '우리집' })
+console.log('  🔎 우리집레시피 상자 =', await 우리집.count(), '개')
+if (await 우리집.count()) { await 우리집.first().scrollIntoViewIfNeeded(); await page.waitForTimeout(800); await 찍기('3b-우리집') }
 
 // ② 레시피 목록 — 촤르륵 넘어가는 자리 (위·중간·아래 세 컷)
 await 탭('레시피')
@@ -124,6 +129,18 @@ if (await 첫편.count()) {
     await page.screenshot({ path: p, clip: { x: 8, y: Math.max(0, b1.y - 14), width: 389, height: 250 } })
     console.log('  ✂️', 이름)
   }
+  // ⏱ [창업자 2026-09-12] *"몇분이 총 몇분 요리하는게 아니였어??"*
+  //    -> 「몇 분」은 «총 조리시간»이다. 상세 맨 위 「20분」 칩이 그것이다.
+  //    ⛔ 내가 걸음마다 적힌 시간으로 잘못 읽고 만드는 법을 오렸다. 그건 다른 값이다.
+  const 시간칩오리기 = async () => {
+    const 칩 = page.getByText(/^\d+분$/).first()
+    if (!(await 칩.count())) { console.log('  ⛔ 시간 칩을 못 찾았다'); return }
+    await 칩.scrollIntoViewIfNeeded(); await page.waitForTimeout(500)
+    const bb = await 칩.boundingBox(); if (!bb) return
+    await page.screenshot({ path: join(OUT, '5g-오림-총시간.png'), clip: { x: 8, y: Math.max(0, bb.y - 12), width: 389, height: 76 } })
+    console.log('  ✂️ 5g-오림-총시간')
+  }
+  await 시간칩오리기()
   await 오리기('5b2-오림-1인분')
   // ⭐ [창업자 2026-09-12] *"몇분인지는 캡쳐에 없는데"* + *"따로잘라서 옆에 붙여주던가"*
   //    -> 만드는 법에서 «시간이 적힌 걸음»을 따로 오려 둔다. 인분 카드 옆에 붙일 재료다.

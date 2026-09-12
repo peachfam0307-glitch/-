@@ -99,5 +99,24 @@ await p.setContent(`${머리}<div class=band><div class=big>SNS 레시피</div><
 <div class=sec style="top:240px"><div class=tag>8·9월</div>${칸(sns지난.slice(0, 4), 226)}</div>
 <div class=sec style="top:760px"><div class=tag>9·10월</div>${칸(sns앞, 226)}</div>`)
 await 찍기('5-SNS')
+// ⑥ 인분 — 눌러서 양이 바뀐다 (1인분 ↔ 3인분)
+const 오림 = (png, w) => `<img src="data:image/png;base64,${readFileSync(png).toString('base64')}" style="width:${w}px;border-radius:22px;box-shadow:0 10px 30px rgba(93,52,16,.18)">`
+await p.setContent(`${머리}<div class=band><div class=big>인분을 누르면 양이 같이 바뀌어요</div></div>
+<div class=sec style="top:250px;display:flex;flex-direction:column;align-items:center;gap:18px">
+  <div class=tag style="margin:0">1인분</div>${오림('/tmp/릴스8장/5b2-오림-1인분.png', 668)}
+  <div class=tag style="margin:0">3인분</div>${오림('/tmp/릴스8장/5d2-오림-3인분.png', 668)}
+</div>`)
+await 찍기('6-인분')
+// ⑦ 총 시간
+await p.setContent(`${머리}<div class=band><div class=big>총 몇 분 걸리는지도 적혀 있어요</div></div>
+<div class=sec style="top:280px;display:flex;justify-content:center">
+  <div style="width:720px;height:150px;overflow:hidden;border-radius:22px;box-shadow:0 10px 30px rgba(93,52,16,.18)">
+    <img src="data:image/png;base64,${readFileSync('/tmp/릴스8장/5g-오림-총시간.png').toString('base64')}" style="width:720px;display:block"></div></div>
+<div class=shot style="top:520px"><img src="data:image/png;base64,${readFileSync('/tmp/릴스8장/5a-상세-위.png').toString('base64')}" style="height:830px"></div>`)
+await 찍기('7-시간')
+// ⑧ 끝
+await p.setContent(`${머리}<div style="position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:28px">
+  <div class=big style="font-size:120px">한끼</div><div class=sub>흩어진 레시피를, 한곳에</div></div>`)
+await 찍기('8-끝')
 console.log(`\n✅ ${낼곳}`)
 await b.close()
